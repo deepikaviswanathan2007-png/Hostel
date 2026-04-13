@@ -1,0 +1,10 @@
+node_modules/
+backend/.env
+frontend/.env
+frontend/build/
+frontend/build.log
+frontend/build_utf8.log
+frontend/src/pages/LoginPage.js.bak
+report.txt
+report_utf8.txt
+uploads/
