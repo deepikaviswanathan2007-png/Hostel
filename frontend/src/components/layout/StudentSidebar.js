@@ -82,9 +82,9 @@ export default function StudentSidebar({ children }) {
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[292px] flex-col border-r border-slate-200 bg-slate-50 shadow-[0_10px_35px_rgba(15,23,42,0.08)] lg:flex">
         <div className="border-b border-slate-200 px-6 py-6 bg-white/70">
           <div className="flex items-center gap-2">
-            <img src="/bit-hostel-logo.png" alt="BIT Logo" className="h-[38px] w-[38px] object-contain drop-shadow-sm" />
+            <img src="/bit-hostel-logo.png" alt="Bannari Amman Institute of Technology Logo" className="h-[38px] w-[38px] object-contain drop-shadow-sm" />
             <div className="leading-tight">
-              <div className="text-[16px] font-extrabold text-slate-900 leading-tight">Bannari Amman</div>
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-900 leading-tight">Bannari Amman Institute of Technology</div>
               <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Student Portal</div>
             </div>
           </div>
@@ -154,8 +154,8 @@ export default function StudentSidebar({ children }) {
             <div className="relative flex w-[292px] flex-col bg-slate-50 shadow-xl">
               <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5 bg-white/70">
                 <div className="flex items-center gap-2">
-                  <img src="/bit-hostel-logo.png" alt="BIT Logo" className="h-[26px] w-[26px] object-contain drop-shadow-sm" />
-                  <div className="font-bold text-slate-900 text-[12px]">BIT Student Portal</div>
+                  <img src="/bit-hostel-logo.png" alt="Bannari Amman Institute of Technology Logo" className="h-[26px] w-[26px] object-contain drop-shadow-sm" />
+                  <div className="font-bold text-slate-900 text-[12px]">Bannari Amman Institute of Technology</div>
                 </div>
                 <button onClick={() => setMobileOpen(false)} className="rounded-xl bg-slate-100 p-2 text-slate-700">
                   <X className="h-4 w-4" />

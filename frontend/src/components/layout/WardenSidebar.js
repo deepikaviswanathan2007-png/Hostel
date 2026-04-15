@@ -81,9 +81,9 @@ export default function WardenSidebar({ children }) {
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[292px] flex-col border-r border-slate-200 bg-slate-50 shadow-[0_10px_35px_rgba(15,23,42,0.08)] lg:flex">
         <div className="border-b border-slate-200 px-6 py-6 bg-white/70">
           <div className="flex items-center gap-2">
-            <img src="/bit-hostel-logo.png" alt="BIT Logo" className="h-[38px] w-[38px] object-contain drop-shadow-sm" />
+            <img src="/bit-hostel-logo.png" alt="Bannari Amman Institute of Technology Logo" className="h-[38px] w-[38px] object-contain drop-shadow-sm" />
             <div className="leading-tight">
-              <div className="text-[16px] font-extrabold text-slate-900 leading-tight">Warden</div>
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-900 leading-tight">Bannari Amman Institute of Technology</div>
               <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Management Portal</div>
             </div>
           </div>
@@ -178,10 +178,10 @@ export default function WardenSidebar({ children }) {
           >
             <div className="flex h-[80px] items-center justify-between px-6 border-b border-slate-200 bg-white/70">
               <div className="flex items-center gap-2">
-                <img src="/bit-hostel-logo.png" alt="BIT Logo" className="h-[32px] w-[32px] object-contain drop-shadow-sm" />
+                <img src="/bit-hostel-logo.png" alt="Bannari Amman Institute of Technology Logo" className="h-[32px] w-[32px] object-contain drop-shadow-sm" />
                 <div className="leading-tight">
-                  <div className="text-[11px] font-bold text-slate-900">Warden</div>
-                  <div className="text-[10px] font-semibold text-slate-600">Portal</div>
+                  <div className="text-[11px] font-bold text-slate-900">Bannari Amman Institute of Technology</div>
+                  <div className="text-[10px] font-semibold text-slate-600">Management Portal</div>
                 </div>
               </div>
               <button onClick={() => setMobileOpen(false)} className="rounded-xl bg-slate-100 p-2 text-slate-700">
