@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { dashboardAPI } from '../../../services/api';
-import { Spinner, StatCard, PageHeader, Card } from '../../../components/ui';
+ import { Spinner, Card } from '../../../components/ui';
 import { Building2, Home, Users, CheckCircle, Clock } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import useHostelNameMap from '../../../hooks/useHostelNameMap';
@@ -24,6 +24,45 @@ export default function DashboardPage() {
   const stats = data?.stats || {};
   const blockStats = data?.blockStats || [];
 
+  const metricCards = [
+    {
+      title: 'Total Students',
+      value: stats.totalStudents || 0,
+      icon: Users,
+      tone: 'bg-indigo-100 text-indigo-600',
+    },
+    {
+      title: 'Total Rooms',
+      value: stats.totalRooms || 0,
+      icon: Building2,
+      tone: 'bg-sky-100 text-sky-600',
+    },
+    {
+      title: 'Available Rooms',
+      value: stats.availableRooms || 0,
+      icon: Home,
+      tone: 'bg-emerald-100 text-emerald-600',
+    },
+    {
+      title: 'Occupied Rooms',
+      value: stats.occupiedRooms || 0,
+      icon: Home,
+      tone: 'bg-violet-100 text-violet-600',
+    },
+    {
+      title: 'Pending Complaints',
+      value: stats.pendingComplaints || 0,
+      icon: Clock,
+      tone: 'bg-amber-100 text-amber-600',
+    },
+    {
+      title: 'Resolved Complaints',
+      value: stats.resolvedComplaints || 0,
+      icon: CheckCircle,
+      tone: 'bg-emerald-100 text-emerald-600',
+    },
+  ];
+
   const pieData = blockStats.length > 0 
     ? blockStats.map((b) => ({
         name: getHostelName(b.block),
@@ -40,33 +79,42 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      <PageHeader 
-        title={`Welcome back, ${user?.name || 'Administrator'} 👋`}
-        description="Here's what's happening in your campus today. Manage hostel occupancy, view student statistics, and handle pending complaints."
-        eyebrow="Admin Dashboard"
-      />
+    <div className="mx-auto max-w-6xl space-y-6">
+      <section className="rounded-[26px] border border-white/80 bg-white/90 p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-sm">
+        <div className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-indigo-500">Admin Dashboard</div>
+        <h1 className="mt-1 text-[2.1rem] font-black tracking-[-0.03em] text-slate-900">
+          Welcome back, {user?.name || 'Administrator'}
+        </h1>
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-500">
+          Here's what's happening in your campus today. Manage hostel occupancy, view student statistics, and handle pending complaints.
+        </p>
+      </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <StatCard title="Total Students" value={stats.totalStudents || 0} icon={<Users className="w-5 h-5" />} color="primary" />
-          <StatCard title="Total Rooms" value={stats.totalRooms || 0} icon={<Building2 className="w-5 h-5" />} color="blue" />
-          <StatCard title="Available Rooms" value={stats.availableRooms || 0} icon={<Home className="w-5 h-5" />} color="green" />
-          <StatCard title="Occupied Rooms" value={stats.occupiedRooms || 0} icon={<Home className="w-5 h-5" />} color="purple" />
-          <StatCard title="Pending Complaints" value={stats.pendingComplaints || 0} icon={<Clock className="w-5 h-5" />} color="amber" />
-          <StatCard title="Resolved Complaints" value={stats.resolvedComplaints || 0} icon={<CheckCircle className="w-5 h-5" />} color="green" />
-        </div>
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:col-span-8">
+          {metricCards.map(({ title, value, icon: Icon, tone }) => (
+            <Card key={title} className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_8px_20px_rgba(15,23,42,0.04)]">
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-xs font-semibold text-slate-500">{title}</div>
+                <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${tone}`}>
+                  <Icon className="h-4 w-4" />
+                </div>
+              </div>
+              <div className="mt-3 text-4xl font-black tracking-tight text-slate-900">{value}</div>
+            </Card>
+          ))}
+        </section>
 
-        <div className="lg:col-span-4">
-          <Card className="p-6 h-full flex flex-col">
-            <h2 className="text-lg font-bold text-gray-900 mb-6">Occupancy by Hostel</h2>
-            <div className="flex-1 min-h-[240px] relative">
+        <section className="xl:col-span-4">
+          <Card className="flex h-full flex-col rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_8px_20px_rgba(15,23,42,0.05)]">
+            <h2 className="text-lg font-bold text-slate-900">Occupancy by Hostel</h2>
+            <div className="relative mt-4 min-h-[250px] flex-1">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={pieData}
-                    innerRadius={60}
-                    outerRadius={90}
+                    innerRadius={58}
+                    outerRadius={88}
                     paddingAngle={2}
                     dataKey="value"
                     stroke="none"
@@ -75,31 +123,36 @@ export default function DashboardPage() {
                       <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '12px', fontSize: '13px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }} 
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: '12px',
+                      fontSize: '13px',
+                      border: '1px solid #E2E8F0',
+                      boxShadow: '0 4px 10px -2px rgba(0, 0, 0, 0.08)'
+                    }}
                     itemStyle={{ color: '#0F172A', fontWeight: 600 }}
                   />
                 </PieChart>
               </ResponsiveContainer>
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none flex-col">
-                <span className="text-3xl font-bold text-gray-900">{stats.occupiedRooms || 0}</span>
-                <span className="text-xs text-gray-500 font-medium">Occupied</span>
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-4xl font-black tracking-tight text-slate-900">{stats.occupiedRooms || 0}</span>
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Occupied</span>
               </div>
             </div>
-            
-            <div className="mt-6 space-y-3">
+
+            <div className="mt-4 space-y-2.5">
               {pieData.map((d, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }}></div>
-                    <span className="text-gray-600 font-medium">{d.name}</span>
+                <div key={idx} className="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
+                    <span className="font-medium text-slate-600">{d.name}</span>
                   </div>
-                  <span className="font-bold text-gray-900">{d.value}</span>
+                  <span className="text-sm font-bold text-slate-900">{d.value}</span>
                 </div>
               ))}
             </div>
           </Card>
-        </div>
+        </section>
       </div>
     </div>
   );

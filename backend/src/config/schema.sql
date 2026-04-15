@@ -67,6 +67,7 @@ CREATE OR REPLACE VIEW wardens AS
 CREATE TABLE IF NOT EXISTS rooms (
   id           INT AUTO_INCREMENT PRIMARY KEY,
   room_number  VARCHAR(20) NOT NULL UNIQUE,
+  hostel_id    INT DEFAULT NULL,
   block        ENUM('A','B','C','D') NOT NULL,
   floor        TINYINT NOT NULL DEFAULT 1,
   wing         ENUM('left','right') DEFAULT NULL,
@@ -76,6 +77,8 @@ CREATE TABLE IF NOT EXISTS rooms (
   status       ENUM('available','occupied','maintenance','reserved') DEFAULT 'available',
   created_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at   DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (hostel_id) REFERENCES hostels(id) ON DELETE SET NULL,
+  INDEX idx_rooms_hostel_id (hostel_id),
   INDEX idx_rooms_block (block),
   INDEX idx_rooms_status (status),
   INDEX idx_rooms_room_number (room_number)
@@ -252,7 +255,7 @@ CREATE TABLE IF NOT EXISTS hostel_applications (
   academic_year       VARCHAR(20) NOT NULL,
   semester            TINYINT NOT NULL,
   preferred_block     ENUM('A','B','C','D') DEFAULT NULL,
-  preferred_room_type ENUM('single','double','triple','quadruple','1','2','3','4') DEFAULT NULL,
+  preferred_room_type ENUM('single','double','triple','quad') DEFAULT NULL,
   reason              TEXT,
   status              ENUM('pending','approved','rejected') DEFAULT 'pending',
   reviewed_by         INT DEFAULT NULL,

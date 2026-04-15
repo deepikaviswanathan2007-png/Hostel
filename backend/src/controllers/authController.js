@@ -20,6 +20,24 @@ const cookieOptions = () => ({
   maxAge: 7 * 24 * 60 * 60 * 1000,
 });
 
+const createStudentStub = async (conn, userId, name, email) => {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const tempRegNo = `G-${userId}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+    try {
+      const [insertRes] = await conn.query(
+        'INSERT INTO students (user_id, name, email, register_no, department, year) VALUES (?, ?, ?, ?, ?, ?)',
+        [userId, name, email, tempRegNo, 'PENDING', 1]
+      );
+      return insertRes.insertId;
+    } catch (err) {
+      if (err.code !== 'ER_DUP_ENTRY') throw err;
+    }
+  }
+
+  throw new Error('Unable to create a unique student record.');
+};
+
 const login = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password)
@@ -80,6 +98,7 @@ const googleLogin = async (req, res) => {
 
     // 1. Look up by google_id
     let [rows] = await pool.query('SELECT * FROM users WHERE google_id = ?', [googleId]);
+    let createdStudentId = null;
 
     if (!rows.length) {
       // 2. Look up by email (link existing account)
@@ -88,10 +107,26 @@ const googleLogin = async (req, res) => {
       if (rows.length) {
         await pool.query('UPDATE users SET google_id = ? WHERE id = ?', [googleId, rows[0].id]);
       } else {
-        return res.status(403).json({ 
-          success: false, 
-          message: 'Account not found. Please contact an administrator to register your email before logging in.' 
-        });
+        const conn = await pool.getConnection();
+        try {
+          await conn.beginTransaction();
+
+          const [userResult] = await conn.query(
+            'INSERT INTO users (name, email, password, google_id, role) VALUES (?, ?, ?, ?, ?)',
+            [name, email, null, googleId, 'student']
+          );
+
+          const userId = userResult.insertId;
+          createdStudentId = await createStudentStub(conn, userId, name, email);
+
+          await conn.commit();
+          rows = [{ id: userId, name, email, role: 'student' }];
+        } catch (err) {
+          await conn.rollback();
+          throw err;
+        } finally {
+          conn.release();
+        }
       }
     }
 
@@ -109,17 +144,13 @@ const googleLogin = async (req, res) => {
         if (studentRows.length) {
           await pool.query('UPDATE students SET user_id = ? WHERE id = ?', [user.id, studentRows[0].id]);
           userData.student_id = studentRows[0].id;
-        } else {
-          // Auto-create pending student record
-          const tempRegNo = `G-${user.id}-${Date.now().toString().slice(-4)}`;
-          const [insertRes] = await pool.query(
-            'INSERT INTO students (user_id, name, email, register_no, department, year) VALUES (?, ?, ?, ?, ?, ?)',
-            [user.id, user.name, user.email, tempRegNo, 'PENDING', 1]
-          );
-          userData.student_id = insertRes.insertId;
         }
       } else {
         userData.student_id = studentRows[0].id;
+      }
+
+      if (!userData.student_id && createdStudentId) {
+        userData.student_id = createdStudentId;
       }
     }
 
@@ -160,14 +191,6 @@ const me = async (req, res) => {
         if (studentRows.length) {
           await pool.query('UPDATE students SET user_id = ? WHERE id = ?', [userData.id, studentRows[0].id]);
           userData.student_id = studentRows[0].id;
-        } else {
-          // Auto-create pending student record
-          const tempRegNo = `G-${userData.id}-${Date.now().toString().slice(-4)}`;
-          const [insertRes] = await pool.query(
-            'INSERT INTO students (user_id, name, email, register_no, department, year) VALUES (?, ?, ?, ?, ?, ?)',
-            [userData.id, userData.name, userData.email, tempRegNo, 'PENDING', 1]
-          );
-          userData.student_id = insertRes.insertId;
         }
       } else {
         userData.student_id = studentRows[0].id;

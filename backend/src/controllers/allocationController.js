@@ -14,6 +14,7 @@ const allocate = async (req, res) => {
     if (!room) throw new Error('Room not found.');
     if (room.occupied >= room.capacity) throw new Error('Room is fully occupied.');
     if (room.status === 'maintenance') throw new Error('Room is under maintenance.');
+    if (room.status === 'reserved') throw new Error('Room is reserved and cannot be allocated directly.');
 
     await conn.query(
       'UPDATE students SET room_id=?, floor=?, wing=? WHERE id=?',

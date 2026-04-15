@@ -1,5 +1,6 @@
 const { pool } = require('../config/database');
 const VALID_BLOCK_CODES = new Set(['A', 'B', 'C', 'D']);
+const VALID_HOSTEL_GENDERS = new Set(['MALE', 'FEMALE']);
 
 const deriveAcademicYearFromDate = (date = new Date()) => {
   const d = new Date(date);
@@ -17,6 +18,20 @@ const validateBlockCode = (blockCode) => {
   if (blockCode == null) return null;
   if (!VALID_BLOCK_CODES.has(blockCode)) {
     return `Hostel code must be one of ${Array.from(VALID_BLOCK_CODES).join(', ')}.`;
+  }
+  return null;
+};
+
+const normalizeHostelGender = (value) => {
+  if (value == null) return null;
+  const normalized = String(value).trim().toUpperCase();
+  return normalized || null;
+};
+
+const validateHostelGender = (gender) => {
+  if (gender == null) return null;
+  if (!VALID_HOSTEL_GENDERS.has(gender)) {
+    return `Hostel gender must be one of ${Array.from(VALID_HOSTEL_GENDERS).join(', ')}.`;
   }
   return null;
 };
@@ -53,11 +68,14 @@ const getAll = async (req, res) => {
 // ── Create hostel ─────────────────────────────────────────────
 const create = async (req, res) => {
   try {
-    const { name, block_code, gender = 'COED', total_rooms = 0, warden_id, capacity = 0 } = req.body;
+    const { name, block_code, gender = 'MALE', total_rooms = 0, warden_id, capacity = 0 } = req.body;
     const normalizedBlockCode = normalizeBlockCode(block_code);
+    const normalizedGender = normalizeHostelGender(gender) || 'MALE';
     if (!name) return res.status(400).json({ success: false, message: 'Hostel name is required.' });
     const blockCodeError = validateBlockCode(normalizedBlockCode);
     if (blockCodeError) return res.status(400).json({ success: false, message: blockCodeError });
+    const genderError = validateHostelGender(normalizedGender);
+    if (genderError) return res.status(400).json({ success: false, message: genderError });
 
     if (normalizedBlockCode) {
       const [[existing]] = await pool.query(
@@ -75,7 +93,7 @@ const create = async (req, res) => {
     const [result] = await pool.query(
       `INSERT INTO hostels (name, block_code, gender, total_rooms, warden_id, capacity)
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [name, normalizedBlockCode, gender, total_rooms, warden_id || null, capacity || 0]
+      [name, normalizedBlockCode, normalizedGender, total_rooms, warden_id || null, capacity || 0]
     );
     const [[hostel]] = await pool.query('SELECT * FROM hostels WHERE id=?', [result.insertId]);
     res.json({ success: true, hostel });
@@ -97,8 +115,12 @@ const update = async (req, res) => {
     const { name, block_code, gender, total_rooms, warden_id, capacity } = req.body;
     const normalizedBlockCode =
       block_code !== undefined ? normalizeBlockCode(block_code) : hostel.block_code;
+    const normalizedGender =
+      gender !== undefined ? normalizeHostelGender(gender) : hostel.gender;
     const blockCodeError = validateBlockCode(normalizedBlockCode);
     if (blockCodeError) return res.status(400).json({ success: false, message: blockCodeError });
+    const genderError = validateHostelGender(normalizedGender);
+    if (genderError) return res.status(400).json({ success: false, message: genderError });
 
     if (normalizedBlockCode) {
       const [[existing]] = await pool.query(
@@ -120,7 +142,7 @@ const update = async (req, res) => {
       [
         name ?? hostel.name,
         normalizedBlockCode,
-        gender ?? hostel.gender,
+        normalizedGender,
         total_rooms ?? hostel.total_rooms,
         warden_id !== undefined ? (warden_id || null) : hostel.warden_id,
         capacity ?? hostel.capacity,

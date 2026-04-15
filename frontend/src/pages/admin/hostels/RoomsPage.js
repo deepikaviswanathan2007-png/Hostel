@@ -25,7 +25,7 @@ export default function RoomsPage() {
   const [modal, setModal] = useState(null);
   const [selected, setSelected] = useState(null);
   const [detail, setDetail] = useState(null);
-  const [form, setForm] = useState({ room_number: '', hostel_id: '', block: 'A', floor: 1, capacity: 4, room_type: 'Quad' });
+  const [form, setForm] = useState({ room_number: '', hostel_id: '', block: 'A', floor: 1, capacity: 4, room_type: 'quad' });
   const [saving, setSaving] = useState(false);
   const [view, setView] = useState('grid');
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
@@ -226,13 +226,12 @@ export default function RoomsPage() {
         columns={[
           { key: 'room_number', label: 'Room Number' },
           { key: 'hostel_name', label: 'Hostel Name' },
-          { key: 'block', label: 'Block' },
           { key: 'floor', label: 'Floor' },
           { key: 'capacity', label: 'Capacity' },
           { key: 'room_type', label: 'Room Type' }
         ]}
         sampleData={[
-          { room_number: 'A-101', block: 'A', floor: '1', capacity: '3', room_type: 'triple' }
+          { room_number: 'A-101', hostel_name: 'Boys Hostel A', floor: '1', capacity: '3', room_type: 'triple' }
         ]}
         uploadEndpoint="/bulk/rooms"
         onSuccess={() => { setIsBulkModalOpen(false); load(); }}
@@ -252,6 +251,7 @@ export default function RoomsPage() {
             <option value="single">Single</option>
             <option value="double">Double</option>
             <option value="triple">Triple</option>
+            <option value="quad">Quad</option>
           </Select>
           {modal === 'edit' && (
             <Select label="Status" value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>

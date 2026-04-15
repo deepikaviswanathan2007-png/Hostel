@@ -62,6 +62,23 @@ const create = async (req, res) => {
     return res.status(400).json({ success: false, message: 'All fields are required.' });
   }
 
+  const fromDate = new Date(`${from_date}T00:00:00`);
+  const toDate = new Date(`${to_date}T00:00:00`);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
+    return res.status(400).json({ success: false, message: 'Invalid date format.' });
+  }
+
+  if (fromDate > toDate) {
+    return res.status(400).json({ success: false, message: 'from_date must be before or equal to to_date' });
+  }
+
+  if (fromDate < today) {
+    return res.status(400).json({ success: false, message: 'from_date cannot be in the past' });
+  }
+
   try {
     const [result] = await pool.query(
       `INSERT INTO leaves (student_id, from_date, to_date, reason) VALUES (?, ?, ?, ?)`,

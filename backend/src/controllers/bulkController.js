@@ -14,10 +14,72 @@ const parseCSV = (filePath) => {
   });
 };
 
+const VALID_BLOCKS = new Set(['A', 'B', 'C', 'D']);
+
+const firstDefined = (row, keys = []) => {
+  for (const key of keys) {
+    const value = row?.[key];
+    if (value !== undefined && value !== null && String(value).trim() !== '') return value;
+  }
+  return null;
+};
+
+const normalizeBlockCode = (value) => {
+  if (value == null) return null;
+  let normalized = String(value).trim().toUpperCase();
+  if (!normalized) return null;
+
+  normalized = normalized.replace(/\s+/g, '_').replace(/-/g, '_');
+  normalized = normalized.replace(/^BLOCK_?/, '');
+
+  if (VALID_BLOCKS.has(normalized)) return normalized;
+  return null;
+};
+
+const deriveBlockFromRoomNumber = (roomNumber) => {
+  if (roomNumber == null) return null;
+  const normalized = String(roomNumber).trim().toUpperCase();
+  if (!normalized) return null;
+  const firstAlpha = normalized.match(/[A-Z]/);
+  if (!firstAlpha) return null;
+  return VALID_BLOCKS.has(firstAlpha[0]) ? firstAlpha[0] : null;
+};
+
+const resolveHostelFromRow = async (row) => {
+  const hostelIdRaw = firstDefined(row, ['hostel_id', 'hostelId']);
+  if (hostelIdRaw) {
+    const hostelId = Number(hostelIdRaw);
+    if (!Number.isInteger(hostelId) || hostelId <= 0) {
+      throw new Error('hostel_id must be a positive integer.');
+    }
+    const [[hostel]] = await pool.query('SELECT id, block_code FROM hostels WHERE id = ? LIMIT 1', [hostelId]);
+    if (!hostel) throw new Error(`Hostel with id ${hostelId} not found.`);
+    return {
+      hostelId: hostel.id,
+      block: normalizeBlockCode(hostel.block_code),
+    };
+  }
+
+  const hostelName = firstDefined(row, ['hostel_name', 'hostelName', 'hostel']);
+  if (hostelName) {
+    const [[hostel]] = await pool.query(
+      'SELECT id, block_code FROM hostels WHERE LOWER(name) = LOWER(?) LIMIT 1',
+      [String(hostelName).trim()]
+    );
+    if (!hostel) throw new Error(`Hostel '${hostelName}' not found.`);
+    return {
+      hostelId: hostel.id,
+      block: normalizeBlockCode(hostel.block_code),
+    };
+  }
+
+  return { hostelId: null, block: null };
+};
+
 exports.bulkStudents = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
 
     let rows = [];
@@ -107,7 +169,7 @@ exports.bulkStudents = async (req, res) => {
 exports.bulkRooms = async (req, res) => {
     try {
       if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
+        return res.status(400).json({ success: false, message: 'No file uploaded' });
       }
   
       let rows = [];
@@ -126,29 +188,67 @@ exports.bulkRooms = async (req, res) => {
         const rowNum = i + 1;
   
         try {
-          const { roomNumber, block, floor, capacity, type } = row;
-          
-          if (!roomNumber || !block || !capacity) {
-            throw new Error('roomNumber, block, and capacity are required');
+          const roomNumber = firstDefined(row, ['room_number', 'roomNumber', 'room_no', 'roomNo']);
+          const capacityRaw = firstDefined(row, ['capacity']);
+          const floorRaw = firstDefined(row, ['floor']);
+          const roomTypeRaw = firstDefined(row, ['room_type', 'roomType', 'type']);
+
+          if (!roomNumber || !capacityRaw) {
+            throw new Error('room_number and capacity are required.');
           }
-  
-          if (parseInt(capacity) <= 0) {
-            throw new Error('Capacity must be > 0');
+
+          const capacity = Number(capacityRaw);
+          if (!Number.isInteger(capacity) || capacity <= 0) {
+            throw new Error('capacity must be a positive integer.');
+          }
+
+          const floor = floorRaw == null || String(floorRaw).trim() === '' ? 1 : Number(floorRaw);
+          if (!Number.isInteger(floor) || floor <= 0) {
+            throw new Error('floor must be a positive integer.');
+          }
+
+          const normalizedRoomType = String(roomTypeRaw || 'triple').trim().toLowerCase();
+          if (!['single', 'double', 'triple', 'quad'].includes(normalizedRoomType)) {
+            throw new Error('room_type must be one of single, double, triple, quad.');
+          }
+
+          const hostelInfo = await resolveHostelFromRow(row);
+          let normalizedBlock = hostelInfo.block || deriveBlockFromRoomNumber(roomNumber);
+
+          if (!normalizedBlock) {
+            throw new Error('Unable to detect block. Provide hostel_id or hostel_name, or use room_number like A-101/B-201/C-301/D-401.');
+          }
+
+          if (!VALID_BLOCKS.has(normalizedBlock)) {
+            throw new Error('block must be one of A, B, C, D.');
           }
   
           const [existing] = await pool.query(
             'SELECT id FROM rooms WHERE room_number = ? AND block = ?', 
-            [roomNumber, block]
+            [String(roomNumber).trim(), normalizedBlock]
           );
   
           if (existing.length > 0) {
             throw new Error('Room already exists in this block');
           }
-  
-          await pool.query(`
-            INSERT INTO rooms (room_number, block, floor, capacity, room_type, status) 
-            VALUES (?, ?, ?, ?, ?, 'available')
-          `, [roomNumber, block, parseInt(floor) || 1, capacity, type || 'triple']);
+
+          const baseParams = [String(roomNumber).trim(), normalizedBlock, floor, capacity, normalizedRoomType];
+          try {
+            await pool.query(
+              `INSERT INTO rooms (room_number, hostel_id, block, floor, capacity, room_type, status)
+               VALUES (?, ?, ?, ?, ?, ?, 'available')`,
+              [baseParams[0], hostelInfo.hostelId || null, baseParams[1], baseParams[2], baseParams[3], baseParams[4]]
+            );
+          } catch (insertErr) {
+            if (insertErr?.code !== 'ER_BAD_FIELD_ERROR' || !/hostel_id/i.test(insertErr?.sqlMessage || '')) {
+              throw insertErr;
+            }
+            await pool.query(
+              `INSERT INTO rooms (room_number, block, floor, capacity, room_type, status)
+               VALUES (?, ?, ?, ?, ?, 'available')`,
+              baseParams
+            );
+          }
   
           successCount++;
         } catch (err) {

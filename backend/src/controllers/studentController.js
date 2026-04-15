@@ -95,15 +95,26 @@ const update = async (req, res) => {
 };
 
 const remove = async (req, res) => {
+  let conn;
   try {
-    const [s] = await pool.query('SELECT room_id FROM students WHERE id=?', [req.params.id]);
-    if (s.length && s[0].room_id) {
-      await pool.query('UPDATE rooms SET occupied=occupied-1 WHERE id=? AND occupied>0', [s[0].room_id]);
-      await pool.query('UPDATE rooms SET status=IF(occupied>=capacity,"occupied","available") WHERE id=?', [s[0].room_id]);
+    conn = await pool.getConnection();
+    await conn.beginTransaction();
+
+    const [[student]] = await conn.query('SELECT room_id FROM students WHERE id=?', [req.params.id]);
+    if (student && student.room_id) {
+      const [[room]] = await conn.query('SELECT id, occupied, capacity FROM rooms WHERE id=? FOR UPDATE', [student.room_id]);
+      if (room) {
+        const newOccupied = Math.max(0, room.occupied - 1);
+        const newStatus = newOccupied >= room.capacity ? 'occupied' : 'available';
+        await conn.query('UPDATE rooms SET occupied=?, status=? WHERE id=?', [newOccupied, newStatus, room.id]);
+      }
     }
-    await pool.query('DELETE FROM students WHERE id=?', [req.params.id]);
+
+    await conn.query('DELETE FROM students WHERE id=?', [req.params.id]);
+    await conn.commit();
     res.json({ success: true, message: 'Student deleted.' });
   } catch (err) { console.error('Error in ' + __filename + ':', err); res.status(500).json({ success: false, message: 'Server error.' }); }
+  finally { if (conn) conn.release(); }
 };
 
 const exportCSV = async (req, res) => {

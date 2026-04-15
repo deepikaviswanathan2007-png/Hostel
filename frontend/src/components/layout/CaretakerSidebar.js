@@ -26,9 +26,9 @@ function NavItem({ to, label, icon: Icon, onClick, end = false }) {
       end={end}
       onClick={onClick}
       className={({ isActive }) =>
-        `flex items-center justify-between px-6 py-2.5 text-[13px] font-medium transition-all duration-200 ${isActive
-          ? 'bg-brand-primary/10 text-brand-primary border-l-4 border-brand-primary'
-          : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent'
+        `group flex items-center justify-between rounded-xl px-3 py-2.5 text-[14px] font-semibold transition-all duration-200 ${isActive
+          ? 'bg-orange-600 text-white shadow-sm'
+          : 'text-slate-700 hover:bg-slate-100/90 hover:text-slate-900'
         }`
       }
     >
@@ -36,7 +36,7 @@ function NavItem({ to, label, icon: Icon, onClick, end = false }) {
         <Icon className="h-4 w-4" />
         <span>{label}</span>
       </div>
-      <ChevronRight className="h-4 w-4 text-gray-400" />
+      <ChevronRight className="h-4 w-4 text-current opacity-60 transition-transform group-hover:translate-x-0.5" />
     </NavLink>
   );
 }
@@ -60,21 +60,21 @@ export default function CaretakerSidebar({ children }) {
 
   return (
     <div className="min-h-screen bg-brand-surface font-sans">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[272px] flex-col border-r border-white/70 bg-white/85 shadow-[0_24px_60px_rgba(145,158,171,0.16)] backdrop-blur-xl lg:flex">
-        <div className="border-b border-brand-border/70 px-6 py-6">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[292px] flex-col border-r border-slate-200 bg-slate-50 shadow-[0_10px_35px_rgba(15,23,42,0.08)] lg:flex">
+        <div className="border-b border-slate-200 px-6 py-6 bg-white/70">
           <div className="flex items-center gap-2">
-            <img src="/bit-hostel-logo.png" alt="BIT Logo" className="h-12 w-12 object-contain drop-shadow-sm" />
+            <img src="/bit-hostel-logo.png" alt="BIT Logo" className="h-[38px] w-[38px] object-contain drop-shadow-sm" />
             <div className="leading-tight">
-              <div className="text-[14px] font-bold text-gray-900">Caretaker</div>
-              <div className="text-[12px] font-semibold uppercase tracking-[0.16em] text-brand-muted">Operations Portal</div>
+              <div className="text-[16px] font-extrabold text-slate-900 leading-tight">Caretaker</div>
+              <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Operations Portal</div>
             </div>
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto py-5 space-y-4 custom-scrollbar">
+        <nav className="flex-1 overflow-y-auto px-3 py-5 space-y-5 custom-scrollbar" aria-label="Caretaker navigation">
           {NAV_GROUPS.map((group, idx) => (
             <div key={idx}>
-              <div className="px-6 mb-2 text-[11px] font-bold uppercase tracking-wider text-brand-muted/70">
+              <div className="px-3 mb-2 text-[12px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                 {group.title}
               </div>
               <div className="space-y-0.5">
@@ -86,19 +86,19 @@ export default function CaretakerSidebar({ children }) {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-brand-border/70">
+        <div className="p-2 border-t border-slate-200 bg-white/70">
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-[13px] font-medium text-gray-600 transition-colors hover:bg-orange-50 hover:text-orange-600"
+            className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[12px] font-semibold text-slate-700 transition-colors hover:bg-red-50 hover:text-red-600"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-3 w-3" />
             <span>Logout</span>
           </button>
         </div>
       </aside>
 
-      <div className="lg:pl-[272px] flex flex-col min-h-screen">
+      <div className="lg:pl-[292px] flex flex-col min-h-screen">
         <header className="sticky top-0 z-30 px-6 pb-2 pt-4 lg:px-8">
           <div className="flex w-full items-center justify-between rounded-[28px] border border-white/70 bg-white/80 px-6 py-4 shadow-[0_18px_44px_rgba(145,158,171,0.12)] backdrop-blur-xl">
             <div className="flex items-center gap-3">
@@ -153,25 +153,25 @@ export default function CaretakerSidebar({ children }) {
               initial={{ x: -250 }}
               animate={{ x: 0 }}
               exit={{ x: -250 }}
-              className="fixed inset-y-0 left-0 z-50 w-[272px] flex-col bg-white shadow-lg lg:hidden"
+              className="fixed inset-y-0 left-0 z-50 w-[292px] flex-col bg-slate-50 shadow-xl lg:hidden"
             >
-              <div className="flex h-[80px] items-center justify-between px-6 border-b border-brand-border/70">
+              <div className="flex h-[80px] items-center justify-between px-6 border-b border-slate-200 bg-white/70">
                 <div className="flex items-center gap-2">
-                  <img src="/bit-hostel-logo.png" alt="BIT Logo" className="h-10 w-10 object-contain drop-shadow-sm" />
+                  <img src="/bit-hostel-logo.png" alt="BIT Logo" className="h-[32px] w-[32px] object-contain drop-shadow-sm" />
                   <div className="leading-tight">
-                    <div className="text-[14px] font-bold text-gray-900">Caretaker</div>
-                    <div className="text-[12px] font-semibold text-gray-600">Portal</div>
+                    <div className="text-[11px] font-bold text-slate-900">Caretaker</div>
+                    <div className="text-[10px] font-semibold text-slate-600">Portal</div>
                   </div>
                 </div>
-                <button onClick={() => setMobileOpen(false)}>
-                  <X className="h-5 w-5 text-gray-600" />
+                <button onClick={() => setMobileOpen(false)} className="rounded-xl bg-slate-100 p-2 text-slate-700">
+                  <X className="h-5 w-5" />
                 </button>
               </div>
 
-              <nav className="flex-1 overflow-y-auto py-5 space-y-4">
+              <nav className="flex-1 overflow-y-auto px-3 py-5 space-y-5" aria-label="Caretaker mobile navigation">
                 {NAV_GROUPS.map((group, idx) => (
                   <div key={idx}>
-                    <div className="px-6 mb-2 text-[11px] font-bold uppercase tracking-wider text-brand-muted/70">
+                    <div className="px-3 mb-2 text-[12px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       {group.title}
                     </div>
                     <div className="space-y-0.5">
@@ -187,13 +187,13 @@ export default function CaretakerSidebar({ children }) {
                 ))}
               </nav>
 
-              <div className="p-4 border-t border-brand-border/70">
+              <div className="p-2 border-t border-slate-200 bg-white/70">
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-[13px] font-medium text-gray-600 transition-colors hover:bg-orange-50 hover:text-orange-600"
+                  className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[12px] font-semibold text-slate-700 transition-colors hover:bg-red-50 hover:text-red-600"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-3 w-3" />
                   <span>Logout</span>
                 </button>
               </div>

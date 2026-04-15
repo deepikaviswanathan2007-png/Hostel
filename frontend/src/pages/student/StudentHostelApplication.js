@@ -17,7 +17,7 @@ export default function StudentHostelApplication() {
   const [academicYear, setAcademicYear] = useState('2025-2026');
   const [semester, setSemester] = useState(1);
   const [preferredBlock, setPreferredBlock] = useState('');
-  const [preferredRoomType, setPreferredRoomType] = useState('3');
+  const [preferredRoomType, setPreferredRoomType] = useState('triple');
   const [reason, setReason] = useState('');
 
   const fetchApplications = async () => {
@@ -116,10 +116,10 @@ export default function StudentHostelApplication() {
                 ))}
               </Select>
               <Select label="Preferred Room Type" value={preferredRoomType} onChange={e => setPreferredRoomType(e.target.value)}>
-                <option value="1">1 Cot</option>
-                <option value="2">2 Cot</option>
-                <option value="3">3 Cot</option>
-                <option value="4">4 Cot</option>
+                <option value="single">Single Cot</option>
+                <option value="double">Double Cot</option>
+                <option value="triple">Triple Cot</option>
+                <option value="quad">Quad Cot</option>
               </Select>
             </div>
 
