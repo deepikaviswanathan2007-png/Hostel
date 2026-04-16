@@ -25,7 +25,7 @@ const NAV_GROUPS = [
       { to: '/student/attendance', label: 'Attendance', icon: CalendarRange },
       { to: '/student/requests', label: 'Requests', icon: RefreshCcw },
       { to: '/student/visitors', label: 'Visitor Request', icon: UserPlus },
-      { to: '/student/outpass', label: 'Outpass', icon: ClipboardList },
+      { to: '/student/outpass', label: 'Leave', icon: ClipboardList },
     ]
   },
   {
