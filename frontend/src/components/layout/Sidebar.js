@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { ChevronRight, Home, Users, CheckSquare, List, Calendar, FileText, Settings, LogOut, Menu, X, Building2, MessageSquare, ClipboardCheck } from 'lucide-react';
+import { ChevronRight, Home, Users, CheckSquare, List, Calendar, FileText, LogOut, X, Building2, MessageSquare, ClipboardCheck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import TopNavBar from './TopNavBar';
 

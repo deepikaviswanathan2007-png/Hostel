@@ -1,5 +1,4 @@
 import React from 'react';
-import { User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function TopNavBar({ pageTitle, brandingContent, theme = 'admin' }) {

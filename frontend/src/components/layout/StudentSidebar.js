@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { ChevronRight, Bell, ClipboardList, LayoutGrid, LogOut, Menu, UserRound, X, Building2, CalendarRange, RefreshCcw, Coffee, Users, UserPlus, BedDouble } from 'lucide-react';
+import { ChevronRight, Bell, ClipboardList, LayoutGrid, LogOut, UserRound, X, Building2, CalendarRange, RefreshCcw, Coffee, Users, UserPlus, BedDouble } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import TopNavBar from './TopNavBar';
 
@@ -76,7 +76,6 @@ export default function StudentSidebar({ children }) {
   const allItems = NAV_GROUPS.flatMap(g => g.items);
   const activeItem = allItems.find(item => (item.to === '/student' ? location.pathname === '/student' : location.pathname.startsWith(item.to)));
   const pageTitle = activeItem?.label || 'Student Portal';
-  const initials = user?.name?.charAt(0)?.toUpperCase() || 'S';
 
   return (
     <div className="min-h-screen bg-brand-surface font-sans">

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Home, FileText, Wrench, LogOut, Menu, X } from 'lucide-react';
+import { ChevronRight, Home, FileText, LogOut, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import TopNavBar from './TopNavBar';
 
@@ -57,7 +57,6 @@ export default function CaretakerSidebar({ children }) {
   const allItems = NAV_GROUPS.flatMap(g => g.items);
   const activeItem = allItems.find(item => (item.to === '/caretaker' ? location.pathname === '/caretaker' : location.pathname.startsWith(item.to)));
   const pageTitle = activeItem?.label || 'Caretaker Dashboard';
-  const initials = user?.name?.charAt(0)?.toUpperCase() || 'C';
 
   return (
     <div className="min-h-screen bg-brand-surface font-sans">

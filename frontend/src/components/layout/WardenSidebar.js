@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Home, Users, FileText, LogOut, Menu, X, List, Building2, RefreshCcw, CalendarCheck, MessageSquare } from 'lucide-react';
+import { ChevronRight, Home, Users, FileText, LogOut, X, List, Building2, RefreshCcw, CalendarCheck, MessageSquare } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import TopNavBar from './TopNavBar';
 
@@ -75,7 +75,6 @@ export default function WardenSidebar({ children }) {
   const allItems = NAV_GROUPS.flatMap(g => g.items);
   const activeItem = allItems.find(item => (item.to === '/warden' ? location.pathname === '/warden' : location.pathname.startsWith(item.to)));
   const pageTitle = activeItem?.label || 'Warden Dashboard';
-  const initials = user?.name?.charAt(0)?.toUpperCase() || 'W';
 
   return (
     <div className="min-h-screen bg-brand-surface font-sans">
