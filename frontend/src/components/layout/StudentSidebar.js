@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronRight, Bell, ClipboardList, LayoutGrid, LogOut, Menu, UserRound, X, Building2, CalendarRange, RefreshCcw, Coffee, Users, UserPlus, BedDouble } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import TopNavBar from './TopNavBar';
 
 const NAV_GROUPS = [
   {
@@ -118,35 +119,10 @@ export default function StudentSidebar({ children }) {
       </aside>
 
       <div className="lg:pl-[292px] flex flex-col min-h-screen">
-        <header className="sticky top-0 z-30 px-6 pb-2 pt-4 lg:px-8">
-          <div className="flex w-full items-center justify-between rounded-[28px] border border-white/70 bg-white/80 px-6 py-4 shadow-[0_18px_44px_rgba(145,158,171,0.12)] backdrop-blur-xl">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setMobileOpen(open => !open)}
-                className="rounded-xl bg-brand-primary/10 p-2 text-brand-primary lg:hidden"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-              <div className="flex items-center gap-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-primary/10 text-brand-primary">
-                  <LayoutGrid className="h-4 w-4" />
-                </div>
-                <div>
-                  <div className="text-[11px] uppercase tracking-[0.18em] text-brand-muted">Student Workspace</div>
-                  <span className="font-semibold text-gray-800">{pageTitle}</span>
-                </div>
-              </div>
-            </div>
-            <div className="hidden items-center gap-3 sm:flex">
-              <div className="rounded-[18px] border border-[#ece8ff] bg-[#f8f6ff] px-4 py-2">
-                <div className="text-[11px] uppercase tracking-[0.16em] text-brand-muted">Logged in as</div>
-                <div className="text-sm font-semibold text-gray-900">{user?.name || 'Student'}</div>
-              </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-primary to-[#7e57c2] text-sm font-bold text-white shadow-md">{initials}</div>
-            </div>
-          </div>
-        </header>
+        <TopNavBar 
+          pageTitle={pageTitle}
+          theme="student"
+        />
 
         {mobileOpen && (
           <div className="fixed inset-0 z-50 flex lg:hidden">

@@ -3,6 +3,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Home, FileText, Wrench, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import TopNavBar from './TopNavBar';
 
 const NAV_GROUPS = [
   {
@@ -99,38 +100,10 @@ export default function CaretakerSidebar({ children }) {
       </aside>
 
       <div className="lg:pl-[292px] flex flex-col min-h-screen">
-        <header className="sticky top-0 z-30 px-6 pb-2 pt-4 lg:px-8">
-          <div className="flex w-full items-center justify-between rounded-[28px] border border-white/70 bg-white/80 px-6 py-4 shadow-[0_18px_44px_rgba(145,158,171,0.12)] backdrop-blur-xl">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setMobileOpen(open => !open)}
-                className="rounded-xl bg-orange-50 p-2 text-orange-600 lg:hidden"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-              <div className="flex items-center gap-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
-                  <Wrench className="h-4 w-4" />
-                </div>
-                <div>
-                  <div className="text-[11px] uppercase tracking-[0.18em] text-brand-muted">Caretaker Workspace</div>
-                  <span className="font-semibold text-gray-800">{pageTitle}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="hidden rounded-[18px] border border-orange-100 bg-orange-50 px-4 py-2 sm:block">
-                <div className="text-[11px] uppercase tracking-[0.16em] text-brand-muted">Caretaker</div>
-                <div className="text-sm font-semibold text-gray-900">{user?.name || 'Caretaker'}</div>
-              </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 text-sm font-bold text-white shadow-md">
-                {initials}
-              </div>
-            </div>
-          </div>
-        </header>
+        <TopNavBar 
+          pageTitle={pageTitle}
+          theme="caretaker"
+        />
 
         <main className="flex-1 px-6 lg:px-8 py-6">
           <div className="max-w-7xl mx-auto" style={{ zoom: contentZoom }}>
