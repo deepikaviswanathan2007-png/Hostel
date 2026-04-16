@@ -362,25 +362,7 @@ export default function StudentsPage() {
             borderColor: '#D8DCF0',
           }}
         >
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 mb-8">
-            <div>
-              <p
-                className="text-sm font-semibold uppercase tracking-[2px]"
-                style={{ color: COLORS.skyblue }}
-              >
-                Hostel Management
-              </p>
-              <h1
-                className="text-3xl md:text-4xl font-bold mt-1"
-                style={{ color: COLORS.primary }}
-              >
-                Student Records
-              </h1>
-              <p className="text-sm mt-2" style={{ color: COLORS.secondarytext }}>
-                Manage student details and room allocation in one place.
-              </p>
-            </div>
-
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-end gap-5 mb-8">
             <div className="flex flex-wrap gap-3">
               <button
                   onClick={() => setIsBulkModalOpen(true)}

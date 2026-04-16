@@ -63,12 +63,6 @@ export default function AdminAttendanceReportsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Attendance Reports</h1>
-        <p className="text-sm text-brand-muted mt-0.5">Track and monitor student check-in / check-out records</p>
-      </div>
-
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard label="Present Today"  value={presentToday}      icon={UserCheck} color="text-green-600"       bg="bg-green-100" />

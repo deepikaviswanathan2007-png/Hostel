@@ -10,7 +10,6 @@ const PIE_COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#0EA5E9', '#8B5CF6'];
 
 export default function DashboardPage() {
   const { getHostelName } = useHostelNameMap();
-  const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -80,16 +79,6 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <section className="rounded-[26px] border border-white/80 bg-white/90 p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-sm">
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-indigo-500">Admin Dashboard</div>
-        <h1 className="mt-1 text-[2.1rem] font-black tracking-[-0.03em] text-slate-900">
-          Welcome back, {user?.name || 'Administrator'}
-        </h1>
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-500">
-          Here's what's happening in your campus today. Manage hostel occupancy, view student statistics, and handle pending complaints.
-        </p>
-      </section>
-
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:col-span-8">
           {metricCards.map(({ title, value, icon: Icon, tone }) => (

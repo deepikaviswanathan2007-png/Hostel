@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { usersAPI } from '../../../services/api';
-import { Table, Badge, Button, Input, Select, Modal, PageHeader, EmptyState } from '../../../components/ui';
+import { Table, Badge, Button, Input, Select, Modal, EmptyState } from '../../../components/ui';
 import { format } from 'date-fns';
 import { UsersIcon, UserPlus, ShieldIcon, Wrench, Trash2, Edit2 } from 'lucide-react';
 import useDebouncedValue from '../../../hooks/useDebouncedValue';
@@ -110,13 +110,6 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        eyebrow="System Administration"
-        title="User Management"
-        description="Add and manage administrative users, wardens, and caretakers."
-        actions={<Button onClick={() => handleOpenForm()} className="gap-2"><UserPlus className="w-4 h-4"/> Add User</Button>}
-      />
-
       <div className="flex flex-col sm:flex-row gap-4 mb-2">
          <Input placeholder="Search name or email..." value={search} onChange={e => setSearch(e.target.value)} className="w-full sm:w-64 bg-white" />
          <Select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} className="w-full sm:w-48 bg-white">
@@ -125,6 +118,7 @@ export default function UsersPage() {
            <option value="warden">Wardens</option>
            <option value="caretaker">Caretakers</option>
          </Select>
+         <Button onClick={() => handleOpenForm()} className="gap-2 sm:ml-auto"><UserPlus className="w-4 h-4"/> Add User</Button>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
