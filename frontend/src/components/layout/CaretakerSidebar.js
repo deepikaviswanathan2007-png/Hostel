@@ -29,8 +29,7 @@ function NavItem({ to, label, icon: Icon, onClick, end = false }) {
       className={({ isActive }) =>
         `group flex items-center justify-between rounded-xl px-3 py-2.5 text-[14px] font-semibold transition-all duration-200 ${isActive
           ? 'bg-orange-600 text-white shadow-sm'
-          : 'text-slate-700 hover:bg-slate-100/90 hover:text-slate-900'
-        }`
+        : 'text-black hover:bg-slate-100/90 hover:text-black'        }`
       }
     >
       <div className="flex items-center gap-3">
