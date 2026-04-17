@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { ChevronRight, Home, Users, CheckSquare, List, Calendar, FileText, LogOut, X, Building2, MessageSquare, ClipboardCheck } from 'lucide-react';
+import { ChevronRight, Home, Users, CheckSquare, List, Calendar, FileText, LogOut, X, Building2, MessageSquare, ClipboardCheck, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import TopNavBar from './TopNavBar';
 
@@ -10,6 +10,7 @@ const NAV_GROUPS = [
     items: [
       { to: '/', label: 'Admin Dashboard', icon: Home, end: true },
       { to: '/attendance-reports', label: 'Attendance Reports', icon: ClipboardCheck },
+      { to: '/security-logs', label: 'Security Logs', icon: ShieldAlert },
     ]
   },
   {

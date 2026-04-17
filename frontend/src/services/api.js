@@ -132,6 +132,14 @@ export const dashboardAPI = {
   getStats: () => api.get('/dashboard'),
 };
 
+export const securityAPI = {
+  getIncidents: (p) => api.get('/security/incidents', { params: p }),
+  createIncident: (d) => api.post('/security/incidents', d),
+  resolveIncident: (id, d = { status: 'resolved' }) => api.patch(`/security/incidents/${id}/resolve`, d),
+  blockIncidentIp: (id, d = {}) => api.patch(`/security/incidents/${id}/block`, d),
+  deleteIncident: (id) => api.delete(`/security/incidents/${id}`),
+};
+
 export const caretakerAPI = {
   getStats:    ()  => api.get('/caretaker/dashboard'),
   getComplaints: (p) => api.get('/caretaker/complaints', { params: p }),

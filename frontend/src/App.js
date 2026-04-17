@@ -17,6 +17,7 @@ import LoginPage from './pages/LoginPage';
 // Reports & Analytics
 import DashboardPage from './pages/admin/reports/DashboardPage';
 import AdminAttendanceReportsPage from './pages/admin/reports/AdminAttendanceReportsPage';
+import SecurityLogsPage from './pages/admin/reports/SecurityLogsPage';
 // User Management
 import AdminUsersPage from './pages/admin/users/UsersPage';
 import StudentsPage from './pages/admin/users/StudentsPage';
@@ -125,6 +126,7 @@ function AppRoutes() {
                 {/* Reports & Analytics */}
                 <Route path="/"            element={<DashboardPage />} />
                 <Route path="/attendance-reports" element={<AdminAttendanceReportsPage />} />
+                <Route path="/security-logs" element={<SecurityLogsPage />} />
                 
                 {/* User Management */}
                 <Route path="/users"       element={<AdminUsersPage />} />
