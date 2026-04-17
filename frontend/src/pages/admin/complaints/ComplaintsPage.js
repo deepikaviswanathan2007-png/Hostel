@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { complaintsAPI, studentsAPI } from '../../../services/api';
-import { Button, Badge, Select, Input, Textarea, Modal, Spinner, EmptyState, PageHeader, SectionCard } from '../../../components/ui';
+import { Button, Badge, Select, Input, Textarea, Modal, Spinner, EmptyState, SectionCard } from '../../../components/ui';
 import { format } from 'date-fns';
 
 const PRIORITY_BADGE = { low: 'success', medium: 'warning', high: 'danger' };
@@ -87,13 +87,10 @@ export default function ComplaintsPage() {
 
   return (
     <div className="space-y-5 animate-fade-in">
-      <PageHeader
-        eyebrow="Student Services Desk"
-        title="Complaints and Service Requests"
-        description="Track maintenance issues, grievance resolution, student room concerns, and administrative response status from one service queue."
-        actions={<Button size="sm" onClick={openAdd}>File Complaint</Button>}
-        meta={<Badge variant="default">{complaints.length} active records</Badge>}
-      />
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        <Badge variant="default">{complaints.length} active records</Badge>
+        <Button size="sm" onClick={openAdd}>File Complaint</Button>
+      </div>
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }} className="grid grid-cols-3 gap-5">
         {[['Pending', pending], ['In Progress', progress], ['Resolved', resolved]].map(([label, value], idx) => (

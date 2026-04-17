@@ -21,6 +21,8 @@ DROP TABLE IF EXISTS visitors;
 DROP TABLE IF EXISTS notices;
 DROP TABLE IF EXISTS warden_messages;
 DROP TABLE IF EXISTS complaints;
+DROP TABLE IF EXISTS security_incidents;
+DROP TABLE IF EXISTS blocked_ips;
 DROP TABLE IF EXISTS allocations;
 DROP TABLE IF EXISTS students;
 DROP TABLE IF EXISTS floor_warden_assignments;
@@ -300,6 +302,54 @@ CREATE TABLE IF NOT EXISTS attendance (
   INDEX idx_att_student (student_id),
   INDEX idx_att_date (checked_at),
   INDEX idx_att_type (check_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── SECURITY INCIDENTS TABLE ──
+CREATE TABLE IF NOT EXISTS security_incidents (
+  id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
+  event_type         VARCHAR(80) NOT NULL,
+  severity           ENUM('low','medium','high','critical') DEFAULT 'medium',
+  status             ENUM('open','resolved','blocked','ignored') DEFAULT 'open',
+  actor_user_id      INT DEFAULT NULL,
+  actor_email        VARCHAR(160) DEFAULT NULL,
+  actor_role         VARCHAR(50) DEFAULT NULL,
+  target_user_id     INT DEFAULT NULL,
+  target_user_name   VARCHAR(160) DEFAULT NULL,
+  target_user_meta   VARCHAR(120) DEFAULT NULL,
+  request_method     VARCHAR(12) DEFAULT NULL,
+  endpoint           VARCHAR(500) DEFAULT NULL,
+  source_ip          VARCHAR(64) DEFAULT NULL,
+  user_agent         VARCHAR(1000) DEFAULT NULL,
+  browser            VARCHAR(120) DEFAULT NULL,
+  operating_system   VARCHAR(120) DEFAULT NULL,
+  device_type        VARCHAR(60) DEFAULT NULL,
+  message            TEXT,
+  raw_context        JSON DEFAULT NULL,
+  reviewed_by        INT DEFAULT NULL,
+  reviewed_at        DATETIME DEFAULT NULL,
+  created_at         DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at         DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (target_user_id) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_sec_event_type (event_type),
+  INDEX idx_sec_severity (severity),
+  INDEX idx_sec_status (status),
+  INDEX idx_sec_source_ip (source_ip),
+  INDEX idx_sec_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── BLOCKED IPs TABLE ──
+CREATE TABLE IF NOT EXISTS blocked_ips (
+  id                 INT AUTO_INCREMENT PRIMARY KEY,
+  ip_address         VARCHAR(64) NOT NULL UNIQUE,
+  reason             VARCHAR(255) DEFAULT NULL,
+  blocked_by_user_id INT DEFAULT NULL,
+  expires_at         DATETIME DEFAULT NULL,
+  created_at         DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at         DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (blocked_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_blocked_ips_expires (expires_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================

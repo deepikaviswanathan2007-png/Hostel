@@ -1,5 +1,10 @@
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
+const {
+  logSecurityIncident,
+  isIpBlocked,
+  getSourceIp,
+} = require('../services/securityIncidentService');
 
 // ── 1. Security Headers (Helmet) ─────────────────────────────
 //    Adds X-Content-Type-Options, X-Frame-Options, CSP, HSTS, etc.
@@ -76,7 +81,24 @@ const requestSizeGuard = (maxBytes = 1024 * 1024) => {
 
 // ── 6. Suspicious Request Blocker ─────────────────────────────
 //    Blocks common malicious path patterns and bad user agents.
-const suspiciousRequestBlocker = (req, res, next) => {
+const suspiciousRequestBlocker = async (req, res, next) => {
+  const sourceIp = getSourceIp(req);
+
+  if (await isIpBlocked(sourceIp)) {
+    logSecurityIncident({
+      req,
+      eventType: 'BLOCKED_IP_REQUEST',
+      severity: 'high',
+      status: 'blocked',
+      message: `Blocked IP attempted access: ${sourceIp}`,
+      extraContext: { sourceIp },
+    });
+    return res.status(403).json({
+      success: false,
+      message: 'Forbidden.',
+    });
+  }
+
   const blockedPatterns = [
     /\.\.\//, /\.\.\\/, /%2e%2e/i,             // path traversal
     /\.(php|asp|aspx|jsp|cgi|env)$/i,          // server-side script probes
@@ -86,10 +108,27 @@ const suspiciousRequestBlocker = (req, res, next) => {
     /<script/i,                                 // XSS in URL
   ];
 
-  const path = decodeURIComponent(req.path);
+  let path = req.path;
+  try {
+    path = decodeURIComponent(req.path);
+  } catch {
+    // If URI decoding fails, continue using raw path.
+  }
+
   for (const pattern of blockedPatterns) {
     if (pattern.test(path)) {
       console.warn(`[SECURITY] Blocked suspicious request: ${req.method} ${req.originalUrl} from ${req.ip}`);
+      logSecurityIncident({
+        req,
+        eventType: 'SUSPICIOUS_REQUEST_BLOCKED',
+        severity: 'high',
+        status: 'open',
+        message: `Suspicious path pattern blocked for ${req.method} ${req.originalUrl}`,
+        extraContext: {
+          pattern: String(pattern),
+          sourceIp,
+        },
+      });
       return res.status(403).json({
         success: false,
         message: 'Forbidden.',
@@ -103,6 +142,14 @@ const suspiciousRequestBlocker = (req, res, next) => {
     // Allow health-check tools but log the request
     if (req.path !== '/health') {
       console.warn(`[SECURITY] Suspicious User-Agent: "${ua}" on ${req.method} ${req.originalUrl}`);
+      logSecurityIncident({
+        req,
+        eventType: 'SUSPICIOUS_USER_AGENT',
+        severity: 'medium',
+        status: 'open',
+        message: `Suspicious user-agent detected on ${req.method} ${req.originalUrl}`,
+        extraContext: { sourceIp },
+      });
     }
   }
 

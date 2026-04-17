@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { hostelsAPI, roomsAPI } from '../../../services/api';
-import { Button, Badge, Select, Spinner, PageHeader, SectionCard } from '../../../components/ui';
+import { Button, Badge, Select, Spinner, SectionCard } from '../../../components/ui';
 
 export default function FloorWardenPage() {
   const [hostels, setHostels] = useState([]);
@@ -81,18 +81,12 @@ export default function FloorWardenPage() {
 
   return (
     <div className="space-y-5 animate-fade-in">
-      <PageHeader
-        eyebrow="Facilities Management"
-        title="Floor Wardens"
-        description="Manage separate wardens for the left wing and right wing of a specific hostel and floor."
-      />
-
-      <SectionCard
-        title="Floor Warden Assignment"
-        description="Assign separate wardens for the left wing and right wing of a specific hostel and floor."
-        action={<Button size="sm" onClick={saveFloorWardens} loading={assignmentSaving} disabled={!assignmentBlock}>Save Floor Wardens</Button>}
-      >
+      <SectionCard>
         <div className="space-y-4">
+          <div className="flex justify-end">
+            <Button size="sm" onClick={saveFloorWardens} loading={assignmentSaving} disabled={!assignmentBlock}>Save Floor Wardens</Button>
+          </div>
+
           <div className="flex flex-wrap gap-3">
             <Select value={assignmentBlock} onChange={e => setAssignmentBlock(e.target.value)} disabled={!assignmentBlock}>
               {hostels.length > 0 ? hostels.map((h) => (

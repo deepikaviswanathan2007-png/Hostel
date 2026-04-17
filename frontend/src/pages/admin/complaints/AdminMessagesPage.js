@@ -102,12 +102,7 @@ export default function AdminMessagesPage() {
 
   return (
     <div className="space-y-6 p-1">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Warden Messages</h1>
-          <p className="text-sm text-brand-muted mt-0.5">Internal communication with hostel wardens</p>
-        </div>
+      <div className="flex justify-end">
         <button
           onClick={() => setShowCompose(v => !v)}
           className="flex items-center gap-2 rounded-xl bg-brand-primary px-4 py-2 text-sm font-semibold text-white hover:bg-brand-primary/90 transition-colors"

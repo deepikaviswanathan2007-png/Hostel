@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { hostelApplicationsAPI } from '../../services/api';
-import { Table, Badge, Button, Modal, Textarea, PageHeader, EmptyState } from '../../components/ui';
+import { Table, Badge, Button, Modal, Textarea, EmptyState } from '../../components/ui';
 import { format } from 'date-fns';
 import { BuildingIcon } from 'lucide-react';
 import useHostelNameMap from '../../hooks/useHostelNameMap';
@@ -78,24 +78,19 @@ export default function WardenApplicationReview() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        eyebrow="Admissions"
-        title="Hostel Applications"
-        description="Review and process student applications for hostel accommodation."
-        actions={
-          <div className="flex bg-gray-100 p-1 rounded-xl">
-            {['pending', 'approved', 'rejected'].map(status => (
-              <button
-                key={status}
-                className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all ${statusFilter === status ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                onClick={() => setStatusFilter(status)}
-              >
-                {status}
-              </button>
-            ))}
-          </div>
-        }
-      />
+      <div className="flex justify-end">
+        <div className="flex bg-gray-100 p-1 rounded-xl">
+          {['pending', 'approved', 'rejected'].map(status => (
+            <button
+              key={status}
+              className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all ${statusFilter === status ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              onClick={() => setStatusFilter(status)}
+            >
+              {status}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
          {applications.length > 0 ? (

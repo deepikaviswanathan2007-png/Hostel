@@ -26,6 +26,7 @@ const staffDirCtrl = require('../controllers/staffDirectoryController');
 const userCtrl = require('../controllers/userController');
 const messageCtrl = require('../controllers/messageController');
 const hostelCtrl = require('../controllers/hostelController');
+const securityCtrl = require('../controllers/securityController');
 const complaintUpload = require('../middleware/complaintUpload');
 const multer = require('multer');
 
@@ -179,5 +180,12 @@ router.get('/hostels/warden/:id', authenticate, adminOnly, hostelCtrl.getWardenD
 
 // ── Student: My Room ──────────────────────────────────────────
 router.get('/student/my-room', authenticate, hostelCtrl.getMyRoom);
+
+// ── Security & Malpractice Logs (Admin) ───────────────────────
+router.get('/security/incidents', authenticate, adminOnly, securityCtrl.getIncidents);
+router.post('/security/incidents', authenticate, adminOnly, securityCtrl.createManualIncident);
+router.patch('/security/incidents/:id/resolve', authenticate, adminOnly, securityCtrl.resolveIncident);
+router.patch('/security/incidents/:id/block', authenticate, adminOnly, securityCtrl.blockIncidentIp);
+router.delete('/security/incidents/:id', authenticate, adminOnly, securityCtrl.deleteIncident);
 
 module.exports = router;

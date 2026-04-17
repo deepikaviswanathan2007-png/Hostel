@@ -115,25 +115,18 @@ export default function RoomsPage() {
 
   return (
     <div className="space-y-5 animate-fade-in">
-      <PageHeader
-        eyebrow="Facilities Management"
-        title="Room Inventory"
-        description="Monitor room capacity, status, and occupancy across hostel blocks with both grid and tabular management views."
-        actions={
-          <>
-            <Button variant="outline" size="sm" onClick={() => setView(v => v === 'grid' ? 'table' : 'grid')}>
-              {view === 'grid' ? 'Table View' : 'Grid View'}
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setIsBulkModalOpen(true)} className="flex items-center gap-2">
-              <Upload className="w-4 h-4" /> Import Rooms
-            </Button>
-            <Button size="sm" onClick={openAdd}>Add Room</Button>
-          </>
-        }
-        meta={<Badge variant="default">{rooms.length} rooms in inventory</Badge>}
-      />
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        <Badge variant="default">{rooms.length} rooms in inventory</Badge>
+        <Button variant="outline" size="sm" onClick={() => setView(v => v === 'grid' ? 'table' : 'grid')}>
+          {view === 'grid' ? 'Table View' : 'Grid View'}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setIsBulkModalOpen(true)} className="flex items-center gap-2">
+          <Upload className="w-4 h-4" /> Import Rooms
+        </Button>
+        <Button size="sm" onClick={openAdd}>Add Room</Button>
+      </div>
 
-      <SectionCard title="Inventory Filters" description="Review blocks, occupancy status, and room health indicators from a single control area.">
+      <SectionCard>
         <div className="flex flex-wrap gap-3">
           <Select value={hostelId} onChange={e => setHostelId(e.target.value)}>
             <option value="">All Hostels</option>

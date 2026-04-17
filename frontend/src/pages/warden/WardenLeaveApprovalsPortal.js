@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { CheckCircle, Search, Trash2, XCircle } from 'lucide-react';
 import { leavesAPI } from '../../services/api';
-import { Badge, Button, EmptyState, Input, PanelShell, PortalHero, Select, Spinner } from '../../components/ui';
+import { Badge, Button, EmptyState, Input, PanelShell, Select, Spinner } from '../../components/ui';
 
 export default function WardenLeaveApprovalsPortal() {
   const [leaves, setLeaves] = useState([]);
@@ -64,14 +64,7 @@ export default function WardenLeaveApprovalsPortal() {
 
   return (
     <div className="space-y-6">
-      <PortalHero
-        eyebrow="Warden Outpass Desk"
-        title="Leave Approvals"
-        description="Review student outpass requests, search by resident details, and approve or reject from one organized moderation flow."
-        accent="blue"
-      />
-
-      <PanelShell title="Filters" description="Filter leave requests by student search and approval status.">
+      <PanelShell>
         <div className="grid gap-4 lg:grid-cols-[1.2fr_0.55fr]">
           <Input icon={<Search className="h-4 w-4" />} value={search} onChange={event => setSearch(event.target.value)} placeholder="Search by student name or register number" className="h-14 rounded-[20px] bg-[#fbfbff] px-5" />
           <Select value={statusFilter} onChange={event => setStatusFilter(event.target.value)} className="h-14 rounded-[20px] bg-[#fbfbff] px-5">
