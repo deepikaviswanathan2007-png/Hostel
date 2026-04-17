@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { attendanceAPI } from '../../../services/api';
 import { UserCheck, UserX, Users, Search, Filter } from 'lucide-react';
 import { Spinner } from '../../../components/ui';
@@ -13,19 +14,24 @@ const fmt12h = (val) => {
   return `${hour % 12 || 12}:${String(min).padStart(2, '0')} ${suffix}`;
 };
 
-function StatCard({ label, value, icon: Icon, color, bg }) {
+function StatCard({ label, value, icon: Icon, color, bg, index }) {
   return (
-    <div className="bg-white rounded-2xl border border-brand-border/60 shadow-sm p-5">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className="bg-white rounded-2xl border border-brand-border/60 shadow-sm p-6 hover:shadow-md hover:scale-105 transition-all duration-300"
+    >
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-brand-muted mb-1">{label}</p>
-          <p className={`text-3xl font-black ${color}`}>{value}</p>
+          <p className="text-sm font-semibold uppercase tracking-wider text-brand-muted mb-2">{label}</p>
+          <p className={`text-5xl font-black ${color}`}>{value}</p>
         </div>
-        <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${bg}`}>
-          <Icon className={`h-5 w-5 ${color}`} />
+        <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${bg}`}>
+          <Icon className={`h-6 w-6 ${color}`} />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -70,10 +76,10 @@ export default function AdminAttendanceReportsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard label="Present Today"  value={presentToday}      icon={UserCheck} color="text-green-600"       bg="bg-green-100" />
-        <StatCard label="Absent Today"   value={absentToday}       icon={UserX}     color="text-red-600"         bg="bg-red-100"   />
-        <StatCard label="Total Records"  value={attendance.length} icon={Users}     color="text-brand-primary"   bg="bg-brand-primary/10" />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <StatCard label="Present Today"  value={presentToday}      icon={UserCheck} color="text-green-600"       bg="bg-green-100" index={0} />
+        <StatCard label="Absent Today"   value={absentToday}       icon={UserX}     color="text-red-600"         bg="bg-red-100" index={1}   />
+        <StatCard label="Total Records"  value={attendance.length} icon={Users}     color="text-brand-primary"   bg="bg-brand-primary/10" index={2} />
       </div>
 
       {/* Filters */}

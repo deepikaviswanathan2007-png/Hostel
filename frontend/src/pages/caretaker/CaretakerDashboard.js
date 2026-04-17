@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { caretakerAPI } from '../../services/api';
-import { Spinner, Badge, StatCard, PageHeader, Card } from '../../components/ui';
-import { AlertCircle, CheckCircle2, Clock, Users, Building2, Home } from 'lucide-react';
+import { Spinner, Badge, Card } from '../../components/ui';
+import { AlertCircle, CheckCircle2, Clock, Users, Building2, Home, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function CaretakerDashboard() {
@@ -18,7 +18,7 @@ export default function CaretakerDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Spinner size="lg" className="text-orange-500" />
+        <Spinner size="lg" className="text-orange-600" />
       </div>
     );
   }
@@ -26,99 +26,165 @@ export default function CaretakerDashboard() {
   const stats = data?.stats || {};
   const recentComplaints = data?.recentComplaints || [];
 
-  return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      <PageHeader 
-        title="Complaint Management Dashboard"
-        description="Manage and resolve all hostel complaints from here."
-        eyebrow="Caretaker Portal"
-      />
+  const metricCards = [
+    { title: 'Total Students', value: stats.totalStudents || 0, icon: Users, tone: 'bg-orange-100 text-orange-600' },
+    { title: 'Total Rooms', value: stats.totalRooms || 0, icon: Building2, tone: 'bg-blue-100 text-blue-600' },
+    { title: 'Occupied Rooms', value: stats.occupiedRooms || 0, icon: Home, tone: 'bg-emerald-100 text-emerald-600' },
+    { title: 'Pending Issues', value: stats.pendingComplaints || 0, icon: AlertCircle, tone: 'bg-red-100 text-red-600' },
+  ];
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Students" value={stats.totalStudents || 0} icon={<Users className="w-5 h-5" />} color="primary" />
-        <StatCard title="Total Rooms" value={stats.totalRooms || 0} icon={<Building2 className="w-5 h-5" />} color="blue" />
-        <StatCard title="Occupied Rooms" value={stats.occupiedRooms || 0} icon={<Home className="w-5 h-5" />} color="purple" />
-        <StatCard title="Pending Issues" value={stats.pendingComplaints || 0} icon={<AlertCircle className="w-5 h-5" />} color="amber" />
+  const complaintStats = [
+    { label: 'Pending', value: stats.pendingComplaints || 0, icon: AlertCircle, color: 'bg-orange-50 border-orange-100 text-orange-600' },
+    { label: 'In Progress', value: stats.inProgressComplaints || 0, icon: Clock, color: 'bg-blue-50 border-blue-100 text-blue-600' },
+  ];
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <motion.section
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-3"
+      >
+        <div className="text-sm font-semibold uppercase tracking-wider text-orange-600">Caretaker Portal</div>
+        <h1 className="text-4xl font-bold text-gray-900">Complaint Management</h1>
+        <p className="max-w-2xl text-base leading-relaxed text-gray-600">
+          Manage and resolve all hostel complaints efficiently from your dashboard.
+        </p>
+      </motion.section>
+
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {metricCards.map(({ title, value, icon: Icon, tone }, idx) => (
+          <motion.div
+            key={title}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.05 }}
+          >
+            <Card className="group overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-gray-300">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 space-y-3">
+                  <div className="text-sm font-semibold uppercase tracking-wider text-gray-600">{title}</div>
+                  <div className="text-5xl font-black text-gray-900">{value.toLocaleString()}</div>
+                </div>
+                <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl ${tone} transition-transform group-hover:scale-110`}>
+                  <Icon className="h-6 w-6" />
+                </div>
+              </div>
+              <div className="mt-4 h-1 w-16 rounded-full bg-gradient-to-r from-gray-200 to-transparent" />
+            </Card>
+          </motion.div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-1 p-6 h-full flex flex-col">
-          <h2 className="text-lg font-bold text-gray-900 mb-6">Complaint Status</h2>
-          <div className="space-y-4">
-            <div className="flex items-center gap-4 bg-orange-50/50 p-4 rounded-xl border border-orange-100">
-              <div className="w-12 h-12 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
-                <AlertCircle className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-600">Pending</div>
-                <div className="text-2xl font-bold text-gray-900">{stats.pendingComplaints || 0}</div>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-4 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-              <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
-                <Clock className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-600">In Progress</div>
-                <div className="text-2xl font-bold text-gray-900">{stats.inProgressComplaints || 0}</div>
-              </div>
-            </div>
-          </div>
-        </Card>
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Complaint Status Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="lg:col-span-1 space-y-4"
+        >
+          {complaintStats.map(({ label, value, icon: Icon, color }, idx) => (
+            <motion.div
+              key={label}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 + idx * 0.1 }}
+            >
+              <Card className={`rounded-2xl border p-6 shadow-sm transition-all hover:shadow-md ${color}`}>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-gray-600 mb-2">{label}</div>
+                    <div className="text-3xl font-bold text-gray-900">{value}</div>
+                  </div>
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg opacity-80">
+                    <Icon className="h-6 w-6" />
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          ))}
+        </motion.div>
 
-        <Card className="lg:col-span-2 p-6 h-full">
-          <h2 className="text-lg font-bold text-gray-900 mb-6">Recent Complaints</h2>
-          <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+        {/* Recent Complaints Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="lg:col-span-2"
+        >
+          <Card className="rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+            <div className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-5">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Recent Complaints</h2>
+                <p className="mt-1 text-sm text-gray-600">Latest complaints requiring your attention</p>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100 text-orange-600">
+                <FileText className="h-5 w-5" />
+              </div>
+            </div>
+
             {recentComplaints.length > 0 ? (
-              recentComplaints.map((complaint, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="p-4 rounded-xl bg-slate-50 border border-gray-100 hover:border-brand-primary/30 transition-colors"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-2">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-sm text-gray-900 truncate">{complaint.title}</h3>
-                      <p className="text-sm text-gray-500 mt-0.5">
-                        {complaint.student_name || 'Unknown Student'} • Room {complaint.room_number || 'N/A'}
-                      </p>
-                    </div>
-                    <Badge 
-                      variant={
-                        complaint.status === 'pending' ? 'warning' :
-                        complaint.status === 'in_progress' ? 'info' :
-                        'success'
-                      }
-                      className="shrink-0 w-fit"
+              <div className="max-h-[500px] overflow-y-auto">
+                <div className="divide-y divide-gray-100">
+                  {recentComplaints.map((complaint, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.3 + i * 0.05 }}
+                      className="transition-colors hover:bg-gray-50 p-6"
                     >
-                      {complaint.status === 'pending' ? 'Pending' :
-                       complaint.status === 'in_progress' ? 'In Progress' :
-                       'Resolved'}
-                    </Badge>
-                  </div>
-                  {complaint.description && (
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-3">{complaint.description}</p>
-                  )}
-                  <div className="flex items-center justify-between text-xs text-gray-400 font-medium pt-3 border-t border-gray-100">
-                    <span className={`uppercase tracking-wider ${complaint.priority?.toLowerCase() === 'high' ? 'text-red-500' : ''}`}>
-                      {complaint.priority || 'MEDIUM'} Priority
-                    </span>
-                    <span>{format(new Date(complaint.created_at), 'dd MMM yyyy')}</span>
-                  </div>
-                </motion.div>
-              ))
+                      <div className="space-y-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <h3 className="font-bold text-gray-900 text-base">{complaint.title}</h3>
+                            <p className="mt-1 text-sm text-gray-600">
+                              {complaint.student_name || 'Unknown Student'} • Room {complaint.room_number || 'N/A'}
+                            </p>
+                          </div>
+                          <Badge 
+                            className={`flex-shrink-0 ${
+                              complaint.status === 'pending' ? 'bg-orange-100 text-orange-700' :
+                              complaint.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                              'bg-green-100 text-green-700'
+                            }`}
+                          >
+                            {complaint.status === 'pending' ? 'Pending' :
+                             complaint.status === 'in_progress' ? 'In Progress' :
+                             'Resolved'}
+                          </Badge>
+                        </div>
+
+                        {complaint.description && (
+                          <p className="text-sm text-gray-600 line-clamp-2">{complaint.description}</p>
+                        )}
+
+                        <div className="flex items-center justify-between border-t border-gray-100 pt-3">
+                          <span className={`text-xs font-semibold uppercase tracking-wide ${complaint.priority?.toLowerCase() === 'high' ? 'text-red-600' : 'text-amber-600'}`}>
+                            {complaint.priority || 'MEDIUM'} Priority
+                          </span>
+                          <span className="text-xs font-medium text-gray-500">
+                            {format(new Date(complaint.created_at), 'dd MMM yyyy')}
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
             ) : (
-              <div className="py-12 flex flex-col items-center text-center">
-                <CheckCircle2 className="w-12 h-12 mb-3 text-emerald-500" />
-                <p className="text-base font-bold text-gray-900">No complaints</p>
-                <p className="text-sm text-gray-500 mt-1">All complaints are resolved!</p>
+              <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+                <CheckCircle2 className="h-12 w-12 text-green-300 mb-3" />
+                <p className="text-base font-semibold text-gray-900">No complaints</p>
+                <p className="mt-1 text-sm text-gray-600">All complaints have been resolved!</p>
               </div>
             )}
-          </div>
-        </Card>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );
