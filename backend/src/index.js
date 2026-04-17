@@ -74,8 +74,7 @@ app.use('/api', routes);
 app.use((req, res) => res.status(404).json({ success: false, message: 'Route not found.' }));
 
 // Global error handler
-// eslint-disable-next-line no-unused-vars
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   // Handle multer file upload errors gracefully
   if (err.code === 'LIMIT_FILE_SIZE') {
     return res.status(413).json({ success: false, message: 'File size exceeds the 5MB limit.' });

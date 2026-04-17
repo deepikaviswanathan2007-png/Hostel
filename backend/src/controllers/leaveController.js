@@ -57,8 +57,8 @@ const getAll = async (req, res) => {
 
 const create = async (req, res) => {
   const { student_id, from_date, to_date, reason } = req.body;
-  
-  if (!student_id || !from_date || !to_date || !reason) {
+
+  if (!from_date || !to_date || !reason) {
     return res.status(400).json({ success: false, message: 'All fields are required.' });
   }
 
@@ -80,9 +80,25 @@ const create = async (req, res) => {
   }
 
   try {
+    let targetStudentId;
+
+    if (req.user.role === 'student') {
+      targetStudentId = await getLinkedStudentId(req.user);
+      if (!targetStudentId) {
+        return res.status(404).json({ success: false, message: 'Student profile not linked.' });
+      }
+    } else if (['admin', 'warden'].includes(req.user.role)) {
+      if (!student_id) {
+        return res.status(400).json({ success: false, message: 'student_id is required.' });
+      }
+      targetStudentId = student_id;
+    } else {
+      return res.status(403).json({ success: false, message: 'Access denied.' });
+    }
+
     const [result] = await pool.query(
       `INSERT INTO leaves (student_id, from_date, to_date, reason) VALUES (?, ?, ?, ?)`,
-      [student_id, from_date, to_date, reason]
+      [targetStudentId, from_date, to_date, reason]
     );
     res.status(201).json({ success: true, message: 'Leave request submitted.', id: result.insertId });
   } catch (err) {

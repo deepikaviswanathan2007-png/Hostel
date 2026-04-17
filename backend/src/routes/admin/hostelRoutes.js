@@ -23,9 +23,9 @@ const upload = multer({
 
 router.get   ('/hostels',              authenticate, hostelCtrl.getAll);
 router.post  ('/hostels',              authenticate, adminOnly, hostelCtrl.create);
+router.get   ('/hostels/warden/:id',   authenticate, adminOnly, hostelCtrl.getWardenDetail);
 router.put   ('/hostels/:id',          authenticate, adminOnly, hostelCtrl.update);
 router.delete('/hostels/:id',          authenticate, adminOnly, hostelCtrl.remove);
-router.get   ('/hostels/warden/:id',   authenticate, adminOnly, hostelCtrl.getWardenDetail);
 
 router.get   ('/rooms/export',  authenticate, adminOnly, roomCtrl.exportCSV);
 router.get   ('/rooms',      authenticate, adminOnly, roomCtrl.getAll);

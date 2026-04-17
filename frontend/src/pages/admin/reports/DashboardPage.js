@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 const PIE_COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#0EA5E9', '#8B5CF6'];
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const { getHostelName } = useHostelNameMap();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
