@@ -207,8 +207,8 @@ export default function StudentComplaints() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <section className="relative overflow-hidden rounded-[36px] border border-white/70 bg-white/80 px-6 py-7 shadow-[0_28px_60px_rgba(145,158,171,0.14)] backdrop-blur-xl md:px-8 md:py-9">
+    <div className="space-y-8 animate-fade-in">
+      <motion.section initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="relative overflow-hidden rounded-[36px] border border-white/70 bg-white/80 px-6 py-7 shadow-[0_28px_60px_rgba(145,158,171,0.14)] backdrop-blur-xl md:px-8 md:py-9">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(159,116,247,0.14),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(3,136,252,0.08),transparent_24%)]" />
         <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-brand-primary/10 blur-3xl" />
         <div className="absolute bottom-0 left-1/3 h-40 w-40 rounded-full bg-[#dbe7ff] blur-3xl" />
@@ -254,44 +254,47 @@ export default function StudentComplaints() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }} className="grid gap-5 md:grid-cols-3">
         {[
           { label: 'Pending', value: complaintStats.pending, tone: 'bg-amber-50 text-amber-700 border-amber-100' },
           { label: 'In Progress', value: complaintStats.inProgress, tone: 'bg-blue-50 text-blue-700 border-blue-100' },
           { label: 'Resolved', value: complaintStats.resolved, tone: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
-        ].map(item => (
-          <div
+        ].map((item, idx) => (
+          <motion.div
             key={item.label}
-            className="rounded-[32px] border border-white/80 bg-white/85 px-6 py-7 text-center shadow-[0_20px_48px_rgba(145,158,171,0.12)] backdrop-blur-xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 + idx * 0.05 }}
+            className="rounded-2xl border border-white/80 bg-white/85 px-6 py-7 text-center shadow-[0_20px_48px_rgba(145,158,171,0.12)] backdrop-blur-xl hover:shadow-[0_30px_60px_rgba(145,158,171,0.2)] transition-all duration-300"
           >
-            <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f7f8fd] text-brand-primary">
+            <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f7f8fd] text-brand-primary group-hover:scale-110 transition-transform">
               <CircleAlert className="h-5 w-5" strokeWidth={1.9} />
             </div>
-            <div className="font-display text-4xl font-black tracking-[-0.04em] text-brand-text">{item.value}</div>
-            <div className="mt-2 text-[13px] font-semibold uppercase tracking-[0.2em] text-brand-muted">{item.label}</div>
-            <div className={`mx-auto mt-5 inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] ${item.tone}`}>
+            <div className="font-display text-5xl font-black tracking-[-0.04em] text-brand-text">{item.value}</div>
+            <div className="mt-2 text-sm font-semibold uppercase tracking-[0.2em] text-brand-muted">{item.label}</div>
+            <div className={`mx-auto mt-5 inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] ${item.tone}`}>
               Updated live
             </div>
-          </div>
+          </motion.div>
         ))}
-      </section>
+      </motion.section>
 
-      <section className="overflow-hidden rounded-[36px] border border-white/80 bg-white/85 shadow-[0_24px_60px_rgba(145,158,171,0.14)] backdrop-blur-xl">
-        <div className="bg-[linear-gradient(180deg,rgba(247,248,253,0.95)_0%,rgba(247,248,253,0.75)_100%)] px-6 py-6 md:px-8 md:py-7">
-          <h2 className="font-display text-[2rem] font-bold tracking-[-0.04em] text-brand-text">Service Filters</h2>
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="overflow-hidden rounded-2xl border border-white/80 bg-white/85 shadow-[0_24px_60px_rgba(145,158,171,0.14)] backdrop-blur-xl">
+        <div className="bg-[linear-gradient(180deg,rgba(247,248,253,0.95)_0%,rgba(247,248,253,0.75)_100%)] px-6 py-6 md:px-8 md:py-8">
+          <h2 className="font-display text-2xl font-bold tracking-[-0.04em] text-brand-text">Service Filters</h2>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-brand-muted md:text-base">
             Narrow requests by workflow status, complaint category, and urgency to review the exact service tickets you need.
           </p>
         </div>
 
-        <div className="border-t border-brand-border/70 px-6 py-6 md:px-8">
+        <div className="border-t border-brand-border/70 px-6 py-7 md:px-8">
           <div className="grid gap-4 md:grid-cols-3">
             <Select
               value={filters.status}
               onChange={event => setFilters(current => ({ ...current, status: event.target.value }))}
-              className="h-14 rounded-[20px] border-brand-border/80 bg-[#fbfbff] px-5 text-base"
+              className="h-12 rounded-xl border-brand-border/80 bg-[#fbfbff] px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-brand-primary/50"
             >
               {STATUS_OPTIONS.map(option => (
                 <option key={option} value={option}>
@@ -303,7 +306,7 @@ export default function StudentComplaints() {
             <Select
               value={filters.category}
               onChange={event => setFilters(current => ({ ...current, category: event.target.value }))}
-              className="h-14 rounded-[20px] border-brand-border/80 bg-[#fbfbff] px-5 text-base"
+              className="h-12 rounded-xl border-brand-border/80 bg-[#fbfbff] px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-brand-primary/50"
             >
               {CATEGORY_OPTIONS.map(option => (
                 <option key={option} value={option}>
@@ -315,7 +318,7 @@ export default function StudentComplaints() {
             <Select
               value={filters.priority}
               onChange={event => setFilters(current => ({ ...current, priority: event.target.value }))}
-              className="h-14 rounded-[20px] border-brand-border/80 bg-[#fbfbff] px-5 text-base"
+              className="h-12 rounded-xl border-brand-border/80 bg-[#fbfbff] px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-brand-primary/50"
             >
               {PRIORITY_OPTIONS.map(option => (
                 <option key={option} value={option}>
@@ -325,25 +328,25 @@ export default function StudentComplaints() {
             </Select>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="rounded-[36px] border border-white/80 bg-[linear-gradient(180deg,rgba(247,248,253,0.72)_0%,rgba(255,255,255,0.84)_100%)] p-4 shadow-[0_24px_60px_rgba(145,158,171,0.12)] backdrop-blur-xl md:p-5">
-        <div className="mb-4 flex flex-col gap-3 px-2 pt-2 md:flex-row md:items-center md:justify-between">
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }} className="rounded-2xl border border-white/80 bg-[linear-gradient(180deg,rgba(247,248,253,0.72)_0%,rgba(255,255,255,0.84)_100%)] p-6 shadow-[0_24px_60px_rgba(145,158,171,0.12)] backdrop-blur-xl md:p-7">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-primary">Resident Queue</div>
-            <h2 className="mt-2 font-display text-[1.9rem] font-bold tracking-[-0.04em] text-brand-text">Open Requests</h2>
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-primary">Resident Queue</div>
+            <h2 className="mt-3 font-display text-2xl font-bold tracking-[-0.04em] text-brand-text">Open Requests</h2>
           </div>
-          <div className="rounded-full border border-brand-border/70 bg-white/90 px-4 py-2 text-sm font-medium text-brand-muted">
+          <div className="rounded-full border border-brand-border/70 bg-white/90 px-5 py-2.5 text-sm font-medium text-brand-muted">
             {filteredComplaints.length} request{filteredComplaints.length === 1 ? '' : 's'} found
           </div>
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-20">
+          <div className="flex justify-center py-24">
             <Spinner size="lg" className="text-brand-primary" />
           </div>
         ) : filteredComplaints.length === 0 ? (
-          <div className="rounded-[28px] bg-white/80 px-4 py-10">
+          <div className="rounded-2xl bg-white/80 px-6 py-16">
             <EmptyState
               title="No complaints match the selected filters"
               description="Try adjusting the workflow, category, or priority filters to see more service records."
@@ -471,7 +474,7 @@ export default function StudentComplaints() {
             })}
           </div>
         )}
-      </section>
+      </motion.section>
 
       <Modal
         open={modalOpen}

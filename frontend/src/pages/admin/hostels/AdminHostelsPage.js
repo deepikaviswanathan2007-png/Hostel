@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { hostelsAPI, usersAPI } from '../../../services/api';
 import toast from 'react-hot-toast';
 import { Plus, Pencil, Trash2, X, Check } from 'lucide-react';
@@ -10,12 +11,17 @@ const GENDER_COLORS = {
   FEMALE: 'bg-pink-50 text-pink-700 border border-pink-200',
 };
 
-function StatCard({ label, value, color }) {
+function StatCard({ label, value, color, index }) {
   return (
-    <div className="bg-white rounded-2xl border border-brand-border/60 shadow-sm p-5 text-center">
-      <p className="text-xs font-semibold uppercase tracking-wider text-brand-muted mb-1">{label}</p>
-      <p className={`text-3xl font-black ${color}`}>{value}</p>
-    </div>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className="bg-white rounded-2xl border border-brand-border/60 shadow-sm p-6 text-center hover:shadow-md hover:scale-105 transition-all duration-300"
+    >
+      <p className="text-sm font-semibold uppercase tracking-wider text-brand-muted mb-3">{label}</p>
+      <p className={`text-5xl font-black ${color}`}>{value}</p>
+    </motion.div>
   );
 }
 
@@ -216,12 +222,12 @@ export default function AdminHostelsPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Total Hostels" value={hostels.length} color="text-gray-900" />
-        <StatCard label="Boys Hostels" value={maleHostels.length} color="text-blue-600" />
-        <StatCard label="Girls Hostels" value={femaleHostels.length} color="text-pink-600" />
-        <StatCard label="Total Rooms" value={totalRooms} color="text-green-600" />
-      </div>
+      <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+        <StatCard label="Total Hostels" value={hostels.length} color="text-gray-900" index={0} />
+        <StatCard label="Boys Hostels" value={maleHostels.length} color="text-blue-600" index={1} />
+        <StatCard label="Girls Hostels" value={femaleHostels.length} color="text-pink-600" index={2} />
+        <StatCard label="Total Rooms" value={totalRooms} color="text-green-600" index={3} />
+      </motion.div>
 
       <SectionCard title="Hostels List" description="Complete registry of all campus accommodations.">
         <Table columns={columns} data={hostels} loading={loading} paginate pageSize={10} />

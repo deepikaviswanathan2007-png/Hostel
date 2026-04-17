@@ -92,88 +92,94 @@ export default function ComplaintsPage() {
         <Button size="sm" onClick={openAdd}>File Complaint</Button>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        {[['Pending', pending], ['In Progress', progress], ['Resolved', resolved]].map(([label, value]) => (
-          <div key={label} className="rounded-3xl border border-brand-border bg-white p-5 text-center shadow-card">
-            <div className="font-display text-2xl font-black text-brand-text">{value}</div>
-            <div className="mt-1 text-xs font-semibold uppercase tracking-[0.08em] text-brand-muted">{label}</div>
-          </div>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }} className="grid grid-cols-3 gap-5">
+        {[['Pending', pending], ['In Progress', progress], ['Resolved', resolved]].map(([label, value], idx) => (
+          <motion.div key={label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + idx * 0.05 }} className="rounded-2xl border border-brand-border bg-white p-6 text-center shadow-sm hover:shadow-md hover:scale-105 transition-all duration-300">
+            <div className="font-display text-5xl font-black text-brand-text">{value}</div>
+            <div className="mt-2 text-sm font-semibold uppercase tracking-[0.08em] text-brand-muted">{label}</div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      <SectionCard title="Service Filters" description="Filter requests by workflow status, complaint category, and urgency.">
-        <div className="flex flex-wrap gap-3">
-          <Select value={filters.status} onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}>
-            <option value="">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="in_progress">In Progress</option>
-            <option value="resolved">Resolved</option>
-          </Select>
-          <Select value={filters.category} onChange={e => setFilters(f => ({ ...f, category: e.target.value }))}>
-            <option value="">All Categories</option>
-            {['plumbing', 'electrical', 'carpentry', 'housekeeping', 'network', 'mess', 'other'].map(c => (
-              <option key={c} value={c} className="capitalize">{c}</option>
-            ))}
-          </Select>
-          <Select value={filters.priority} onChange={e => setFilters(f => ({ ...f, priority: e.target.value }))}>
-            <option value="">All Priority</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-          </Select>
-          {(filters.status || filters.category || filters.priority) && (
-            <Button variant="ghost" size="sm" onClick={() => setFilters({ status: '', category: '', priority: '' })}>Clear</Button>
-          )}
-        </div>
-      </SectionCard>
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+        <SectionCard title="Service Filters" description="Filter requests by workflow status, complaint category, and urgency.">
+          <div className="flex flex-wrap gap-4">
+            <Select value={filters.status} onChange={e => setFilters(f => ({ ...f, status: e.target.value }))} className="h-12 rounded-xl border-brand-border bg-white px-4 py-3 text-sm font-medium">
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="in_progress">In Progress</option>
+              <option value="resolved">Resolved</option>
+            </Select>
+            <Select value={filters.category} onChange={e => setFilters(f => ({ ...f, category: e.target.value }))} className="h-12 rounded-xl border-brand-border bg-white px-4 py-3 text-sm font-medium">
+              <option value="">All Categories</option>
+              {['plumbing', 'electrical', 'carpentry', 'housekeeping', 'network', 'mess', 'other'].map(c => (
+                <option key={c} value={c} className="capitalize">{c.charAt(0).toUpperCase() + c.slice(1)}</option>
+              ))}
+            </Select>
+            <Select value={filters.priority} onChange={e => setFilters(f => ({ ...f, priority: e.target.value }))} className="h-12 rounded-xl border-brand-border bg-white px-4 py-3 text-sm font-medium">
+              <option value="">All Priority</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </Select>
+            {(filters.status || filters.category || filters.priority) && (
+              <Button variant="ghost" size="sm" onClick={() => setFilters({ status: '', category: '', priority: '' })} className="h-12 rounded-xl px-4 py-3 text-sm font-medium">Clear</Button>
+            )}
+          </div>
+        </SectionCard>
+      </motion.section>
 
       {loading ? (
-        <div className="flex justify-center py-16"><Spinner size="lg" className="text-brand-primary" /></div>
+        <div className="flex justify-center py-24">
+          <Spinner size="lg" className="text-brand-primary" />
+        </div>
       ) : complaints.length === 0 ? (
         <EmptyState title="No complaints found" description="All clear!" />
       ) : (
-        <div className="space-y-3">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.3 }} className="space-y-4">
           {complaints.map((complaint, i) => (
             <motion.div
               key={complaint.id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.04 }}
-              className="bg-white rounded-2xl border border-gray-100 shadow-card p-4 flex items-start gap-4 hover:shadow-card-hover transition-shadow"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 + i * 0.05 }}
+              className="group bg-white rounded-2xl border border-gray-200 shadow-sm p-6 flex flex-col gap-5 md:flex-row md:items-start md:gap-6 hover:shadow-md hover:border-gray-300 transition-all duration-300"
             >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-semibold flex-shrink-0
-                ${complaint.priority === 'high' ? 'bg-red-50 text-red-700' : complaint.priority === 'medium' ? 'bg-amber-50 text-amber-700' : 'bg-green-50 text-green-700'}`}>
+              <div className={`h-14 w-14 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0 transition-transform group-hover:scale-110
+                ${complaint.priority === 'high' ? 'bg-red-50 text-red-700' : complaint.priority === 'medium' ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
                 {complaint.category.slice(0, 3).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <span className="font-semibold text-brand-text text-sm">{complaint.title}</span>
+                <div className="flex items-center gap-3 flex-wrap mb-3">
+                  <span className="font-bold text-brand-text text-lg">{complaint.title}</span>
                   <Badge variant={STATUS_BADGE[complaint.status]}>{complaint.status.replace('_', ' ')}</Badge>
                   <Badge variant={PRIORITY_BADGE[complaint.priority]}>{complaint.priority}</Badge>
                   <Badge variant="default" className="capitalize">{complaint.category}</Badge>
                 </div>
-                {complaint.description && <p className="text-xs text-brand-muted mb-1 line-clamp-2">{complaint.description}</p>}                  {complaint.image_url && (
-                    <a href={`${(process.env.REACT_APP_API_URL || '').replace(/(\/api)?$/, '')}${complaint.image_url}`} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-primary font-medium hover:underline mb-1 block">
-                      View Attachment
-                    </a>
-                  )}                <div className="flex items-center gap-3 text-xs text-gray-400 flex-wrap">
-                  {complaint.student_name && <span>{complaint.student_name} ({complaint.register_no})</span>}
+                {complaint.description && <p className="text-sm text-brand-muted mb-3 line-clamp-2">{complaint.description}</p>}
+                {complaint.image_url && (
+                  <a href={`${(process.env.REACT_APP_API_URL || '').replace(/(\/api)?$/, '')}${complaint.image_url}`} target="_blank" rel="noopener noreferrer" className="text-sm text-brand-primary font-medium hover:underline mb-3 block">
+                    View Attachment
+                  </a>
+                )}
+                <div className="flex items-center gap-4 text-xs text-gray-500 flex-wrap">
+                  {complaint.student_name && <span className="font-medium">{complaint.student_name} ({complaint.register_no})</span>}
                   {complaint.room_number && <span>Room {complaint.room_number}</span>}
                   <span>{format(new Date(complaint.created_at), 'dd MMM yyyy')}</span>
                 </div>
                 {complaint.admin_note && (
-                  <div className="mt-2 text-xs bg-brand-bg rounded-lg px-2 py-1.5 text-brand-muted border border-gray-100">
+                  <div className="mt-4 text-sm bg-brand-bg rounded-xl px-4 py-3 text-brand-muted border border-gray-200">
                     <span className="font-semibold text-brand-primary">Admin note:</span> {complaint.admin_note}
                   </div>
                 )}
               </div>
-              <div className="flex flex-col gap-1 flex-shrink-0">
-                <Button variant="outline" size="sm" onClick={() => openUpdate(complaint)}>Update</Button>
-                <Button variant="ghost" size="sm" onClick={() => handleDelete(complaint.id)}>Delete</Button>
+              <div className="flex gap-2 flex-shrink-0">
+                <Button variant="outline" size="sm" onClick={() => openUpdate(complaint)} className="h-10 rounded-lg px-4 text-sm">Update</Button>
+                <Button variant="ghost" size="sm" onClick={() => handleDelete(complaint.id)} className="h-10 rounded-lg px-4 text-sm text-red-600 hover:text-red-700 hover:bg-red-50">Delete</Button>
               </div>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
 
       <Modal open={modal === 'add'} onClose={() => setModal(null)} title="File New Complaint" size="lg">

@@ -71,7 +71,7 @@ function NavItem({ to, label, icon: Icon, onClick, end = false }) {
 }
 
 export default function Sidebar({ children }) {
-  const contentZoom = 0.72;
+  const contentZoom = 0.95;
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();

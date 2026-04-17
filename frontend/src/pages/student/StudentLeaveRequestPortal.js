@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { CalendarClock, ClipboardCheck, Plus, Trash2 } from 'lucide-react';
 import { leavesAPI } from '../../services/api';
@@ -138,49 +139,55 @@ export default function StudentLeaveRequestPortal() {
         ) : leaves.length === 0 ? (
           <EmptyState title="No leave requests yet" description="Your submitted outpass requests will appear here." icon={<CalendarClock className="h-10 w-10" />} />
         ) : (
-          <div className="space-y-4">
-            {leaves.map(leave => {
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="space-y-4">
+            {leaves.map((leave, index) => {
               const days = Math.ceil((new Date(leave.to_date) - new Date(leave.from_date)) / (1000 * 60 * 60 * 24)) + 1;
               const parsedReason = decodeLeaveReason(leave.reason || '');
               return (
-                <div key={leave.id} className="rounded-[28px] border border-brand-border/70 bg-[#fafbff] p-5">
+                <motion.div
+                  key={leave.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 + index * 0.05 }}
+                  className="rounded-2xl border border-brand-border/70 bg-white p-6 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all duration-300"
+                >
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="space-y-4">
+                    <div className="space-y-4 flex-1">
                       <div className="flex flex-wrap items-center gap-3">
-                        <div className="text-lg font-semibold text-brand-text">{days} day{days > 1 ? 's' : ''} leave</div>
+                        <div className="text-lg font-bold text-brand-text">{days} day{days > 1 ? 's' : ''} leave</div>
                         <Badge variant={statusVariant(leave.status)}>{leave.status}</Badge>
                       </div>
                       <div className="grid gap-3 md:grid-cols-2">
-                        <div className="rounded-[22px] border border-white bg-white px-4 py-3">
-                          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-muted">From</div>
+                        <div className="rounded-xl border border-brand-border/50 bg-brand-bg px-4 py-3">
+                          <div className="text-xs font-semibold uppercase tracking-widest text-brand-muted">From</div>
                           <div className="mt-2 text-sm font-semibold text-brand-text">{new Date(leave.from_date).toLocaleDateString()}</div>
                         </div>
-                        <div className="rounded-[22px] border border-white bg-white px-4 py-3">
-                          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-muted">To</div>
+                        <div className="rounded-xl border border-brand-border/50 bg-brand-bg px-4 py-3">
+                          <div className="text-xs font-semibold uppercase tracking-widest text-brand-muted">To</div>
                           <div className="mt-2 text-sm font-semibold text-brand-text">{new Date(leave.to_date).toLocaleDateString()}</div>
                         </div>
                       </div>
-                      <div className="rounded-[22px] border border-white bg-white px-4 py-3">
-                        <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-muted">Leave Type</div>
+                      <div className="rounded-xl border border-brand-border/50 bg-brand-bg px-4 py-3">
+                        <div className="text-xs font-semibold uppercase tracking-widest text-brand-muted">Leave Type</div>
                         <div className="mt-2 text-sm font-semibold text-brand-text">{parsedReason.type || 'General'}</div>
                       </div>
-                      <div className="rounded-[22px] border border-white bg-white px-4 py-3">
-                        <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-muted">Reason</div>
+                      <div className="rounded-xl border border-brand-border/50 bg-brand-bg px-4 py-3">
+                        <div className="text-xs font-semibold uppercase tracking-widest text-brand-muted">Reason</div>
                         <div className="mt-2 text-sm leading-7 text-brand-text">{parsedReason.description || '-'}</div>
                       </div>
                     </div>
 
                     {leave.status === 'pending' ? (
-                      <Button variant="outline" size="sm" onClick={() => handleDelete(leave.id)} className="h-11 rounded-[18px] px-4 text-red-600 border-red-200 hover:bg-red-50">
+                      <Button variant="outline" size="sm" onClick={() => handleDelete(leave.id)} className="h-11 rounded-lg px-4 text-red-600 border-red-200 hover:bg-red-50">
                         <Trash2 className="h-4 w-4" />
                         Delete
                       </Button>
                     ) : null}
                   </div>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         )}
       </PanelShell>
 

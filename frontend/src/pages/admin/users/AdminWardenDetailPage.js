@@ -1,18 +1,24 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { hostelsAPI } from '../../../services/api';
 import { ArrowLeft, User, Building2, BedDouble, Users, Home } from 'lucide-react';
 import { Spinner } from '../../../components/ui';
 
-function StatCard({ label, value, color, icon: Icon }) {
+function StatCard({ label, value, color, icon: Icon, index }) {
   return (
-    <div className="bg-white rounded-2xl border border-brand-border/60 shadow-sm p-5 text-center">
-      <div className={`h-10 w-10 rounded-xl flex items-center justify-center mx-auto mb-2 ${color.replace('text-', 'bg-').replace('-600', '-100')}`}>
-        <Icon className={`h-5 w-5 ${color}`} />
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className="bg-white rounded-2xl border border-brand-border/60 shadow-sm p-6 text-center hover:shadow-md hover:scale-105 transition-all duration-300"
+    >
+      <div className={`h-12 w-12 rounded-xl flex items-center justify-center mx-auto mb-3 ${color.replace('text-', 'bg-').replace('-600', '-100')}`}>
+        <Icon className={`h-6 w-6 ${color}`} />
       </div>
-      <p className={`text-3xl font-black ${color}`}>{value}</p>
-      <p className="text-xs font-semibold uppercase tracking-wider text-brand-muted mt-1">{label}</p>
-    </div>
+      <p className={`text-5xl font-black ${color}`}>{value}</p>
+      <p className="text-sm font-semibold uppercase tracking-wider text-brand-muted mt-2">{label}</p>
+    </motion.div>
   );
 }
 
@@ -101,11 +107,11 @@ export default function AdminWardenDetailPage() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard label="Total Rooms"    value={hostelStats.totalRooms}    color="text-blue-600"         icon={BedDouble}  />
-            <StatCard label="Occupied"       value={hostelStats.occupiedRooms} color="text-orange-600"       icon={Home}       />
-            <StatCard label="Available"      value={hostelStats.availableRooms} color="text-green-600"       icon={BedDouble}  />
-            <StatCard label="Students"       value={hostelStats.totalStudents} color="text-brand-primary"    icon={Users}      />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            <StatCard label="Total Rooms"    value={hostelStats.totalRooms}    color="text-blue-600"         icon={BedDouble} index={0} />
+            <StatCard label="Occupied"       value={hostelStats.occupiedRooms} color="text-orange-600"       icon={Home} index={1}      />
+            <StatCard label="Available"      value={hostelStats.availableRooms} color="text-green-600"       icon={BedDouble} index={2} />
+            <StatCard label="Students"       value={hostelStats.totalStudents} color="text-brand-primary"    icon={Users} index={3}     />
           </div>
 
           {/* Room Details Table */}

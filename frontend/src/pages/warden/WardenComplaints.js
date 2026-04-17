@@ -44,33 +44,42 @@ export default function WardenComplaints() {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-8">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
+      <motion.section
+        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-lg p-3 md:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 shadow-sm"
+        className="space-y-3"
       >
-        <h1 className="text-lg font-bold text-gray-900 mb-0.5">Complaints Overview</h1>
-        <p className="text-xs text-gray-600">Monitor all complaints across the hostel</p>
-      </motion.div>
+        <div className="text-sm font-semibold uppercase tracking-wider text-sky-600">Management Portal</div>
+        <h1 className="text-4xl font-bold text-gray-900">Complaints Overview</h1>
+        <p className="max-w-2xl text-base leading-relaxed text-gray-600">
+          Monitor all complaints across the hostel and track resolution progress.
+        </p>
+      </motion.section>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: 'Total', value: total, color: 'bg-blue-50', textColor: 'text-blue-600' },
-          { label: 'Pending', value: complaints.filter(c => c.status === 'pending').length, color: 'bg-orange-50', textColor: 'text-orange-600' },
-          { label: 'In Progress', value: complaints.filter(c => c.status === 'in_progress').length, color: 'bg-blue-50', textColor: 'text-blue-600' },
-          { label: 'Resolved', value: complaints.filter(c => c.status === 'resolved').length, color: 'bg-green-50', textColor: 'text-green-600' },
-        ].map(({ label, value, color, textColor }) => (
+          { label: 'Total', value: total, color: 'bg-blue-100 text-blue-600' },
+          { label: 'Pending', value: complaints.filter(c => c.status === 'pending').length, color: 'bg-orange-100 text-orange-600' },
+          { label: 'In Progress', value: complaints.filter(c => c.status === 'in_progress').length, color: 'bg-sky-100 text-sky-600' },
+          { label: 'Resolved', value: complaints.filter(c => c.status === 'resolved').length, color: 'bg-green-100 text-green-600' },
+        ].map(({ label, value, color }, idx) => (
           <motion.div
             key={label}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className={`${color} rounded-lg p-3 border border-gray-100 shadow-sm`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.05 }}
+            className="group"
           >
-            <div className="text-xs text-gray-600 mb-1">{label}</div>
-            <div className={`text-lg font-bold ${textColor}`}>{value}</div>
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-gray-300">
+              <div className="space-y-3">
+                <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${color} transition-transform group-hover:scale-110`} />
+                <div className="text-sm font-medium text-gray-600">{label}</div>
+                <div className="text-3xl font-bold text-gray-900">{value}</div>
+              </div>
+            </div>
           </motion.div>
         ))}
       </div>
@@ -79,18 +88,18 @@ export default function WardenComplaints() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
-        className="rounded-lg p-4 bg-white border border-gray-100 shadow-sm"
+        transition={{ delay: 0.2 }}
+        className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Search by title or student..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
             />
           </div>
 
@@ -100,7 +109,7 @@ export default function WardenComplaints() {
               setFilterStatus(e.target.value);
               setPage(1);
             }}
-            className="px-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
           >
             <option value="">All Status</option>
             <option value="pending">Pending</option>
@@ -108,9 +117,9 @@ export default function WardenComplaints() {
             <option value="resolved">Resolved</option>
           </select>
 
-          <div className="flex items-center justify-between text-xs text-gray-600">
-            <span>{filterComplaints.length} of {total} complaints</span>
-            <Filter className="w-3 h-3" />
+          <div className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 rounded-xl px-4 py-3 border border-gray-200">
+            <span className="font-medium">{filterComplaints.length} of {total}</span>
+            <Filter className="w-4 h-4" />
           </div>
         </div>
       </motion.div>
@@ -119,18 +128,18 @@ export default function WardenComplaints() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-        className="space-y-2"
+        transition={{ delay: 0.3 }}
+        className="space-y-4"
       >
         {loading ? (
-          <div className="flex items-center justify-center h-48">
-            <Spinner size="md" />
+          <div className="flex items-center justify-center py-16">
+            <Spinner size="lg" className="text-sky-600" />
           </div>
         ) : filterComplaints.length === 0 ? (
-          <div className="text-center py-8 bg-white rounded-lg border border-gray-100">
-            <CheckCircle2 className="w-8 h-8 mx-auto mb-1 text-green-400" />
-            <p className="text-sm font-semibold text-gray-900">No complaints found</p>
-            <p className="text-xs text-gray-600">All systems operational!</p>
+          <div className="text-center py-12 bg-white rounded-2xl border border-gray-200">
+            <CheckCircle2 className="h-12 w-12 text-green-300 mx-auto mb-3" />
+            <p className="text-lg font-bold text-gray-900">No complaints found</p>
+            <p className="text-sm text-gray-600 mt-1">All systems operational!</p>
           </div>
         ) : (
           filterComplaints.map((complaint, i) => {
@@ -141,46 +150,50 @@ export default function WardenComplaints() {
                 key={complaint.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="bg-white rounded-lg p-4 border border-gray-100 hover:shadow-md transition-shadow"
+                transition={{ delay: 0.3 + i * 0.05 }}
+                className="group"
               >
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: statusInfo.bg }}>
-                    <StatusIcon className="w-5 h-5" style={{ color: statusInfo.color }} />
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-3 mb-1">
-                      <div>
-                        <h3 className="text-sm font-semibold text-gray-900 truncate">{complaint.title}</h3>
-                        <p className="text-xs text-gray-600 mt-0.5">
-                          {complaint.student_name || 'Unknown'} • Room {complaint.room_number || 'N/A'}
-                        </p>
-                      </div>
-                      <Badge style={{
-                        backgroundColor: statusInfo.bg,
-                        color: statusInfo.color,
-                      }}>
-                        {complaint.status === 'pending' ? '⏳ Pending' :
-                         complaint.status === 'in_progress' ? '🔧 In Progress' :
-                         '✓ Resolved'}
-                      </Badge>
+                <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm transition-all hover:shadow-md hover:border-gray-300">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 h-12 w-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: statusInfo.bg }}>
+                      <StatusIcon className="h-6 w-6" style={{ color: statusInfo.color }} />
                     </div>
 
-                    {complaint.description && (
-                      <p className="text-xs text-gray-600 mb-2 line-clamp-1">{complaint.description}</p>
-                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900">{complaint.title}</h3>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {complaint.student_name || 'Unknown'} • Room {complaint.room_number || 'N/A'}
+                          </p>
+                        </div>
+                        <Badge style={{
+                          backgroundColor: statusInfo.bg,
+                          color: statusInfo.color,
+                          fontSize: '12px',
+                          padding: '6px 12px',
+                        }}>
+                          {complaint.status === 'pending' ? '⏳ Pending' :
+                           complaint.status === 'in_progress' ? '🔧 In Progress' :
+                           '✓ Resolved'}
+                        </Badge>
+                      </div>
 
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600">
-                      <span>
-                        {complaint.category ? `📋 ${complaint.category.toUpperCase()}` : '📋 OTHER'}
-                      </span>
-                      <span>
-                        {complaint.priority === 'high' ? '🔴 High' :
-                         complaint.priority === 'medium' ? '🟡 Medium' :
-                         '🟢 Low'} Priority
-                      </span>
-                      <span>{format(new Date(complaint.created_at), 'dd MMM yyyy')}</span>
+                      {complaint.description && (
+                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{complaint.description}</p>
+                      )}
+
+                      <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
+                        <span className="inline-flex items-center gap-1">
+                          📋 {complaint.category ? complaint.category.toUpperCase() : 'OTHER'}
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          {complaint.priority === 'high' ? '🔴 High' :
+                           complaint.priority === 'medium' ? '🟡 Medium' :
+                           '🟢 Low'} Priority
+                        </span>
+                        <span>{format(new Date(complaint.created_at), 'dd MMM yyyy')}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -192,27 +205,32 @@ export default function WardenComplaints() {
 
       {/* Pagination */}
       {total > pageSize && (
-        <div className="flex items-center justify-between bg-white rounded-lg p-4 border border-gray-100 shadow-sm">
-          <span className="text-xs text-gray-600">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="flex items-center justify-between bg-white rounded-2xl border border-gray-200 p-6 shadow-sm"
+        >
+          <span className="text-sm font-medium text-gray-600">
             Page {page} of {totalPages} • {total} total complaints
           </span>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <button
               disabled={page === 1}
               onClick={() => setPage(page - 1)}
-              className="px-3 py-1 border border-gray-200 rounded-lg text-xs font-medium disabled:opacity-50 hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium disabled:opacity-50 hover:bg-gray-50 transition-colors"
             >
               Previous
             </button>
             <button
               disabled={page === totalPages}
               onClick={() => setPage(page + 1)}
-              className="px-3 py-1 border border-gray-200 rounded-lg text-xs font-medium disabled:opacity-50 hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium disabled:opacity-50 hover:bg-gray-50 transition-colors"
             >
               Next
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { requestsAPI } from '../../services/api';
 import { Badge, Button, Input, Select, Textarea, PanelShell, PortalHero, EmptyState, Spinner } from '../../components/ui';
@@ -101,35 +102,42 @@ export default function StudentRequests() {
       )}
 
       {requests.length > 0 ? (
-        <div className="grid gap-4">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="space-y-5">
           <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider pl-1 font-display">Past Requests</h3>
-          {requests.map(req => (
-            <PanelShell key={req.id} className="transition-all hover:border-brand-primary/30">
-              <div className="flex flex-col sm:flex-row justify-between gap-4">
-                <div className="space-y-3 flex-1">
-                  <div className="flex items-center flex-wrap gap-2">
-                     <h4 className="text-base font-bold text-gray-900 mr-2">{req.title}</h4>
-                     <Badge variant="outline" className="capitalize">{req.request_type.replace('_', ' ')}</Badge>
-                     {getStatusBadge(req.status)}
-                  </div>
-                  
-                  <p className="text-sm text-gray-600 leading-relaxed max-w-3xl">{req.description}</p>
-                  <p className="text-xs text-gray-400 font-medium tracking-wide border-b border-gray-100 pb-3">Requested on {format(new Date(req.created_at), 'dd MMM yyyy')}</p>
-
-                  {req.status !== 'pending' && req.review_note && (
-                    <div className={`mt-2 p-3 rounded-xl border flex gap-3 items-start text-sm ${req.status === 'approved' ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-red-50 border-red-100 text-red-800'}`}>
-                      <FileTextIcon className={`w-4 h-4 mt-0.5 shrink-0 ${req.status === 'approved' ? 'text-emerald-500' : 'text-red-500'}`} />
-                      <div>
-                        <span className="font-semibold block mb-0.5">Reviewed by {req.reviewed_by_name}:</span>
-                        <p>{req.review_note}</p>
-                      </div>
+          {requests.map((req, index) => (
+            <motion.div
+              key={req.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 + index * 0.05 }}
+            >
+              <PanelShell key={req.id} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-brand-primary/30">
+                <div className="flex flex-col sm:flex-row justify-between gap-4">
+                  <div className="space-y-4 flex-1">
+                    <div className="flex items-center flex-wrap gap-3">
+                      <h4 className="text-lg font-bold text-gray-900 mr-2">{req.title}</h4>
+                      <Badge variant="outline" className="capitalize">{req.request_type.replace('_', ' ')}</Badge>
+                      {getStatusBadge(req.status)}
                     </div>
-                  )}
+                    
+                    <p className="text-sm text-gray-600 leading-relaxed max-w-3xl">{req.description}</p>
+                    <p className="text-xs text-gray-400 font-medium tracking-wide border-b border-gray-100 pb-3">Requested on {format(new Date(req.created_at), 'dd MMM yyyy')}</p>
+
+                    {req.status !== 'pending' && req.review_note && (
+                      <div className={`mt-3 p-4 rounded-xl border flex gap-3 items-start text-sm ${req.status === 'approved' ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-red-50 border-red-100 text-red-800'}`}>
+                        <FileTextIcon className={`w-4 h-4 mt-0.5 shrink-0 ${req.status === 'approved' ? 'text-emerald-500' : 'text-red-500'}`} />
+                        <div>
+                          <span className="font-semibold block mb-0.5">Reviewed by {req.reviewed_by_name}:</span>
+                          <p>{req.review_note}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </PanelShell>
+              </PanelShell>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       ) : (
         !showForm && <EmptyState title="No Requests Found" description="You haven't submitted any requests." icon={<RefreshCcwIcon className="w-10 h-10 text-gray-300" />} />
       )}

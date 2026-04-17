@@ -44,7 +44,7 @@ export default function TopNavBar({ pageTitle, brandingContent, theme = 'admin' 
         {/* Right: User Info */}
         <div className="flex items-center gap-4 flex-shrink-0">
           <div className="text-right hidden sm:block">
-            <div className="text-sm font-semibold text-black">
+            <div className="text-lg font-bold text-black">
               {user?.name || 'User'}
             </div>
           </div>
