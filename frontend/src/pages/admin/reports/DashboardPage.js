@@ -11,7 +11,6 @@ const PIE_COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#0EA5E9', '#8B5CF6'];
 
 export default function DashboardPage() {
   const { getHostelName } = useHostelNameMap();
-  const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 

@@ -134,22 +134,15 @@ export default function AllocationsPage() {
 
   return (
     <div className="space-y-5 animate-fade-in">
-      <PageHeader
-        eyebrow="Hostel Allocation Control"
-        title="Room Allocation Ledger"
-        description="Administer student-to-room assignments, track active occupancy, and review historical room movement across hostel blocks."
-        actions={
-          <>
-            <Button variant="outline" size="sm" onClick={() => setIsBulkModalOpen(true)} className="flex items-center gap-2">
-              <Upload className="w-4 h-4" /> Import
-            </Button>
-            <Button variant="outline" size="sm" onClick={openVacate}>Vacate Room</Button>
-            <Button size="sm" onClick={openAllocate}>Allocate Room</Button>
-          </>
-        }
-      />
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        <Button variant="outline" size="sm" onClick={() => setIsBulkModalOpen(true)} className="flex items-center gap-2">
+          <Upload className="w-4 h-4" /> Import
+        </Button>
+        <Button variant="outline" size="sm" onClick={openVacate}>Vacate Room</Button>
+        <Button size="sm" onClick={openAllocate}>Allocate Room</Button>
+      </div>
 
-      <SectionCard title="Allocation History" description="Complete assignment trail for room movements, activations, and vacated records.">
+      <SectionCard>
         <Table columns={columns} data={history} loading={loading} paginate pageSize={10} />
       </SectionCard>
 

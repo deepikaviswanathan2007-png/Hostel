@@ -101,11 +101,7 @@ export default function VisitorManagementPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Visitor Management</h1>
-          <p className="text-sm text-gray-500 mt-1">Log and track all campus guests</p>
-        </div>
+      <div className="flex justify-end gap-4">
         <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           Log Visitor

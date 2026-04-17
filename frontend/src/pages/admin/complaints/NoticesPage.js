@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Button, Badge, Input, Select, Textarea, Modal, PageHeader, Spinner } from '../../../components/ui';
+import { Button, Badge, Input, Select, Textarea, Modal, Spinner } from '../../../components/ui';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { noticesAPI } from '../../../services/api';
@@ -66,13 +66,10 @@ export default function NoticesPage() {
 
   return (
     <div className="space-y-5 animate-fade-in">
-      <PageHeader
-        eyebrow="Communication Centre"
-        title="Notice Board"
-        description="Publish official hostel announcements, operational circulars, and student-facing updates within one academic communication stream."
-        actions={<Button size="sm" onClick={() => setModal(true)}>Post Notice</Button>}
-        meta={<Badge variant="default">{notices.length} published notices</Badge>}
-      />
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        <Badge variant="default">{notices.length} published notices</Badge>
+        <Button size="sm" onClick={() => setModal(true)}>Post Notice</Button>
+      </div>
 
       {loading ? (
         <div className="flex justify-center py-16"><Spinner size="lg" className="text-brand-primary" /></div>

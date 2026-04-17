@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { ChevronRight, Home, Users, CheckSquare, List, Calendar, FileText, LogOut, X, Building2, MessageSquare, ClipboardCheck } from 'lucide-react';
+import { ChevronRight, Home, Users, CheckSquare, List, Calendar, FileText, LogOut, X, Building2, MessageSquare, ClipboardCheck, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import TopNavBar from './TopNavBar';
 
@@ -10,6 +10,7 @@ const NAV_GROUPS = [
     items: [
       { to: '/', label: 'Admin Dashboard', icon: Home, end: true },
       { to: '/attendance-reports', label: 'Attendance Reports', icon: ClipboardCheck },
+      { to: '/security-logs', label: 'Security Logs', icon: ShieldAlert },
     ]
   },
   {
@@ -93,8 +94,8 @@ export default function Sidebar({ children }) {
           <div className="flex items-center gap-2">
             <img src="/bit-hostel-logo.png" alt="Bannari Amman Institute of Technology Logo" className="h-[38px] w-[38px] object-contain drop-shadow-sm" />
             <div className="leading-tight">
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-black leading-tight">Bannari Amman Institute of Technology</div>
-              <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-black">Hostel Management</div>
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-900 leading-tight">Bannari Amman Institute of Technology</div>
+              <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Hostel Management</div>
             </div>
           </div>
         </div>
@@ -102,7 +103,7 @@ export default function Sidebar({ children }) {
         <nav className="flex-1 overflow-y-auto px-3 py-5 space-y-5 custom-scrollbar" aria-label="Admin navigation">
           {NAV_GROUPS.map((group, idx) => (
             <div key={idx}>
-              <div className="px-3 mb-2 text-[12px] font-extrabold uppercase tracking-[0.08em] text-black">
+              <div className="px-3 mb-2 text-[12px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                 {group.title}
               </div>
               <div className="space-y-0.5">
@@ -118,7 +119,7 @@ export default function Sidebar({ children }) {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[12px] font-semibold text-black transition-colors hover:bg-red-50 hover:text-black"
+            className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[12px] font-semibold text-slate-700 transition-colors hover:bg-red-50 hover:text-red-600"
           >
             <LogOut className="h-3 w-3" />
             <span>Logout</span>
@@ -139,7 +140,7 @@ export default function Sidebar({ children }) {
               <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5 bg-white/70">
                 <div className="flex items-center gap-2">
                   <img src="/bit-hostel-logo.png" alt="Bannari Amman Institute of Technology Logo" className="h-[26px] w-[26px] object-contain drop-shadow-sm" />
-                  <div className="font-bold text-black text-[12px]">Bannari Amman Institute of Technology</div>
+                  <div className="font-bold text-slate-900 text-[12px]">Bannari Amman Institute of Technology</div>
                 </div>
                 <button onClick={() => setMobileOpen(false)} className="rounded-xl bg-slate-100 p-2 text-slate-700">
                   <X className="h-4 w-4" />
@@ -161,7 +162,7 @@ export default function Sidebar({ children }) {
               <div className="flex-1 overflow-y-auto px-3 py-5 space-y-5" aria-label="Admin mobile navigation">
                 {NAV_GROUPS.map((group, idx) => (
                   <div key={idx}>
-                    <div className="px-3 mb-2 text-[12px] font-extrabold uppercase tracking-[0.08em] text-black">
+                    <div className="px-3 mb-2 text-[12px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       {group.title}
                     </div>
                     <div className="space-y-0.5">
@@ -176,7 +177,7 @@ export default function Sidebar({ children }) {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[12px] font-semibold text-black transition-colors hover:bg-red-50 hover:text-black"
+                  className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[12px] font-semibold text-slate-700 transition-colors hover:bg-red-50 hover:text-red-600"
                 >
                   <LogOut className="h-3 w-3" />
                   <span>Logout</span>
