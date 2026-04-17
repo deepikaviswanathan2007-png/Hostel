@@ -91,8 +91,8 @@ api.interceptors.response.use(
   err => {
     if (err.response) {
       const status = err.response.status;
+      const requestUrl = String(err.config?.url || '');
       if (status === 401) {
-        const requestUrl = String(err.config?.url || '');
         const isAuthBootstrapRequest = requestUrl.includes('/auth/me');
         const isAuthAction = requestUrl.includes('/auth/login') || requestUrl.includes('/auth/google');
 
@@ -105,6 +105,16 @@ api.interceptors.response.use(
 
         // Let auth bootstrap/login failures be handled by calling code without hard redirect loops.
         if (!isAuthBootstrapRequest && !isAuthAction && window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+      } else if (status === 403 && requestUrl.includes('/auth/me')) {
+        try {
+          sessionStorage.clear();
+          localStorage.removeItem('token');
+        } catch {
+          // noop
+        }
+        if (window.location.pathname !== '/login') {
           window.location.href = '/login';
         }
       } else if (status >= 400) {
