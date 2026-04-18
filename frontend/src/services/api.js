@@ -101,9 +101,6 @@ api.interceptors.response.use(
       const status = err.response.status;
       const requestUrl = String(err.config?.url || '');
       if (status === 401) {
-        const isAuthBootstrapRequest = requestUrl.includes('/auth/me');
-        const isAuthAction = requestUrl.includes('/auth/login') || requestUrl.includes('/auth/google');
-
         try {
           sessionStorage.clear();
           localStorage.removeItem('token'); // Clear stored token on 401
