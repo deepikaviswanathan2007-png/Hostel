@@ -18,11 +18,21 @@ const getSecurityIncidentColumns = async () => {
     return securityColumnsCache;
   }
 
-  const [rows] = await pool.query('SHOW COLUMNS FROM security_incidents');
-  const columns = new Set(rows.map((row) => String(row.Field || '').trim()).filter(Boolean));
-  securityColumnsCache = columns;
-  securityColumnsCacheAt = now;
-  return columns;
+  try {
+    const [rows] = await pool.query('SHOW COLUMNS FROM security_incidents');
+    const columns = new Set(rows.map((row) => String(row.Field || '').trim()).filter(Boolean));
+    securityColumnsCache = columns;
+    securityColumnsCacheAt = now;
+    return columns;
+  } catch (error) {
+    // Keep API functional when migrations are incomplete (missing security_incidents table).
+    if (error?.code === 'ER_NO_SUCH_TABLE') {
+      securityColumnsCache = new Set();
+      securityColumnsCacheAt = now;
+      return securityColumnsCache;
+    }
+    throw error;
+  }
 };
 
 exports.getIncidents = async (req, res) => {
@@ -38,6 +48,21 @@ exports.getIncidents = async (req, res) => {
 
     const where = [];
     const args = [];
+
+    if (!columns || columns.size === 0) {
+      return res.json({
+        success: true,
+        data: [],
+        pagination: { page, limit, total: 0 },
+        stats: {
+          total: 0,
+          open_count: 0,
+          blocked_count: 0,
+          resolved_count: 0,
+          high_risk_count: 0,
+        },
+      });
+    }
 
     if (status && columns.has('status')) {
       where.push('si.status = ?');
@@ -64,6 +89,7 @@ exports.getIncidents = async (req, res) => {
 
     const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
     const includeReviewerJoin = columns.has('reviewed_by');
+    const orderColumn = columns.has('created_at') ? 'si.created_at' : (columns.has('id') ? 'si.id' : null);
 
     const [rows] = await pool.query(
       `SELECT
@@ -72,7 +98,7 @@ exports.getIncidents = async (req, res) => {
       FROM security_incidents si
       ${includeReviewerJoin ? 'LEFT JOIN users reviewer ON reviewer.id = si.reviewed_by' : ''}
       ${whereSql}
-      ORDER BY si.created_at DESC
+      ${orderColumn ? `ORDER BY ${orderColumn} DESC` : ''}
       LIMIT ? OFFSET ?`,
       [...args, limit, offset]
     );
