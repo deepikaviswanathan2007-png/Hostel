@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Home, Users, FileText, LogOut, X, List, Building2, RefreshCcw, CalendarCheck, MessageSquare } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -60,7 +60,7 @@ function NavItem({ to, label, icon: Icon, onClick, end = false }) {
   );
 }
 
-export default function WardenSidebar({ children }) {
+export default function WardenSidebar() {
   const contentZoom = 0.95;
   const { logout } = useAuth();
   const navigate = useNavigate();
@@ -124,7 +124,7 @@ export default function WardenSidebar({ children }) {
 
         <main className="flex-1 px-6 lg:px-8 py-6">
           <div className="max-w-7xl mx-auto" style={{ zoom: contentZoom }}>
-            {children}
+            <Outlet />
           </div>
         </main>
       </div>

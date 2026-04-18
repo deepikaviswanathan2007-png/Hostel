@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -75,38 +75,38 @@ function getHomePath({ user, isAdmin, isCaretaker, isWarden, isStudent }) {
   return '/login';
 }
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute() {
   const { user, loading } = useAuth();
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-brand-bg">
       <Spinner size="lg" className="text-brand-primary" />
     </div>
   );
-  return user ? children : <Navigate to="/login" replace />;
+  return user ? <Outlet /> : <Navigate to="/login" replace />;
 }
 
-function AdminRoute({ children }) {
+function AdminRoute() {
   const auth = useAuth();
   if (!auth.isAdmin) return <Navigate to={getHomePath(auth)} replace />;
-  return children;
+  return <Outlet />;
 }
 
-function CaretakerRoute({ children }) {
+function CaretakerRoute() {
   const auth = useAuth();
   if (!auth.isCaretaker && !auth.isAdmin) return <Navigate to={getHomePath(auth)} replace />;
-  return children;
+  return <Outlet />;
 }
 
-function WardenRoute({ children }) {
+function WardenRoute() {
   const auth = useAuth();
   if (!auth.isWarden && !auth.isAdmin) return <Navigate to={getHomePath(auth)} replace />;
-  return children;
+  return <Outlet />;
 }
 
-function StudentRoute({ children }) {
+function StudentRoute() {
   const auth = useAuth();
   if (!auth.isStudent) return <Navigate to={getHomePath(auth)} replace />;
-  return children;
+  return <Outlet />;
 }
 
 function AppRoutes() {
@@ -117,108 +117,76 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={user ? <Navigate to={getHomePath(auth)} replace /> : <LoginPage />} />
 
-      {/* Admin Routes */}
-      <Route path="/*" element={
-        <ProtectedRoute>
-          <AdminRoute>
-            <Sidebar>
-              <Routes>
-                {/* Reports & Analytics */}
-                <Route path="/"            element={<DashboardPage />} />
-                <Route path="/attendance-reports" element={<AdminAttendanceReportsPage />} />
-                <Route path="/security-logs" element={<SecurityLogsPage />} />
-                
-                {/* User Management */}
-                <Route path="/users"       element={<AdminUsersPage />} />
-                <Route path="/students"    element={<StudentsPage />} />
-                <Route path="/floor-wardens" element={<FloorWardenPage />} />
-                <Route path="/wardens/:id" element={<AdminWardenDetailPage />} />
-                
-                {/* Hostel & Room Management */}
-                <Route path="/hostels"     element={<AdminHostelsPage />} />
-                <Route path="/rooms"       element={<RoomsPage />} />
-                <Route path="/allocations" element={<AllocationsPage />} />
-                <Route path="/mess-menu"   element={<MessMenuPage />} />
-                <Route path="/visitors"    element={<VisitorManagementPage />} />
+      <Route element={<ProtectedRoute />}>
+        {/* Caretaker Routes */}
+        <Route path="/caretaker" element={<CaretakerRoute />}>
+          <Route element={<CaretakerSidebar />}>
+            <Route index element={<CaretakerDashboard />} />
+            <Route path="complaints" element={<CaretakerComplaints />} />
+            <Route path="*" element={<Navigate to="/caretaker" replace />} />
+          </Route>
+        </Route>
 
-                {/* Requests & Applications */}
-                <Route path="/applications" element={<AdminApplicationReview />} />
-                <Route path="/outpasses"   element={<AdminLeaveApprovals />} />
+        {/* Warden Routes */}
+        <Route path="/warden" element={<WardenRoute />}>
+          <Route element={<WardenSidebar />}>
+            <Route index element={<WardenDashboard />} />
+            <Route path="students" element={<WardenStudents />} />
+            <Route path="applications" element={<WardenApplicationReview />} />
+            <Route path="requests" element={<WardenRequestManagement />} />
+            <Route path="attendance" element={<WardenAttendance />} />
+            <Route path="outpasses" element={<WardenLeaveApprovals />} />
+            <Route path="mess-menu" element={<MessMenuPage />} />
+            <Route path="visitors" element={<VisitorManagementPage />} />
+            <Route path="complaints" element={<WardenComplaints />} />
+            <Route path="messages" element={<WardenMessagesPage />} />
+            <Route path="*" element={<Navigate to="/warden" replace />} />
+          </Route>
+        </Route>
 
-                {/* Complaints Management */}
-                <Route path="/complaints"  element={<ComplaintsPage />} />
-                <Route path="/notices"     element={<NoticesPage />} />
-                <Route path="/messages"    element={<AdminMessagesPage />} />
+        {/* Student Routes */}
+        <Route path="/student" element={<StudentRoute />}>
+          <Route element={<StudentSidebar />}>
+            <Route index element={<StudentDashboard />} />
+            <Route path="profile" element={<StudentProfile />} />
+            <Route path="applications" element={<StudentHostelApplication />} />
+            <Route path="requests" element={<StudentRequests />} />
+            <Route path="visitors" element={<StudentVisitorRequests />} />
+            <Route path="attendance" element={<StudentAttendance />} />
+            <Route path="outpass" element={<StudentLeaveRequest />} />
+            <Route path="mess-menu" element={<MessMenuPage />} />
+            <Route path="complaints" element={<StudentComplaints />} />
+            <Route path="notices" element={<StudentNotices />} />
+            <Route path="staff-directory" element={<StudentStaffDirectory />} />
+            <Route path="my-room" element={<StudentMyRoomPage />} />
+            <Route path="*" element={<Navigate to="/student" replace />} />
+          </Route>
+        </Route>
 
-                <Route path="*"            element={<Navigate to="/" replace />} />
-              </Routes>
-            </Sidebar>
-          </AdminRoute>
-        </ProtectedRoute>
-      } />
-
-      {/* Caretaker Routes */}
-      <Route path="/caretaker/*" element={
-        <ProtectedRoute>
-          <CaretakerRoute>
-            <CaretakerSidebar>
-              <Routes>
-                <Route path="/"           element={<CaretakerDashboard />} />
-                <Route path="/complaints" element={<CaretakerComplaints />} />
-                <Route path="*"           element={<Navigate to="/caretaker" replace />} />
-              </Routes>
-            </CaretakerSidebar>
-          </CaretakerRoute>
-        </ProtectedRoute>
-      } />
-
-      {/* Warden Routes */}
-      <Route path="/warden/*" element={
-        <ProtectedRoute>
-          <WardenRoute>
-            <WardenSidebar>
-              <Routes>
-                <Route path="/"            element={<WardenDashboard />} />
-                <Route path="/students"    element={<WardenStudents />} />
-                <Route path="/applications" element={<WardenApplicationReview />} />
-                <Route path="/requests"    element={<WardenRequestManagement />} />
-                <Route path="/attendance"  element={<WardenAttendance />} />
-                <Route path="/outpasses"   element={<WardenLeaveApprovals />} />
-                <Route path="/mess-menu"   element={<MessMenuPage />} />
-                <Route path="/visitors"    element={<VisitorManagementPage />} />
-                <Route path="/complaints"  element={<WardenComplaints />} />
-                <Route path="/messages"    element={<WardenMessagesPage />} />
-                <Route path="*"            element={<Navigate to="/warden" replace />} />
-              </Routes>
-            </WardenSidebar>
-          </WardenRoute>
-        </ProtectedRoute>
-      } />
-
-      {/* Student Routes */}
-      <Route path="/student/*" element={
-        <ProtectedRoute>
-          <StudentRoute>
-            <StudentSidebar>
-              <Routes>
-                <Route path="/"            element={<StudentDashboard />} />
-                <Route path="/profile"     element={<StudentProfile />} />
-                <Route path="/applications" element={<StudentHostelApplication />} />
-                <Route path="/requests"    element={<StudentRequests />} />
-                <Route path="/visitors"    element={<StudentVisitorRequests />} />
-                <Route path="/attendance"  element={<StudentAttendance />} />
-                <Route path="/outpass"     element={<StudentLeaveRequest />} />
-                <Route path="/mess-menu"   element={<MessMenuPage />} />
-                <Route path="/complaints"  element={<StudentComplaints />} />
-                <Route path="/notices"     element={<StudentNotices />} />
-                <Route path="/staff-directory" element={<StudentStaffDirectory />} />
-                <Route path="/my-room"       element={<StudentMyRoomPage />} />
-                <Route path="*"            element={<Navigate to="/student" replace />} />
-              </Routes>
-            </StudentSidebar>
-          </StudentRoute>
-        </ProtectedRoute>
-      } />
+        {/* Admin Routes */}
+        <Route path="/" element={<AdminRoute />}>
+          <Route element={<Sidebar />}>
+            <Route index element={<DashboardPage />} />
+            <Route path="attendance-reports" element={<AdminAttendanceReportsPage />} />
+            <Route path="security-logs" element={<SecurityLogsPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="students" element={<StudentsPage />} />
+            <Route path="floor-wardens" element={<FloorWardenPage />} />
+            <Route path="wardens/:id" element={<AdminWardenDetailPage />} />
+            <Route path="hostels" element={<AdminHostelsPage />} />
+            <Route path="rooms" element={<RoomsPage />} />
+            <Route path="allocations" element={<AllocationsPage />} />
+            <Route path="mess-menu" element={<MessMenuPage />} />
+            <Route path="visitors" element={<VisitorManagementPage />} />
+            <Route path="applications" element={<AdminApplicationReview />} />
+            <Route path="outpasses" element={<AdminLeaveApprovals />} />
+            <Route path="complaints" element={<ComplaintsPage />} />
+            <Route path="notices" element={<NoticesPage />} />
+            <Route path="messages" element={<AdminMessagesPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Route>
+      </Route>
     </Routes>
   );
 }

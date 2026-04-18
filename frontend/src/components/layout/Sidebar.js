@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronRight, Home, Users, CheckSquare, List, Calendar, FileText, LogOut, X, Building2, MessageSquare, ClipboardCheck, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import TopNavBar from './TopNavBar';
@@ -70,7 +70,7 @@ function NavItem({ to, label, icon: Icon, onClick, end = false }) {
   );
 }
 
-export default function Sidebar({ children }) {
+export default function Sidebar() {
   const contentZoom = 0.95;
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -189,7 +189,7 @@ export default function Sidebar({ children }) {
 
         <main className="flex-1 px-6 py-4 lg:px-8">
           <div style={{ zoom: contentZoom }}>
-            {children}
+            <Outlet />
           </div>
         </main>
       </div>
