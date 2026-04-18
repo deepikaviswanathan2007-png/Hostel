@@ -21,6 +21,7 @@ DROP TABLE IF EXISTS visitors;
 DROP TABLE IF EXISTS notices;
 DROP TABLE IF EXISTS warden_messages;
 DROP TABLE IF EXISTS complaints;
+DROP TABLE IF EXISTS security_logs;
 DROP TABLE IF EXISTS security_incidents;
 DROP TABLE IF EXISTS blocked_ips;
 DROP TABLE IF EXISTS allocations;
@@ -64,6 +65,18 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE OR REPLACE VIEW wardens AS
   SELECT id, name, email FROM users WHERE role = 'warden';
+
+-- ── SECURITY LOGS TABLE ──
+CREATE TABLE IF NOT EXISTS security_logs (
+  id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+  email       VARCHAR(160) DEFAULT NULL,
+  ip_address  VARCHAR(64) NOT NULL,
+  status      VARCHAR(64) NOT NULL,
+  created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_security_logs_ip_created (ip_address, created_at),
+  INDEX idx_security_logs_email (email),
+  INDEX idx_security_logs_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ── ROOMS TABLE ──
 CREATE TABLE IF NOT EXISTS rooms (
