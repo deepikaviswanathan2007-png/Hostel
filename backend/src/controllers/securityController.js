@@ -11,6 +11,8 @@ const parseIntSafe = (value, fallback) => {
 let securityColumnsCache = null;
 let securityColumnsCacheAt = 0;
 const SECURITY_COLUMNS_TTL_MS = 60 * 1000;
+let securityLogsColumnsCache = null;
+let securityLogsColumnsCacheAt = 0;
 
 const getSecurityIncidentColumns = async () => {
   const now = Date.now();
@@ -30,6 +32,28 @@ const getSecurityIncidentColumns = async () => {
       securityColumnsCache = new Set();
       securityColumnsCacheAt = now;
       return securityColumnsCache;
+    }
+    throw error;
+  }
+};
+
+const getSecurityLogsColumns = async () => {
+  const now = Date.now();
+  if (securityLogsColumnsCache && now - securityLogsColumnsCacheAt < SECURITY_COLUMNS_TTL_MS) {
+    return securityLogsColumnsCache;
+  }
+
+  try {
+    const [rows] = await pool.query('SHOW COLUMNS FROM security_logs');
+    const columns = new Set(rows.map((row) => String(row.Field || '').trim()).filter(Boolean));
+    securityLogsColumnsCache = columns;
+    securityLogsColumnsCacheAt = now;
+    return columns;
+  } catch (error) {
+    if (error?.code === 'ER_NO_SUCH_TABLE') {
+      securityLogsColumnsCache = new Set();
+      securityLogsColumnsCacheAt = now;
+      return securityLogsColumnsCache;
     }
     throw error;
   }
@@ -227,6 +251,7 @@ exports.deleteIncident = async (req, res) => {
 
 exports.getLogs = async (req, res) => {
   try {
+    const columns = await getSecurityLogsColumns();
     const page = Math.max(1, parseIntSafe(req.query.page, 1));
     const limit = Math.min(200, Math.max(1, parseIntSafe(req.query.limit, 25)));
     const offset = (page - 1) * limit;
@@ -236,29 +261,44 @@ exports.getLogs = async (req, res) => {
     const where = [];
     const args = [];
 
-    if (status) {
+    if (!columns || columns.size === 0) {
+      return res.json({
+        success: true,
+        data: [],
+        pagination: { page, limit, total: 0 },
+        stats: { total: 0, success_count: 0, failed_count: 0 },
+      });
+    }
+
+    if (status && columns.has('status')) {
       where.push('sl.status = ?');
       args.push(status);
     }
     if (search) {
-      where.push('(sl.ip_address LIKE ? OR sl.status LIKE ?)');
-      const token = `%${search}%`;
-      args.push(token, token);
+      const searchable = ['ip_address', 'status'].filter((col) => columns.has(col));
+      if (searchable.length > 0) {
+        where.push(`(${searchable.map((col) => `sl.${col} LIKE ?`).join(' OR ')})`);
+        const token = `%${search}%`;
+        for (let i = 0; i < searchable.length; i += 1) {
+          args.push(token);
+        }
+      }
     }
 
     const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+    const orderColumn = columns.has('created_at') ? 'sl.created_at' : (columns.has('id') ? 'sl.id' : null);
 
     const [rows] = await pool.query(
       `SELECT
-        sl.id,
-        CASE WHEN u.id IS NOT NULL THEN sl.email ELSE NULL END AS email,
-        sl.ip_address,
-        sl.status,
-        sl.created_at
+        ${columns.has('id') ? 'sl.id' : 'NULL AS id'},
+        ${columns.has('email') ? 'CASE WHEN u.id IS NOT NULL THEN sl.email ELSE NULL END' : 'NULL'} AS email,
+        ${columns.has('ip_address') ? 'sl.ip_address' : 'NULL AS ip_address'},
+        ${columns.has('status') ? 'sl.status' : 'NULL AS status'},
+        ${columns.has('created_at') ? 'sl.created_at' : 'NULL AS created_at'}
       FROM security_logs sl
-      LEFT JOIN users u ON u.email = sl.email
+      ${columns.has('email') ? 'LEFT JOIN users u ON u.email = sl.email' : ''}
       ${whereSql}
-      ORDER BY sl.created_at DESC
+      ${orderColumn ? `ORDER BY ${orderColumn} DESC` : ''}
       LIMIT ? OFFSET ?`,
       [...args, limit, offset]
     );
@@ -271,8 +311,8 @@ exports.getLogs = async (req, res) => {
     const [statsRows] = await pool.query(
       `SELECT
         COUNT(*) AS total,
-        SUM(CASE WHEN sl.status = 'SUCCESS' THEN 1 ELSE 0 END) AS success_count,
-        SUM(CASE WHEN sl.status LIKE 'FAILED%' THEN 1 ELSE 0 END) AS failed_count
+        ${columns.has('status') ? "SUM(CASE WHEN sl.status = 'SUCCESS' THEN 1 ELSE 0 END)" : '0'} AS success_count,
+        ${columns.has('status') ? "SUM(CASE WHEN sl.status LIKE 'FAILED%' THEN 1 ELSE 0 END)" : '0'} AS failed_count
       FROM security_logs sl`
     );
 
