@@ -85,11 +85,6 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const isAdmin      = user?.role === 'admin';
-  const isStudent    = user?.role === 'student';
-  const isCaretaker  = user?.role === 'caretaker';
-  const isWarden     = user?.role === 'warden';
-
   const value = useMemo(() => ({
     user,
     loading,
@@ -97,11 +92,11 @@ export function AuthProvider({ children }) {
     login,
     googleLogin,
     logout,
-    isAdmin,
-    isStudent,
-    isCaretaker,
-    isWarden,
-  }), [user, loading, error, login, googleLogin, logout, isAdmin, isStudent, isCaretaker, isWarden]);
+    isAdmin:     user?.role === 'admin',
+    isStudent:   user?.role === 'student',
+    isCaretaker: user?.role === 'caretaker',
+    isWarden:    user?.role === 'warden',
+  }), [user, loading, error, login, googleLogin, logout]);
 
   return (
     <AuthContext.Provider value={value}>

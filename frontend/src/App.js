@@ -4,7 +4,6 @@ import { Toaster } from 'react-hot-toast';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
-// Forced HMR Recompilation trigger
 
 import Sidebar from './components/layout/Sidebar';
 import StudentSidebar from './components/layout/StudentSidebar';
@@ -112,14 +111,10 @@ function StudentRoute() {
 function AppRoutes() {
   const auth = useAuth();
   const { user } = auth;
-  const hasKnownRole = auth.isAdmin || auth.isCaretaker || auth.isWarden || auth.isStudent;
 
   return (
     <Routes>
-      <Route
-        path="/login"
-        element={user && hasKnownRole ? <Navigate to={getHomePath(auth)} replace /> : <LoginPage />}
-      />
+      <Route path="/login" element={user ? <Navigate to={getHomePath(auth)} replace /> : <LoginPage />} />
 
       <Route element={<ProtectedRoute />}>
         {/* Caretaker Routes */}

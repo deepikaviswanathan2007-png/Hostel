@@ -62,10 +62,10 @@ export default function StudentLeaveRequestPortal() {
   useEffect(() => {
     if (user?.student_id) {
       fetchLeaves();
-    } else if (user) {
+    } else if (user?.student_id === undefined && !user?.student_id) {
       setLoading(false);
     }
-  }, [fetchLeaves, user]);
+  }, [fetchLeaves, user?.student_id]);
 
   const stats = useMemo(() => ({
     total: leaves.length,
