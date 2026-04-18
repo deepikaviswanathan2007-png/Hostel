@@ -113,10 +113,7 @@ api.interceptors.response.use(
 
         notifyAuthInvalidated();
 
-        // Let auth bootstrap/login failures be handled by calling code without hard redirect loops.
-        if (!isAuthBootstrapRequest && !isAuthAction && window.location.pathname !== '/login') {
-          window.location.href = '/login';
-        }
+        // Let React route guards handle navigation to avoid full-page refresh loops.
       } else if (status === 403 && requestUrl.includes('/auth/me')) {
         try {
           sessionStorage.clear();
@@ -125,9 +122,6 @@ api.interceptors.response.use(
           // noop
         }
         notifyAuthInvalidated();
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login';
-        }
       } else if (status >= 400) {
         const message = err.response.data?.message || 'An error occurred';
         toast.error(`Error ${status}: ${message}`);
