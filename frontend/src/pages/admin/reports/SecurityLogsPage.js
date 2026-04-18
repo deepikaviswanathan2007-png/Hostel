@@ -15,10 +15,6 @@ import {
   Clock3,
   ShieldOff,
   SlidersHorizontal,
-  LogIn,
-  ChevronLeft,
-  ChevronRight,
-  User,
 } from 'lucide-react';
 import { Badge, Button, EmptyState, Input, SectionCard, Select, Spinner } from '../../../components/ui';
 import { securityAPI } from '../../../services/api';
@@ -212,227 +208,10 @@ function DetailChip({ label, value, icon }) {
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   Login Logs Tab Component
-   ───────────────────────────────────────────────────────────── */
-
-const LOGIN_STATUS_CONFIG = {
-  SUCCESS: { label: 'Success', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
-  FAILED_EMAIL_NOT_FOUND: { label: 'Email Not Found', color: 'bg-red-50 text-red-700 border-red-200', dot: 'bg-red-500' },
-  FAILED_WRONG_PASSWORD: { label: 'Wrong Password', color: 'bg-red-50 text-red-700 border-red-200', dot: 'bg-red-500' },
-};
-
-function LoginLogRow({ log }) {
-  const cfg = LOGIN_STATUS_CONFIG[log.status] || { label: log.status, color: 'bg-slate-100 text-slate-600 border-slate-200', dot: 'bg-slate-400' };
-  const isRegistered = log.email !== null && log.email !== undefined;
-
-  return (
-    <div className="group flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white px-5 py-4 shadow-[0_4px_16px_rgba(15,23,42,0.04)] transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(15,23,42,0.08)]">
-      {/* Avatar / Icon */}
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${isRegistered ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white' : 'border border-slate-200 bg-slate-100 text-slate-400'} shadow-sm`}>
-        {isRegistered ? (
-          <User className="h-4.5 w-4.5" />
-        ) : (
-          <ShieldOff className="h-4.5 w-4.5" />
-        )}
-      </div>
-
-      {/* Email */}
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-bold text-slate-950">
-          {isRegistered ? log.email : 'Unknown / Guest'}
-        </div>
-        <div className="mt-0.5 text-[11px] text-slate-400">
-          {isRegistered ? 'Registered user' : 'Unregistered email'}
-        </div>
-      </div>
-
-      {/* IP Address */}
-      <div className="hidden min-w-[120px] sm:block">
-        <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">IP Address</div>
-        <div className="mt-0.5 font-mono text-xs font-semibold text-slate-700">{log.ip_address || '-'}</div>
-      </div>
-
-      {/* Status Badge */}
-      <div className="hidden min-w-[140px] md:block">
-        <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.1em] ${cfg.color}`}>
-          <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
-          {cfg.label}
-        </span>
-      </div>
-
-      {/* Timestamp */}
-      <div className="hidden min-w-[100px] text-right lg:block">
-        <div className="text-xs font-semibold text-slate-700">
-          {log.created_at ? format(new Date(log.created_at), 'MMM d, yyyy') : '-'}
-        </div>
-        <div className="mt-0.5 text-[11px] text-slate-400">
-          {log.created_at ? format(new Date(log.created_at), 'h:mm a') : '-'}
-        </div>
-      </div>
-
-      {/* Mobile badge for status (visible only on small screens) */}
-      <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] md:hidden ${cfg.color}`}>
-        <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
-        {log.status === 'SUCCESS' ? '✓' : '✗'}
-      </span>
-    </div>
-  );
-}
-
-function LoginLogsSection() {
-  const [logs, setLogs] = useState([]);
-  const [logStats, setLogStats] = useState({ total: 0, success_count: 0, failed_count: 0 });
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState('');
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [logFilters, setLogFilters] = useState({ status: '', search: '' });
-  const debouncedLogSearch = useDebouncedValue(logFilters.search, 400);
-
-  const loadLogs = useCallback(async () => {
-    setLoading(true);
-    setLoadError('');
-    try {
-      const res = await securityAPI.getLogs({ status: logFilters.status, search: debouncedLogSearch, page, limit: 25 });
-      setLogs(res.data?.data || []);
-      setLogStats(res.data?.stats || { total: 0, success_count: 0, failed_count: 0 });
-      const total = res.data?.pagination?.total || 0;
-      setTotalPages(Math.max(1, Math.ceil(total / 25)));
-    } catch (error) {
-      const message = error?.response?.data?.message || 'Failed to load login logs.';
-      setLoadError(message);
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  }, [logFilters.status, debouncedLogSearch, page]);
-
-  useEffect(() => {
-    loadLogs();
-  }, [loadLogs]);
-
-  return (
-    <>
-      {/* Stats row */}
-      <div className="grid gap-3 sm:grid-cols-3">
-        {[
-          { label: 'Total Logins', value: logStats.total || 0, icon: LogIn, tone: 'from-slate-900 to-slate-700' },
-          { label: 'Successful', value: logStats.success_count || 0, icon: ShieldCheck, tone: 'from-emerald-500 to-green-600' },
-          { label: 'Failed', value: logStats.failed_count || 0, icon: Ban, tone: 'from-rose-500 to-red-600' },
-        ].map(({ label, value, icon: Icon, tone }) => (
-          <div key={label} className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_12px_28px_rgba(15,23,42,0.05)]">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">{label}</div>
-                <div className="mt-1 text-[2rem] font-black tracking-[-0.06em] text-slate-950">{value}</div>
-              </div>
-              <div className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${tone} text-white shadow-lg`}>
-                <Icon className="h-5 w-5" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Filters */}
-      <SectionCard
-        title="Filter Login Logs"
-        description="Search by IP address or filter by login status."
-        action={
-          <Button variant="outline" size="sm" onClick={loadLogs}><RefreshCcw className="h-4 w-4" /> Refresh</Button>
-        }
-        className="overflow-hidden border border-slate-200/80 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]"
-      >
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
-          <SlidersHorizontal className="h-3.5 w-3.5" /> Quick Filters
-        </div>
-        <div className="grid gap-3 lg:grid-cols-12">
-          <div className="lg:col-span-3">
-            <Select value={logFilters.status} onChange={(e) => { setPage(1); setLogFilters((f) => ({ ...f, status: e.target.value })); }}>
-              <option value="">All Status</option>
-              <option value="SUCCESS">Success</option>
-              <option value="FAILED_EMAIL_NOT_FOUND">Email Not Found</option>
-              <option value="FAILED_WRONG_PASSWORD">Wrong Password</option>
-            </Select>
-          </div>
-          <div className="lg:col-span-6">
-            <Input
-              value={logFilters.search}
-              onChange={(e) => { setPage(1); setLogFilters((f) => ({ ...f, search: e.target.value })); }}
-              placeholder="Search by IP address or status..."
-              icon={<Search className="h-4 w-4" />}
-            />
-          </div>
-          <div className="lg:col-span-3">
-            <Button variant="ghost" className="h-10 w-full" onClick={() => { setPage(1); setLogFilters({ status: '', search: '' }); }}>
-              Reset Filters
-            </Button>
-          </div>
-        </div>
-      </SectionCard>
-
-      {/* List */}
-      {loading ? (
-        <div className="flex justify-center py-20"><Spinner size="lg" className="text-brand-primary" /></div>
-      ) : loadError ? (
-        <div className="rounded-[28px] border border-rose-200 bg-rose-50 py-8 shadow-[0_12px_28px_rgba(15,23,42,0.05)]">
-          <EmptyState
-            icon={<AlertTriangle />}
-            title="Unable to load login logs"
-            description={loadError}
-            action={<Button variant="danger" size="sm" onClick={loadLogs}>Try Again</Button>}
-          />
-        </div>
-      ) : logs.length === 0 ? (
-        <div className="rounded-[28px] border border-slate-200 bg-white py-8 shadow-[0_12px_28px_rgba(15,23,42,0.05)]">
-          <EmptyState icon={<LogIn />} title="No login logs" description="No login attempts match the selected filters." />
-        </div>
-      ) : (
-        <>
-          <div className="space-y-2">
-            {logs.map((log) => (
-              <LoginLogRow key={log.id} log={log} />
-            ))}
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-3 pt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="h-9 rounded-xl px-3"
-              >
-                <ChevronLeft className="h-4 w-4" /> Previous
-              </Button>
-              <span className="text-sm font-semibold text-slate-600">
-                Page {page} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                className="h-9 rounded-xl px-3"
-              >
-                Next <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </>
-      )}
-    </>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────
    Main Page with Tabs
    ───────────────────────────────────────────────────────────── */
 
 export default function SecurityLogsPage() {
-  const [activeTab, setActiveTab] = useState('incidents');
   const [incidents, setIncidents] = useState([]);
   const [stats, setStats] = useState({ total: 0, open_count: 0, blocked_count: 0, resolved_count: 0, high_risk_count: 0 });
   const [loading, setLoading] = useState(true);
@@ -463,8 +242,8 @@ export default function SecurityLogsPage() {
   }, [filters.status, filters.severity, debouncedIncidentSearch]);
 
   useEffect(() => {
-    if (activeTab === 'incidents') load();
-  }, [load, activeTab]);
+    load();
+  }, [load]);
 
   const allSelected = useMemo(() => incidents.length > 0 && selectedIds.length === incidents.length, [incidents.length, selectedIds.length]);
 
@@ -512,11 +291,6 @@ export default function SecurityLogsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const tabs = [
-    { key: 'incidents', label: 'Security Incidents', icon: ShieldAlert },
-    { key: 'loginLogs', label: 'Login Logs', icon: LogIn },
-  ];
-
   return (
     <div className="space-y-6 animate-fade-in">
       {/* ── Header ───────────────────────────────────────────── */}
@@ -542,20 +316,18 @@ export default function SecurityLogsPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-              {activeTab === 'incidents' && (
-                <Button
-                  variant="primary"
-                  size="md"
-                  onClick={handleExport}
-                  className="h-11 rounded-2xl bg-slate-900 px-5 text-white shadow-[0_10px_20px_rgba(15,23,42,0.12)] hover:bg-slate-800"
-                >
-                  <Download className="h-4 w-4" /> Export Data
-                </Button>
-              )}
+              <Button
+                variant="primary"
+                size="md"
+                onClick={handleExport}
+                className="h-11 rounded-2xl bg-slate-900 px-5 text-white shadow-[0_10px_20px_rgba(15,23,42,0.12)] hover:bg-slate-800"
+              >
+                <Download className="h-4 w-4" /> Export Data
+              </Button>
               <Button
                 variant="outline"
                 size="md"
-                onClick={activeTab === 'incidents' ? load : undefined}
+                onClick={load}
                 className="h-11 rounded-2xl px-5"
               >
                 <RefreshCcw className="h-4 w-4" /> Refresh
@@ -563,54 +335,30 @@ export default function SecurityLogsPage() {
             </div>
           </div>
 
-          {/* ── Tab switcher ─────────────────────────────────── */}
-          <div className="mt-6 flex gap-1 rounded-2xl border border-slate-200 bg-slate-100/80 p-1">
-            {tabs.map(({ key, label, icon: TabIcon }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setActiveTab(key)}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all duration-200 ${
-                  activeTab === key
-                    ? 'bg-white text-slate-950 shadow-[0_4px_12px_rgba(15,23,42,0.08)]'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                <TabIcon className="h-4 w-4" />
-                {label}
-              </button>
-            ))}
-          </div>
-
-          {/* ── Stat cards (only for incidents tab) ──────────── */}
-          {activeTab === 'incidents' && (
-            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {[
-                { label: 'Total', value: stats.total || 0, icon: Shield, tone: 'from-slate-900 to-slate-700' },
-                { label: 'Open', value: stats.open_count || 0, icon: AlertTriangle, tone: 'from-amber-500 to-orange-500' },
-                { label: 'Blocked', value: stats.blocked_count || 0, icon: Ban, tone: 'from-rose-500 to-red-600' },
-                { label: 'High Risk', value: stats.high_risk_count || 0, icon: BadgeCheck, tone: 'from-emerald-500 to-green-600' },
-              ].map(({ label, value, icon: Icon, tone }) => (
-                <div key={label} className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_12px_28px_rgba(15,23,42,0.05)]">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">{label}</div>
-                      <div className="mt-1 text-[2rem] font-black tracking-[-0.06em] text-slate-950">{value}</div>
-                    </div>
-                    <div className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${tone} text-white shadow-lg`}>
-                      <Icon className="h-5 w-5" />
-                    </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {[
+              { label: 'Total', value: stats.total || 0, icon: Shield, tone: 'from-slate-900 to-slate-700' },
+              { label: 'Open', value: stats.open_count || 0, icon: AlertTriangle, tone: 'from-amber-500 to-orange-500' },
+              { label: 'Blocked', value: stats.blocked_count || 0, icon: Ban, tone: 'from-rose-500 to-red-600' },
+              { label: 'High Risk', value: stats.high_risk_count || 0, icon: BadgeCheck, tone: 'from-emerald-500 to-green-600' },
+            ].map(({ label, value, icon: Icon, tone }) => (
+              <div key={label} className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_12px_28px_rgba(15,23,42,0.05)]">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">{label}</div>
+                    <div className="mt-1 text-[2rem] font-black tracking-[-0.06em] text-slate-950">{value}</div>
+                  </div>
+                  <div className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${tone} text-white shadow-lg`}>
+                    <Icon className="h-5 w-5" />
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ── Tab content ──────────────────────────────────────── */}
-      {activeTab === 'incidents' ? (
-        <>
+      <>
           <SectionCard
             title="Filter Logs"
             description="Search by endpoint, user, IP, or message."
@@ -691,10 +439,7 @@ export default function SecurityLogsPage() {
               ))}
             </div>
           )}
-        </>
-      ) : (
-        <LoginLogsSection />
-      )}
+      </>
     </div>
   );
 }
