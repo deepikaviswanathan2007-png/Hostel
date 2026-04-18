@@ -8,8 +8,26 @@ const parseIntSafe = (value, fallback) => {
   return Number.isFinite(num) ? num : fallback;
 };
 
+let securityColumnsCache = null;
+let securityColumnsCacheAt = 0;
+const SECURITY_COLUMNS_TTL_MS = 60 * 1000;
+
+const getSecurityIncidentColumns = async () => {
+  const now = Date.now();
+  if (securityColumnsCache && now - securityColumnsCacheAt < SECURITY_COLUMNS_TTL_MS) {
+    return securityColumnsCache;
+  }
+
+  const [rows] = await pool.query('SHOW COLUMNS FROM security_incidents');
+  const columns = new Set(rows.map((row) => String(row.Field || '').trim()).filter(Boolean));
+  securityColumnsCache = columns;
+  securityColumnsCacheAt = now;
+  return columns;
+};
+
 exports.getIncidents = async (req, res) => {
   try {
+    const columns = await getSecurityIncidentColumns();
     const status = String(req.query.status || '').trim();
     const severity = String(req.query.severity || '').trim();
     const eventType = String(req.query.event_type || '').trim();
@@ -21,32 +39,38 @@ exports.getIncidents = async (req, res) => {
     const where = [];
     const args = [];
 
-    if (status) {
+    if (status && columns.has('status')) {
       where.push('si.status = ?');
       args.push(status);
     }
-    if (severity) {
+    if (severity && columns.has('severity')) {
       where.push('si.severity = ?');
       args.push(severity);
     }
-    if (eventType) {
+    if (eventType && columns.has('event_type')) {
       where.push('si.event_type = ?');
       args.push(eventType);
     }
     if (search) {
-      where.push('(si.actor_email LIKE ? OR si.target_user_name LIKE ? OR si.endpoint LIKE ? OR si.source_ip LIKE ? OR si.message LIKE ?)');
+      const searchable = ['actor_email', 'target_user_name', 'endpoint', 'source_ip', 'message'].filter((col) => columns.has(col));
+      if (searchable.length > 0) {
+        where.push(`(${searchable.map((col) => `si.${col} LIKE ?`).join(' OR ')})`);
+      }
       const token = `%${search}%`;
-      args.push(token, token, token, token, token);
+      for (let i = 0; i < searchable.length; i += 1) {
+        args.push(token);
+      }
     }
 
     const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+    const includeReviewerJoin = columns.has('reviewed_by');
 
     const [rows] = await pool.query(
       `SELECT
         si.*,
-        reviewer.name AS reviewed_by_name
+        ${includeReviewerJoin ? 'reviewer.name AS reviewed_by_name' : 'NULL AS reviewed_by_name'}
       FROM security_incidents si
-      LEFT JOIN users reviewer ON reviewer.id = si.reviewed_by
+      ${includeReviewerJoin ? 'LEFT JOIN users reviewer ON reviewer.id = si.reviewed_by' : ''}
       ${whereSql}
       ORDER BY si.created_at DESC
       LIMIT ? OFFSET ?`,
@@ -61,10 +85,10 @@ exports.getIncidents = async (req, res) => {
     const [statsRows] = await pool.query(
       `SELECT
         COUNT(*) AS total,
-        SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) AS open_count,
-        SUM(CASE WHEN status = 'blocked' THEN 1 ELSE 0 END) AS blocked_count,
-        SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END) AS resolved_count,
-        SUM(CASE WHEN severity IN ('high', 'critical') THEN 1 ELSE 0 END) AS high_risk_count
+        ${columns.has('status') ? "SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END)" : '0'} AS open_count,
+        ${columns.has('status') ? "SUM(CASE WHEN status = 'blocked' THEN 1 ELSE 0 END)" : '0'} AS blocked_count,
+        ${columns.has('status') ? "SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END)" : '0'} AS resolved_count,
+        ${columns.has('severity') ? "SUM(CASE WHEN severity IN ('high', 'critical') THEN 1 ELSE 0 END)" : '0'} AS high_risk_count
       FROM security_incidents`
     );
 
