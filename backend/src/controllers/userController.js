@@ -43,12 +43,13 @@ const getOne = async (req, res) => {
 const create = async (req, res) => {
   try {
     const { name, email, password, role, specialty } = req.body;
-    if (!name || !email || !role) {
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    if (!name || !normalizedEmail || !role) {
       return res.status(400).json({ success: false, message: 'Name, email, and role are required.' });
     }
 
     // Check duplicate email
-    const [[existing]] = await pool.query('SELECT id FROM users WHERE email=?', [email]);
+    const [[existing]] = await pool.query('SELECT id FROM users WHERE email=?', [normalizedEmail]);
     if (existing) {
       return res.status(400).json({ success: false, message: 'Email already exists.' });
     }
@@ -56,7 +57,7 @@ const create = async (req, res) => {
     const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
     const [result] = await pool.query(
       'INSERT INTO users (name, email, password, role, specialty) VALUES (?, ?, ?, ?, ?)',
-      [name, email, hashedPassword, role, specialty || null]
+      [name, normalizedEmail, hashedPassword, role, specialty || null]
     );
     res.status(201).json({ success: true, message: 'User created.', id: result.insertId });
   } catch (err) {
@@ -68,11 +69,12 @@ const create = async (req, res) => {
 const update = async (req, res) => {
   try {
     const { name, email, role, specialty, password } = req.body;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
     const fields = [];
     const params = [];
 
     if (name) { fields.push('name=?'); params.push(name); }
-    if (email) { fields.push('email=?'); params.push(email); }
+    if (email) { fields.push('email=?'); params.push(normalizedEmail); }
     if (role) { fields.push('role=?'); params.push(role); }
     if (specialty !== undefined) { fields.push('specialty=?'); params.push(specialty || null); }
     if (password) {

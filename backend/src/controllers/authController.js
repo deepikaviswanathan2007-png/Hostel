@@ -6,6 +6,7 @@ const { pool } = require('../config/database');
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const cookieName = process.env.AUTH_COOKIE_NAME || 'auth_token';
 const INVALID_CREDENTIALS_MSG = 'Invalid email or password';
+const EMAIL_NOT_REGISTERED_MSG = 'Email not registered';
 const TOO_MANY_ATTEMPTS_MSG = 'Too many attempts. Try again later.';
 const MAX_FAILED_ATTEMPTS = 5;
 const FAILED_WINDOW_MINUTES = 10;
@@ -81,24 +82,6 @@ const cookieOptions = () => ({
   maxAge: 7 * 24 * 60 * 60 * 1000,
 });
 
-const createStudentStub = async (conn, userId, name, email) => {
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const tempRegNo = `G-${userId}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-
-    try {
-      const [insertRes] = await conn.query(
-        'INSERT INTO students (user_id, name, email, register_no, department, year) VALUES (?, ?, ?, ?, ?, ?)',
-        [userId, name, email, tempRegNo, 'PENDING', 1]
-      );
-      return insertRes.insertId;
-    } catch (err) {
-      if (err.code !== 'ER_DUP_ENTRY') throw err;
-    }
-  }
-
-  throw new Error('Unable to create a unique student record.');
-};
-
 const login = async (req, res) => {
   const email = String(req.body?.email || '').trim().toLowerCase();
   const password = String(req.body?.password || '');
@@ -120,7 +103,7 @@ const login = async (req, res) => {
         ipAddress,
         status: 'FAILED_EMAIL_NOT_FOUND',
       });
-      return res.status(401).json({ success: false, message: INVALID_CREDENTIALS_MSG });
+      return res.status(404).json({ success: false, message: EMAIL_NOT_REGISTERED_MSG });
     }
 
     const user = rows[0];
@@ -193,7 +176,6 @@ const googleLogin = async (req, res) => {
 
     // 1. Look up by google_id
     let [rows] = await pool.query('SELECT * FROM users WHERE google_id = ?', [googleId]);
-    let createdStudentId = null;
 
     if (!rows.length) {
       // 2. Look up by email (link existing account)
@@ -202,26 +184,7 @@ const googleLogin = async (req, res) => {
       if (rows.length) {
         await pool.query('UPDATE users SET google_id = ? WHERE id = ?', [googleId, rows[0].id]);
       } else {
-        const conn = await pool.getConnection();
-        try {
-          await conn.beginTransaction();
-
-          const [userResult] = await conn.query(
-            'INSERT INTO users (name, email, password, google_id, role) VALUES (?, ?, ?, ?, ?)',
-            [name, email, null, googleId, 'student']
-          );
-
-          const userId = userResult.insertId;
-          createdStudentId = await createStudentStub(conn, userId, name, email);
-
-          await conn.commit();
-          rows = [{ id: userId, name, email, role: 'student' }];
-        } catch (err) {
-          await conn.rollback();
-          throw err;
-        } finally {
-          conn.release();
-        }
+        return res.status(404).json({ success: false, message: EMAIL_NOT_REGISTERED_MSG });
       }
     }
 
@@ -242,10 +205,6 @@ const googleLogin = async (req, res) => {
         }
       } else {
         userData.student_id = studentRows[0].id;
-      }
-
-      if (!userData.student_id && createdStudentId) {
-        userData.student_id = createdStudentId;
       }
     }
 
