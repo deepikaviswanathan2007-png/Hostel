@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS rooms (
   -- FIX: keep the direct hostel FK indexed so joins prefer hostel_id over legacy block matching.
   room_number  VARCHAR(20) NOT NULL,
   hostel_id    INT DEFAULT NULL,
-  block        ENUM('A','B','C','D') NOT NULL,
+  block        ENUM('A','B','C','D','E','F','G') NOT NULL,
   floor        TINYINT NOT NULL DEFAULT 1,
   wing         ENUM('left','right') DEFAULT NULL,
   capacity     TINYINT NOT NULL DEFAULT 4,
@@ -92,9 +92,9 @@ CREATE TABLE IF NOT EXISTS rooms (
 -- ── FLOOR WARDEN ASSIGNMENTS TABLE ──
 CREATE TABLE IF NOT EXISTS floor_warden_assignments (
   id           INT AUTO_INCREMENT PRIMARY KEY,
-  block        ENUM('A','B','C','D') NOT NULL,
+  block        ENUM('A','B','C','D','E','F','G') NOT NULL,
   floor        TINYINT NOT NULL,
-  wing         ENUM('left','right') NOT NULL,
+  wing         ENUM('left','right','north','south') NOT NULL,
   warden_id    INT NOT NULL,
   created_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at   DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
