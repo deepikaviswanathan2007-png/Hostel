@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { authAPI } from '../services/api';
 
 const AuthContext = createContext(null);
@@ -48,7 +48,7 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener('auth:invalidated', handleAuthInvalidated);
   }, []);
 
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     try {
       const { data } = await authAPI.login({ email, password });
       if (data.token) {
@@ -59,9 +59,9 @@ export function AuthProvider({ children }) {
     } catch (err) {
       throw err;
     }
-  };
+  }, []);
 
-  const googleLogin = async (credential) => {
+  const googleLogin = useCallback(async (credential) => {
     try {
       const { data } = await authAPI.googleLogin(credential);
       if (data.token) {
@@ -72,9 +72,9 @@ export function AuthProvider({ children }) {
     } catch (err) {
       throw err;
     }
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await authAPI.logout();
     } catch {
@@ -83,15 +83,28 @@ export function AuthProvider({ children }) {
       localStorage.removeItem('token');
       setUser(null);
     }
-  };
+  }, []);
 
   const isAdmin      = user?.role === 'admin';
   const isStudent    = user?.role === 'student';
   const isCaretaker  = user?.role === 'caretaker';
   const isWarden     = user?.role === 'warden';
 
+  const value = useMemo(() => ({
+    user,
+    loading,
+    error,
+    login,
+    googleLogin,
+    logout,
+    isAdmin,
+    isStudent,
+    isCaretaker,
+    isWarden,
+  }), [user, loading, error, login, googleLogin, logout, isAdmin, isStudent, isCaretaker, isWarden]);
+
   return (
-    <AuthContext.Provider value={{ user, loading, error, login, googleLogin, logout, isAdmin, isStudent, isCaretaker, isWarden }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
