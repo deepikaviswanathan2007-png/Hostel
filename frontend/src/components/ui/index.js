@@ -194,6 +194,14 @@ export function StatCard({ title, value, icon, color = 'primary', delta, subtitl
 export function Table({ columns, data, loading, onRow, paginate = false, pageSize = 10 }) {
   const [currentPage, setCurrentPage] = React.useState(1);
 
+  React.useEffect(() => {
+    if (!paginate) return;
+    setCurrentPage((page) => {
+      const nextTotalPages = Math.max(1, Math.ceil((data?.length || 0) / pageSize));
+      return Math.min(page, nextTotalPages);
+    });
+  }, [data?.length, pageSize, paginate]);
+
   if (loading) return (
     <div className="flex justify-center py-12"><Spinner size="lg" className="text-brand-primary" /></div>
   );

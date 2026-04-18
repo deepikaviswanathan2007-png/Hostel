@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
 const ThemeContext = createContext(null);
 
@@ -10,8 +10,14 @@ export function ThemeProvider({ children }) {
     sessionStorage.setItem('theme', dark ? 'dark' : 'light');
   }, [dark]);
 
+  const toggle = useCallback(() => {
+    setDark((value) => !value);
+  }, []);
+
+  const value = useMemo(() => ({ dark, toggle }), [dark, toggle]);
+
   return (
-    <ThemeContext.Provider value={{ dark, toggle: () => setDark(d => !d) }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );

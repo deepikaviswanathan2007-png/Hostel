@@ -292,8 +292,7 @@ const me = async (req, res) => {
       }
     }
 
-    const token = signToken(userData);
-    res.json({ success: true, user: userData, token });
+    res.json({ success: true, user: userData });
   } catch (err) { console.error('Error in ' + __filename + ':', err); res.status(500).json({ success: false, message: 'Server error.' });
   }
 };
