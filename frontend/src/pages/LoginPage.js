@@ -7,6 +7,9 @@ import { useAuth } from '../context/AuthContext';
 export default function LoginPage() {
   const { login, googleLogin } = useAuth();
   const navigate = useNavigate();
+  const isLocalhost = typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname);
+  const allowLocalGoogle = String(process.env.REACT_APP_GOOGLE_ALLOW_LOCALHOST || '').toLowerCase() === 'true';
+  const googleLoginEnabled = Boolean(process.env.REACT_APP_GOOGLE_CLIENT_ID) && (!isLocalhost || allowLocalGoogle);
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
 
@@ -107,20 +110,30 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="my-5 text-center text-[13px] text-gray-600">Or</div>
+          {googleLoginEnabled && (
+            <>
+              <div className="my-5 text-center text-[13px] text-gray-600">Or</div>
 
-          <div className="flex justify-center">
-            <div className="overflow-hidden rounded border border-gray-200 bg-white">
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={handleGoogleError}
-                theme="outline"
-                size="large"
-                text="signin_with"
-                shape="rectangular"
-              />
-            </div>
-          </div>
+              <div className="flex justify-center">
+                <div className="overflow-hidden rounded border border-gray-200 bg-white">
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={handleGoogleError}
+                    theme="outline"
+                    size="large"
+                    text="signin_with"
+                    shape="rectangular"
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          {!googleLoginEnabled && (
+            <p className="mt-4 text-center text-[12px] text-gray-400">
+              Google sign-in is disabled for this environment.
+            </p>
+          )}
         </div>
       </div>
     </div>

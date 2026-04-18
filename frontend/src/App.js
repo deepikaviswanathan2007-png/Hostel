@@ -190,27 +190,37 @@ function AppRoutes() {
   );
 }
 
-const GOOGLE_CLIENT_ID =
-  process.env.REACT_APP_GOOGLE_CLIENT_ID ||
-  '181603728534-78tjb4gbu8p6olk8mtpqj2h2guls23vv.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
+const GOOGLE_ALLOW_LOCALHOST = String(process.env.REACT_APP_GOOGLE_ALLOW_LOCALHOST || '').toLowerCase() === 'true';
 
 export default function App() {
+  const isLocalhost = typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname);
+  const googleEnabled = Boolean(GOOGLE_CLIENT_ID) && (!isLocalhost || GOOGLE_ALLOW_LOCALHOST);
+
+  const appTree = (
+    <ErrorBoundary>
+      <AuthProvider>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <AppRoutes />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              style: { borderRadius: '12px', fontSize: '13px', fontFamily: 'Manrope, Segoe UI, sans-serif' },
+              success: { iconTheme: { primary: '#7D53F6', secondary: '#fff' } },
+            }}
+          />
+        </BrowserRouter>
+      </AuthProvider>
+    </ErrorBoundary>
+  );
+
+  if (!googleEnabled) {
+    return appTree;
+  }
+
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <ErrorBoundary>
-        <AuthProvider>
-          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <AppRoutes />
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                style: { borderRadius: '12px', fontSize: '13px', fontFamily: 'Manrope, Segoe UI, sans-serif' },
-                success: { iconTheme: { primary: '#7D53F6', secondary: '#fff' } },
-              }}
-            />
-          </BrowserRouter>
-        </AuthProvider>
-      </ErrorBoundary>
+      {appTree}
     </GoogleOAuthProvider>
   );
 }

@@ -1,9 +1,35 @@
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
+const resolveApiBaseUrl = () => {
+  const explicit = String(process.env.REACT_APP_API_URL || '').trim();
+  const isLocal3000 = (
+    typeof window !== 'undefined'
+    && window.location.hostname === 'localhost'
+    && window.location.port === '3000'
+  );
+
+  if (explicit) {
+    // If configured as relative /api while running local app on :3000,
+    // call backend directly to avoid dependency on proxy middleware.
+    if (isLocal3000 && explicit === '/api') {
+      return 'http://localhost:5000/api';
+    }
+    return explicit;
+  }
+
+  // In local dev, the app can run on :3000 without CRA proxy (e.g. static server).
+  // Fall back to direct backend URL so /api requests do not 404 on the frontend server.
+  if (isLocal3000) {
+    return 'http://localhost:5000/api';
+  }
+
+  return '/api';
+};
+
 /* eslint-disable no-undef */
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || '/api',
+  baseURL: resolveApiBaseUrl(),
   timeout: 10000,
   withCredentials: true,
 });
