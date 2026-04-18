@@ -23,6 +23,7 @@ import {
 import { Badge, Button, EmptyState, Input, SectionCard, Select, Spinner } from '../../../components/ui';
 import { securityAPI } from '../../../services/api';
 import { format } from 'date-fns';
+import useDebouncedValue from '../../../hooks/useDebouncedValue';
 
 const severityLabel = {
   low: 'LOW',
@@ -286,12 +287,13 @@ function LoginLogsSection() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [logFilters, setLogFilters] = useState({ status: '', search: '' });
+  const debouncedLogSearch = useDebouncedValue(logFilters.search, 400);
 
   const loadLogs = useCallback(async () => {
     setLoading(true);
     setLoadError('');
     try {
-      const res = await securityAPI.getLogs({ ...logFilters, page, limit: 25 });
+      const res = await securityAPI.getLogs({ status: logFilters.status, search: debouncedLogSearch, page, limit: 25 });
       setLogs(res.data?.data || []);
       setLogStats(res.data?.stats || { total: 0, success_count: 0, failed_count: 0 });
       const total = res.data?.pagination?.total || 0;
@@ -303,7 +305,7 @@ function LoginLogsSection() {
     } finally {
       setLoading(false);
     }
-  }, [logFilters, page]);
+  }, [logFilters.status, debouncedLogSearch, page]);
 
   useEffect(() => {
     loadLogs();
@@ -438,12 +440,17 @@ export default function SecurityLogsPage() {
   const [busyId, setBusyId] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]);
   const [filters, setFilters] = useState({ status: '', severity: '', search: '' });
+  const debouncedIncidentSearch = useDebouncedValue(filters.search, 400);
 
   const load = useCallback(async () => {
     setLoading(true);
     setLoadError('');
     try {
-      const res = await securityAPI.getIncidents(filters);
+      const res = await securityAPI.getIncidents({
+        status: filters.status,
+        severity: filters.severity,
+        search: debouncedIncidentSearch,
+      });
       setIncidents(res.data?.data || []);
       setStats(res.data?.stats || { total: 0, open_count: 0, blocked_count: 0, resolved_count: 0, high_risk_count: 0 });
     } catch (error) {
@@ -453,7 +460,7 @@ export default function SecurityLogsPage() {
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters.status, filters.severity, debouncedIncidentSearch]);
 
   useEffect(() => {
     if (activeTab === 'incidents') load();
