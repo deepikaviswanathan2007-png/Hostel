@@ -135,7 +135,7 @@ api.interceptors.response.use(
 export const authAPI = {
   login:          (d) => api.post('/auth/login', d),
   googleLogin:    (credential) => api.post('/auth/google', { credential }),
-  me:             ()  => api.get('/auth/me'),
+  me:             (config = {})  => api.get('/auth/me', config),
   logout:         ()  => api.post('/auth/logout'),
   changePassword: (d) => api.put('/auth/change-password', d),
 };

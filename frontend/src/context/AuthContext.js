@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { authAPI } from '../services/api';
 
 const AuthContext = createContext(null);
+const AUTH_BOOTSTRAP_TIMEOUT_MS = 5000;
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -10,6 +11,9 @@ export function AuthProvider({ children }) {
 
   // Use useCallback to memoize fetching user data
   const fetchUser = useCallback(async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), AUTH_BOOTSTRAP_TIMEOUT_MS);
+
     try {
       const hasToken = localStorage.getItem('token') || document.cookie.includes('auth_token');
       if (!hasToken) {
@@ -20,15 +24,18 @@ export function AuthProvider({ children }) {
 
       setLoading(true);
       setError(null);
-      const { data } = await authAPI.me();
+      const { data } = await authAPI.me({ signal: controller.signal });
       if (data.token) {
         localStorage.setItem('token', data.token);
       }
       setUser(data.user);
     } catch (err) {
       setUser(null);
-      setError(err?.response?.data?.message || err.message);
+      if (err?.name !== 'CanceledError' && err?.code !== 'ERR_CANCELED') {
+        setError(err?.response?.data?.message || err.message);
+      }
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   }, []);
