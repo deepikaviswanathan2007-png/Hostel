@@ -2,12 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { dashboardAPI } from '../../../services/api';
 import { Spinner, Card } from '../../../components/ui';
-import { Building2, Home, Users, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Building2, Home, Users, CheckCircle, AlertCircle } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import useHostelNameMap from '../../../hooks/useHostelNameMap';
 import { motion } from 'framer-motion';
-
-const PIE_COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#0EA5E9', '#8B5CF6'];
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -69,13 +67,6 @@ export default function DashboardPage() {
       color: '#10B981'
     },
   ];
-
-  const pieData = blockStats.length > 0 
-    ? blockStats.map((b) => ({
-        name: getHostelName(b.block),
-        value: Number(b.occupied) || 0
-      }))
-    : [{ name: 'No Data', value: 1 }];
 
   if (loading) {
     return (

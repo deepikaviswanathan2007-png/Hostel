@@ -63,7 +63,7 @@ function NavItem({ to, label, icon: Icon, onClick, end = false }) {
 
 export default function StudentSidebar({ children }) {
   const contentZoom = 0.95;
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);

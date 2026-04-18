@@ -43,7 +43,7 @@ function NavItem({ to, label, icon: Icon, onClick, end = false }) {
 
 export default function CaretakerSidebar({ children }) {
   const contentZoom = 0.85;
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);

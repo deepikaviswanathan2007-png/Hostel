@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { hostelsAPI, roomsAPI } from '../../../services/api';
-import { Button, Badge, Input, Select, Modal, Spinner, PageHeader, SectionCard, Table } from '../../../components/ui';
+import { Button, Badge, Input, Select, Modal, Spinner, SectionCard, Table } from '../../../components/ui';
 import BulkUploadModal from '../../../components/ui/BulkUploadModal';
 import { Upload } from 'lucide-react';
 import useHostelNameMap from '../../../hooks/useHostelNameMap';

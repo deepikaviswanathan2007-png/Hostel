@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { allocationsAPI, studentsAPI, roomsAPI, hostelsAPI } from '../../../services/api';
-import { Button, Badge, Select, Modal, Table, PageHeader, SectionCard } from '../../../components/ui';
+import { Button, Badge, Select, Modal, Table, SectionCard } from '../../../components/ui';
 import BulkUploadModal from '../../../components/ui/BulkUploadModal';
 import { Upload } from 'lucide-react';
 import { format } from 'date-fns';
