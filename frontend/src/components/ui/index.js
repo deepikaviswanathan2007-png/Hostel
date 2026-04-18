@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function Button({ children, variant = 'primary', size = 'md', className = '', loading, ...props }) {
@@ -114,23 +115,23 @@ export function Spinner({ size = 'md', className = '' }) {
 export function Modal({ open, isOpen, onClose, title, children, size = 'md' }) {
   const isVisible = open || isOpen;
   const sizes = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' };
-  
-  return (
+
+  const modalNode = (
     <AnimatePresence>
       {isVisible && (
         <>
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm"
+            className="fixed inset-0 z-40"
             onClick={onClose}
           />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+          <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 pt-8 sm:items-center sm:pt-4 pointer-events-none">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ duration: 0.2 }}
-              className={`w-full ${sizes[size]} pointer-events-auto overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col max-h-[90vh]`}
+              className={`my-2 w-full ${sizes[size]} pointer-events-auto overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col max-h-[92vh] sm:my-0`}
             >
               <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 bg-white/50">
                 <h2 className="text-lg font-bold text-gray-900">{title}</h2>
@@ -145,6 +146,12 @@ export function Modal({ open, isOpen, onClose, title, children, size = 'md' }) {
       )}
     </AnimatePresence>
   );
+
+  if (typeof document === 'undefined') {
+    return modalNode;
+  }
+
+  return createPortal(modalNode, document.body);
 }
 
 export function EmptyState({ icon, title, description }) {

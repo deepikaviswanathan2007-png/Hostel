@@ -25,7 +25,9 @@ export default function RoomsPage() {
   const [modal, setModal] = useState(null);
   const [selected, setSelected] = useState(null);
   const [detail, setDetail] = useState(null);
-  const [form, setForm] = useState({ room_number: '', hostel_id: '', block: 'A', floor: 1, capacity: 4, room_type: 'quad' });
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [form, setForm] = useState({ room_number: '', hostel_id: '', block: '', floor: 1, capacity: 4, room_type: 'quad' });
   const [saving, setSaving] = useState(false);
   const [view, setView] = useState('grid');
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
@@ -34,8 +36,8 @@ export default function RoomsPage() {
     const linkedHostel = hostels.find((hostel) => String(hostel.id) === String(draft.hostel_id || ''));
     if (linkedHostel?.block_code) return String(linkedHostel.block_code).toUpperCase();
 
-    // Fallback to explicitly selected block
-    return draft.block || 'A';
+    const explicitBlock = String(draft.block || '').trim().toUpperCase();
+    return explicitBlock || undefined;
   }, [hostels]);
 
   useEffect(() => {
@@ -52,7 +54,8 @@ export default function RoomsPage() {
   }, [load]);
 
   const openAdd = () => {
-    setForm({ room_number: '', hostel_id: '', block: 'A', floor: 1, capacity: 3, room_type: 'triple' });
+    setForm({ room_number: '', hostel_id: '', block: '', floor: 1, capacity: 3, room_type: 'triple' });
+    setDeleteConfirmId(null);
     setModal('add');
   };
 
@@ -64,20 +67,31 @@ export default function RoomsPage() {
       if (linked) hId = linked.id;
     }
     setForm({ room_number: room.room_number, hostel_id: hId || '', block: room.block, floor: room.floor, capacity: room.capacity, room_type: room.room_type, status: room.status });
+    setDeleteConfirmId(null);
     setModal('edit');
   };
 
   const openDetail = async room => {
     setSelected(room);
-    const res = await roomsAPI.getOne(room.id);
-    setDetail(res.data.data);
+    setDetail(null);
+    setDetailLoading(true);
+    setDeleteConfirmId(null);
     setModal('detail');
+    try {
+      const res = await roomsAPI.getOne(room.id);
+      setDetail(res.data.data);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to load room details.');
+      setModal(null);
+    } finally {
+      setDetailLoading(false);
+    }
   };
 
   const handleSave = async () => {
     const block = resolveBlockForForm(form);
     if (!block) {
-      toast.error('Select a hostel or use a room number like A-101 so the room can be assigned correctly.');
+      toast.error('Please select a hostel from the dropdown so the room block can be determined.');
       return;
     }
 
@@ -100,11 +114,20 @@ export default function RoomsPage() {
     }
   };
 
-  const handleDelete = async id => {
-    if (!window.confirm('Delete this room?')) return;
+  const beginDelete = (id) => setDeleteConfirmId(id);
+
+  const cancelDelete = () => setDeleteConfirmId(null);
+
+  const confirmDelete = async id => {
     try {
       await roomsAPI.delete(id);
       toast.success('Room deleted.');
+      if (selected?.id === id) {
+        setModal(null);
+        setSelected(null);
+        setDetail(null);
+      }
+      setDeleteConfirmId(null);
       load();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Cannot delete.');
@@ -200,9 +223,16 @@ export default function RoomsPage() {
               )},
               { key: 'status', label: 'Status', render: val => <Badge variant={STATUS_BADGE[val]}>{val}</Badge> },
               { key: 'actions', label: 'Actions', render: (_, row) => (
-                <div className="flex gap-1">
+                <div className="flex flex-wrap gap-1">
                   <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>Edit</Button>
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete(row.id)}>Delete</Button>
+                  {deleteConfirmId === row.id ? (
+                    <>
+                      <Button variant="danger" size="sm" onClick={() => confirmDelete(row.id)}>Confirm</Button>
+                      <Button variant="ghost" size="sm" onClick={cancelDelete}>Cancel</Button>
+                    </>
+                  ) : (
+                    <Button variant="ghost" size="sm" onClick={() => beginDelete(row.id)}>Delete</Button>
+                  )}
                 </div>
               )}
             ]}
@@ -230,10 +260,23 @@ export default function RoomsPage() {
         onSuccess={() => { setIsBulkModalOpen(false); load(); }}
       />
 
-      <Modal open={modal === 'add' || modal === 'edit'} onClose={() => setModal(null)} title={modal === 'add' ? 'Add New Room' : 'Edit Room'}>
+      <Modal open={modal === 'add' || modal === 'edit'} onClose={() => { setModal(null); setDeleteConfirmId(null); }} title={modal === 'add' ? 'Add New Room' : 'Edit Room'}>
         <div className="grid grid-cols-2 gap-4">
           <Input label="Room Number" value={form.room_number} onChange={e => setForm(f => ({ ...f, room_number: e.target.value }))} placeholder="e.g. A-101" disabled={modal === 'edit'} />
-          <Select label="Hostel" value={form.hostel_id} onChange={e => setForm(f => ({ ...f, hostel_id: e.target.value }))}>
+          <Select
+            label="Hostel"
+            value={form.hostel_id}
+            onChange={e => {
+              const nextHostelId = e.target.value;
+              const nextHostel = hostels.find(h => String(h.id) === String(nextHostelId));
+              // FIX: keep the room block aligned with the selected hostel when the hostel changes.
+              setForm(f => ({
+                ...f,
+                hostel_id: nextHostelId,
+                block: nextHostel?.block_code ? String(nextHostel.block_code).toUpperCase() : '',
+              }));
+            }}
+          >
             <option value="">-- No linked hostel --</option>
             {hostels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
           </Select>
@@ -261,8 +304,12 @@ export default function RoomsPage() {
         </div>
       </Modal>
 
-      <Modal open={modal === 'detail'} onClose={() => setModal(null)} title={`Room ${detail?.room_number || ''}`}>
-        {detail && (
+      <Modal open={modal === 'detail'} onClose={() => { setModal(null); setDeleteConfirmId(null); setSelected(null); setDetail(null); }} title={`Room ${selected?.room_number || ''}`}>
+        {detailLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <Spinner size="lg" className="text-brand-primary" />
+          </div>
+        ) : detail && (
           <div className="space-y-4">
             <div className="grid grid-cols-3 gap-3">
               {[['Hostel Name', detail.hostel_name || getHostelName(detail.block)], ['Floor', `Floor ${detail.floor}`], ['Type', detail.room_type], ['Capacity', detail.capacity], ['Occupied', detail.occupied], ['Status', detail.status]].map(([k, v]) => (
@@ -290,9 +337,16 @@ export default function RoomsPage() {
                 </div>
               </div>
             )}
-            <div className="flex gap-2 pt-1">
+            <div className="flex flex-wrap gap-2 pt-1">
               <Button variant="outline" onClick={() => openEdit(selected)}>Edit Room</Button>
-              <Button variant="danger" onClick={() => { setModal(null); handleDelete(selected.id); }}>Delete Room</Button>
+              {deleteConfirmId === selected?.id ? (
+                <>
+                  <Button variant="danger" onClick={() => confirmDelete(selected.id)}>Confirm Delete</Button>
+                  <Button variant="outline" onClick={cancelDelete}>Cancel</Button>
+                </>
+              ) : (
+                <Button variant="danger" onClick={() => beginDelete(selected.id)}>Delete Room</Button>
+              )}
             </div>
           </div>
         )}

@@ -29,6 +29,7 @@ function HostelModal({ hostel, wardens, onSave, onClose }) {
   const [form, setForm] = useState({
     name: hostel?.name || '',
     gender: hostel?.gender || 'MALE',
+    block_code: hostel?.block_code || '',
     total_rooms: hostel?.total_rooms ?? '',
     capacity: hostel?.capacity ?? '',
     warden_id: hostel?.warden_id || '',
@@ -42,6 +43,7 @@ function HostelModal({ hostel, wardens, onSave, onClose }) {
     try {
       await onSave({
         ...form,
+        block_code: form.block_code || null,
         total_rooms: Number(form.total_rooms) || 0,
         capacity: Number(form.capacity) || 0,
         warden_id: form.warden_id || null,
@@ -55,7 +57,7 @@ function HostelModal({ hostel, wardens, onSave, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
         <div className="flex items-center justify-between px-6 py-4 border-b border-brand-border/60">
           <h2 className="text-base font-bold text-gray-900">{hostel ? 'Edit Hostel' : 'Add New Hostel'}</h2>
@@ -84,6 +86,20 @@ function HostelModal({ hostel, wardens, onSave, onClose }) {
                 <option value="FEMALE">Girls Hostel</option>
               </select>
             </div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">Block Code</label>
+            <select
+              value={form.block_code}
+              onChange={e => setForm({ ...form, block_code: e.target.value })}
+              className="w-full rounded-xl border border-brand-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+            >
+              <option value="">None</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+              <option value="D">D</option>
+            </select>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -151,7 +167,7 @@ export default function AdminHostelsPage() {
         usersAPI.getAll({ role: 'warden', limit: 100 }),
       ]);
       setHostels(hRes.data.hostels || []);
-      setWardens(wRes.data.data || []);
+      setWardens((wRes.data.data || []).filter(user => user.role === 'warden'));
     } catch {
       toast.error('Failed to load hostels');
     } finally {
@@ -171,7 +187,7 @@ export default function AdminHostelsPage() {
         toast.success('Hostel added!');
       }
       setEditHostel(null);
-      fetchAll();
+      await fetchAll();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to save hostel');
       throw err;

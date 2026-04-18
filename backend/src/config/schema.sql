@@ -68,7 +68,8 @@ CREATE OR REPLACE VIEW wardens AS
 -- ── ROOMS TABLE ──
 CREATE TABLE IF NOT EXISTS rooms (
   id           INT AUTO_INCREMENT PRIMARY KEY,
-  room_number  VARCHAR(20) NOT NULL UNIQUE,
+  -- FIX: keep the direct hostel FK indexed so joins prefer hostel_id over legacy block matching.
+  room_number  VARCHAR(20) NOT NULL,
   hostel_id    INT DEFAULT NULL,
   block        ENUM('A','B','C','D') NOT NULL,
   floor        TINYINT NOT NULL DEFAULT 1,
@@ -81,6 +82,8 @@ CREATE TABLE IF NOT EXISTS rooms (
   updated_at   DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (hostel_id) REFERENCES hostels(id) ON DELETE SET NULL,
   INDEX idx_rooms_hostel_id (hostel_id),
+  -- FIX: room numbers are unique per hostel, not globally.
+  UNIQUE KEY uniq_rooms_hostel_room (hostel_id, room_number),
   INDEX idx_rooms_block (block),
   INDEX idx_rooms_status (status),
   INDEX idx_rooms_room_number (room_number)
@@ -98,6 +101,8 @@ CREATE TABLE IF NOT EXISTS floor_warden_assignments (
   UNIQUE KEY uniq_floor_wing (block, floor, wing),
   UNIQUE KEY uniq_floor_warden (block, floor, warden_id),
   INDEX idx_floor_lookup (block, floor),
+  -- FIX: direct warden lookups need their own index.
+  INDEX idx_fwa_warden_id (warden_id),
   FOREIGN KEY (warden_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -113,6 +118,7 @@ CREATE TABLE IF NOT EXISTS students (
   email        VARCHAR(120),
   address      TEXT,
   room_id      INT DEFAULT NULL,
+  -- FIX: keep these denormalized values in sync with the room during allocation.
   floor        TINYINT NULL DEFAULT NULL,
   wing         ENUM('left','right') DEFAULT NULL,
   joined_date  DATE,

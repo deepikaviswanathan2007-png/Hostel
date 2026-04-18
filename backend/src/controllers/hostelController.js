@@ -36,6 +36,12 @@ const validateHostelGender = (gender) => {
   return null;
 };
 
+const validateWardenAssignment = async (wardenId) => {
+  if (wardenId == null || wardenId === '') return null;
+  const [[warden]] = await pool.query('SELECT id FROM users WHERE id = ? AND role = "warden"', [wardenId]);
+  return warden ? null : 'Selected warden was not found.';
+};
+
 // ── Get all hostels ───────────────────────────────────────────
 const getAll = async (req, res) => {
   try {
@@ -46,16 +52,16 @@ const getAll = async (req, res) => {
        ORDER BY h.name ASC`
     );
 
-    // Attach actual room count per hostel
+    // FIX: count rooms by hostel_id so shared block letters cannot skew totals.
     const [roomCounts] = await pool.query(
-      `SELECT block, COUNT(*) as count FROM rooms GROUP BY block`
+      `SELECT hostel_id, COUNT(*) as count FROM rooms WHERE hostel_id IS NOT NULL GROUP BY hostel_id`
     );
-    const blockMap = {};
-    roomCounts.forEach(r => { blockMap[r.block] = r.count; });
+    const roomCountMap = {};
+    roomCounts.forEach(r => { roomCountMap[r.hostel_id] = r.count; });
 
     const result = hostels.map(h => ({
       ...h,
-      actual_room_count: h.block_code ? (blockMap[h.block_code] || 0) : 0,
+      actual_room_count: roomCountMap[h.id] || 0,
     }));
 
     res.json({ success: true, hostels: result });
@@ -76,6 +82,8 @@ const create = async (req, res) => {
     if (blockCodeError) return res.status(400).json({ success: false, message: blockCodeError });
     const genderError = validateHostelGender(normalizedGender);
     if (genderError) return res.status(400).json({ success: false, message: genderError });
+    const wardenError = await validateWardenAssignment(warden_id);
+    if (wardenError) return res.status(400).json({ success: false, message: wardenError });
 
     if (normalizedBlockCode) {
       const [[existing]] = await pool.query(
@@ -121,6 +129,10 @@ const update = async (req, res) => {
     if (blockCodeError) return res.status(400).json({ success: false, message: blockCodeError });
     const genderError = validateHostelGender(normalizedGender);
     if (genderError) return res.status(400).json({ success: false, message: genderError });
+    if (warden_id !== undefined) {
+      const wardenError = await validateWardenAssignment(warden_id);
+      if (wardenError) return res.status(400).json({ success: false, message: wardenError });
+    }
 
     if (normalizedBlockCode) {
       const [[existing]] = await pool.query(
@@ -162,6 +174,20 @@ const remove = async (req, res) => {
   try {
     const [[hostel]] = await pool.query('SELECT * FROM hostels WHERE id=?', [req.params.id]);
     if (!hostel) return res.status(404).json({ success: false, message: 'Hostel not found.' });
+    const [occupiedRooms] = await pool.query(
+      `SELECT s.id
+       FROM students s
+       INNER JOIN rooms r ON r.id = s.room_id
+       WHERE r.hostel_id = ?
+       LIMIT 1`,
+      [req.params.id]
+    );
+    if (occupiedRooms.length) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete a hostel that still has active room allocations.',
+      });
+    }
     await pool.query('DELETE FROM hostels WHERE id=?', [req.params.id]);
     res.json({ success: true, message: 'Hostel deleted successfully.' });
   } catch (err) {
@@ -187,19 +213,27 @@ const getWardenDetail = async (req, res) => {
 
     let hostelStats = null;
     if (hostel) {
+      if (!hostel.block_code || !String(hostel.block_code).trim()) {
+        return res.json({
+          success: true,
+          warden,
+          hostelStats: null,
+          message: 'Hostel block code is not set, so hostel statistics cannot be derived yet.',
+        });
+      }
       const [[{ totalRooms }]] = await pool.query(
         'SELECT COUNT(*) as totalRooms FROM rooms WHERE block=?',
-        [hostel.block_code || '']
+        [hostel.block_code]
       );
       const [[{ occupiedRooms }]] = await pool.query(
         "SELECT COUNT(*) as occupiedRooms FROM rooms WHERE block=? AND status='occupied'",
-        [hostel.block_code || '']
+        [hostel.block_code]
       );
       const [[{ totalStudents }]] = await pool.query(
         `SELECT COUNT(*) as totalStudents FROM students s
          INNER JOIN rooms r ON r.id=s.room_id
          WHERE r.block=?`,
-        [hostel.block_code || '']
+        [hostel.block_code]
       );
       const [rooms] = await pool.query(
         `SELECT r.id, r.room_number, r.capacity, r.occupied, r.status,
