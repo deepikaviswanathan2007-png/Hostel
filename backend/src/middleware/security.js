@@ -6,6 +6,30 @@ const {
   getSourceIp,
 } = require('../services/securityIncidentService');
 
+const toInt = (value, fallback) => {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
+const rateLimitKeyGenerator = (req) => {
+  const sourceIp = String(getSourceIp(req) || req.ip || req.socket?.remoteAddress || 'unknown')
+    .replace('::ffff:', '')
+    .trim();
+
+  // express-rate-limit v8 prefers ipKeyGenerator for IPv6 normalization.
+  if (typeof rateLimit.ipKeyGenerator === 'function') {
+    return rateLimit.ipKeyGenerator(sourceIp);
+  }
+  return sourceIp;
+};
+
+const retryAfterSeconds = (req) => {
+  const resetTime = req.rateLimit?.resetTime;
+  if (!resetTime) return undefined;
+  const seconds = Math.ceil((new Date(resetTime).getTime() - Date.now()) / 1000);
+  return Number.isFinite(seconds) && seconds > 0 ? seconds : undefined;
+};
+
 // ── 1. Security Headers (Helmet) ─────────────────────────────
 //    Adds X-Content-Type-Options, X-Frame-Options, CSP, HSTS, etc.
 const securityHeaders = helmet({
@@ -21,15 +45,28 @@ const securityHeaders = helmet({
 //    Adjusted for 10,000+ concurrent users potentially routing through shared campus IPs.
 //    Max 3000 requests per IP per 5-minute window.
 const globalLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000,       // 5 minutes
-  max: process.env.NODE_ENV === 'production' ? 3000 : 5000, // much higher for large user base
+  windowMs: toInt(process.env.RATE_LIMIT_GLOBAL_WINDOW_MS, 5 * 60 * 1000),
+  max: toInt(process.env.RATE_LIMIT_GLOBAL_MAX, process.env.NODE_ENV === 'production' ? 600 : 1200),
+  keyGenerator: rateLimitKeyGenerator,
   standardHeaders: true,           // Return rate limit info in `RateLimit-*` headers
   legacyHeaders: false,            // Disable `X-RateLimit-*` headers
   message: {
     success: false,
     message: 'Too many requests from this IP, please try again after 5 minutes.',
   },
+  handler: (req, res) => {
+    const retryAfter = retryAfterSeconds(req);
+    if (retryAfter) {
+      res.set('Retry-After', String(retryAfter));
+    }
+    return res.status(429).json({
+      success: false,
+      message: 'Too many requests from this IP, please try again after 5 minutes.',
+      retryAfter,
+    });
+  },
   skip: (req) => {
+    if (req.method === 'OPTIONS') return true;
     // In development, don't throttle session-check polling and dev refreshes.
     if (process.env.NODE_ENV !== 'production' && req.path === '/api/auth/me') return true;
     return false;
@@ -39,21 +76,35 @@ const globalLimiter = rateLimit({
 // ── 3. Auth Route Limiter (Brute-force protection) ────────────
 //    Max 100 login attempts per IP per 5-minute window (shared NAT friendly).
 const authLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000,       // 5 minutes
-  max: 100,                         // 100 attempts
+  windowMs: toInt(process.env.RATE_LIMIT_AUTH_WINDOW_MS, 5 * 60 * 1000),
+  max: toInt(process.env.RATE_LIMIT_AUTH_MAX, 20),
+  keyGenerator: rateLimitKeyGenerator,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     success: false,
     message: 'Too many login attempts. Please try again after 5 minutes.',
   },
+  handler: (req, res) => {
+    const retryAfter = retryAfterSeconds(req);
+    if (retryAfter) {
+      res.set('Retry-After', String(retryAfter));
+    }
+    return res.status(429).json({
+      success: false,
+      message: 'Too many login attempts. Please try again after 5 minutes.',
+      retryAfter,
+    });
+  },
+  skip: (req) => req.method !== 'POST',
 });
 
 // ── 4. API-Specific Limiter (stricter for write operations) ───
 //    Max 500 write requests (POST/PUT/DELETE) per IP per 5-minute window.
 const writeLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000,       // 5 minutes
-  max: 500,                         // 500 write operations
+  windowMs: toInt(process.env.RATE_LIMIT_WRITE_WINDOW_MS, 5 * 60 * 1000),
+  max: toInt(process.env.RATE_LIMIT_WRITE_MAX, 120),
+  keyGenerator: rateLimitKeyGenerator,
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: false,
@@ -61,7 +112,19 @@ const writeLimiter = rateLimit({
     success: false,
     message: 'Too many write requests. Please slow down.',
   },
-  skip: (req) => req.method === 'GET',  // only limit POST/PUT/DELETE
+  handler: (req, res) => {
+    const retryAfter = retryAfterSeconds(req);
+    if (retryAfter) {
+      res.set('Retry-After', String(retryAfter));
+    }
+    return res.status(429).json({
+      success: false,
+      message: 'Too many write requests. Please slow down.',
+      retryAfter,
+    });
+  },
+  // Only throttle mutating methods; never count GET/HEAD/OPTIONS preflight requests.
+  skip: (req) => !['POST', 'PUT', 'PATCH', 'DELETE'].includes(String(req.method || '').toUpperCase()),
 });
 
 // ── 5. Request Size Guard ─────────────────────────────────────
@@ -137,8 +200,13 @@ const suspiciousRequestBlocker = async (req, res, next) => {
   }
 
   // Block empty or bot-like user agents
-  const ua = req.headers['user-agent'] || '';
-  if (!ua || /^(curl|wget|python|go-http|httpclient)/i.test(ua)) {
+  const rawUa = String(req.headers['user-agent'] || '');
+  const ua = rawUa.trim();
+  const isSuspiciousUa =
+    !ua ||
+    /(^|[\s(])(curl|wget|python|python-requests|go-http-client|httpclient|libwww-perl)\b/i.test(ua);
+
+  if (isSuspiciousUa) {
     // Allow health-check tools but log the request
     if (req.path !== '/health') {
       console.warn(`[SECURITY] Suspicious User-Agent: "${ua}" on ${req.method} ${req.originalUrl}`);
@@ -148,7 +216,11 @@ const suspiciousRequestBlocker = async (req, res, next) => {
         severity: 'medium',
         status: 'open',
         message: `Suspicious user-agent detected on ${req.method} ${req.originalUrl}`,
-        extraContext: { sourceIp },
+        extraContext: {
+          sourceIp,
+          userAgent: ua,
+          rawUserAgent: rawUa,
+        },
       });
     }
   }

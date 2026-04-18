@@ -1,0 +1,461 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Hostel Management API",
+    "version": "1.0.0",
+    "description": "OpenAPI schema for the Bannari Amman Institute of Technology Hostel Management backend."
+  },
+  "servers": [
+    {
+      "url": "/api",
+      "description": "API base path"
+    },
+    {
+      "url": "http://localhost:5000/api",
+      "description": "Local development"
+    }
+  ],
+  "tags": [
+    { "name": "Auth" },
+    { "name": "Dashboard" },
+    { "name": "Users" },
+    { "name": "Students" },
+    { "name": "Rooms" },
+    { "name": "Hostels" },
+    { "name": "Allocations" },
+    { "name": "Complaints" },
+    { "name": "Notices" },
+    { "name": "Messages" },
+    { "name": "Leaves" },
+    { "name": "Visitors" },
+    { "name": "Attendance" },
+    { "name": "Requests" },
+    { "name": "Staff Directory" },
+    { "name": "Security" },
+    { "name": "Student Portal" },
+    { "name": "Warden" },
+    { "name": "Caretaker" }
+  ],
+  "security": [
+    { "bearerAuth": [] },
+    { "cookieAuth": [] }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login with email and password",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/AuthSuccess" },
+          "404": { "$ref": "#/components/responses/EmailNotRegistered" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/auth/google": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login with Google credential",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/GoogleLoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/AuthSuccess" },
+          "404": { "$ref": "#/components/responses/EmailNotRegistered" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Logout current user",
+        "responses": {
+          "200": { "$ref": "#/components/responses/OkMessage" }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Get authenticated user profile",
+        "responses": {
+          "200": { "$ref": "#/components/responses/CurrentUser" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        }
+      }
+    },
+    "/auth/change-password": {
+      "put": {
+        "tags": ["Auth"],
+        "summary": "Change current password",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ChangePasswordRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/OkMessage" },
+          "400": { "$ref": "#/components/responses/BadRequestError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
+    },
+    "/dashboard": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Admin dashboard stats",
+        "responses": {
+          "200": { "$ref": "#/components/responses/DashboardStats" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" }
+        }
+      }
+    },
+    "/caretaker/dashboard": {
+      "get": {
+        "tags": ["Caretaker"],
+        "summary": "Caretaker dashboard stats",
+        "responses": {
+          "200": { "$ref": "#/components/responses/CaretakerStats" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" }
+        }
+      }
+    },
+    "/caretaker/complaints": {
+      "get": {
+        "tags": ["Caretaker", "Complaints"],
+        "summary": "Get complaints assigned to caretaker scope",
+        "parameters": [
+          { "$ref": "#/components/parameters/Page" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/Status" }
+        ],
+        "responses": {
+          "200": { "$ref": "#/components/responses/ComplaintList" }
+        }
+      },
+      "put": {
+        "tags": ["Caretaker", "Complaints"],
+        "summary": "Update a caretaker complaint",
+        "parameters": [ { "$ref": "#/components/parameters/IdPath" } ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ComplaintStatusUpdate" } } }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/OkMessage" }
+        }
+      }
+    },
+    "/warden/dashboard": {
+      "get": {
+        "tags": ["Warden"],
+        "summary": "Warden dashboard stats",
+        "responses": { "200": { "$ref": "#/components/responses/WardenStats" } }
+      }
+    },
+    "/warden/my-scope": {
+      "get": {
+        "tags": ["Warden"],
+        "summary": "Get current warden scope",
+        "responses": { "200": { "$ref": "#/components/responses/WardenScope" } }
+      }
+    },
+    "/warden/students": {
+      "get": {
+        "tags": ["Warden", "Students"],
+        "summary": "List students in warden scope",
+        "parameters": [ { "$ref": "#/components/parameters/Page" }, { "$ref": "#/components/parameters/Limit" } ],
+        "responses": { "200": { "$ref": "#/components/responses/StudentList" } }
+      }
+    },
+    "/warden/complaints": {
+      "get": {
+        "tags": ["Warden", "Complaints"],
+        "summary": "List complaints in warden scope",
+        "parameters": [ { "$ref": "#/components/parameters/Page" }, { "$ref": "#/components/parameters/Limit" }, { "$ref": "#/components/parameters/Status" } ],
+        "responses": { "200": { "$ref": "#/components/responses/ComplaintList" } }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "List users",
+        "parameters": [ { "$ref": "#/components/parameters/Page" }, { "$ref": "#/components/parameters/Limit" }, { "name": "role", "in": "query", "schema": { "type": "string" } }, { "name": "search", "in": "query", "schema": { "type": "string" } } ],
+        "responses": { "200": { "$ref": "#/components/responses/UserList" } }
+      },
+      "post": {
+        "tags": ["Users"],
+        "summary": "Create user",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UserCreateRequest" } } } },
+        "responses": { "201": { "$ref": "#/components/responses/CreatedMessage" }, "400": { "$ref": "#/components/responses/BadRequestError" } }
+      }
+    },
+    "/users/{id}": {
+      "get": { "tags": ["Users"], "summary": "Get user by id", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "responses": { "200": { "$ref": "#/components/responses/UserItem" }, "404": { "$ref": "#/components/responses/NotFoundError" } } },
+      "put": { "tags": ["Users"], "summary": "Update user", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UserUpdateRequest" } } } }, "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } },
+      "delete": { "tags": ["Users"], "summary": "Delete user", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "responses": { "200": { "$ref": "#/components/responses/OkMessage" }, "404": { "$ref": "#/components/responses/NotFoundError" } } }
+    },
+    "/assign-warden": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Assign warden to floor",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AssignWardenRequest" } } } },
+        "responses": { "200": { "$ref": "#/components/responses/OkMessage" } }
+      }
+    },
+    "/students": {
+      "get": {
+        "tags": ["Students"],
+        "summary": "List students",
+        "parameters": [ { "$ref": "#/components/parameters/Page" }, { "$ref": "#/components/parameters/Limit" }, { "name": "search", "in": "query", "schema": { "type": "string" } }, { "name": "dept", "in": "query", "schema": { "type": "string" } }, { "name": "year", "in": "query", "schema": { "type": "integer" } }, { "name": "block", "in": "query", "schema": { "type": "string" } }, { "name": "floor", "in": "query", "schema": { "type": "string" } }, { "name": "wing", "in": "query", "schema": { "type": "string" } } ],
+        "responses": { "200": { "$ref": "#/components/responses/StudentList" } }
+      },
+      "post": {
+        "tags": ["Students"],
+        "summary": "Create student",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StudentCreateRequest" } } } },
+        "responses": { "201": { "$ref": "#/components/responses/CreatedMessage" } }
+      }
+    },
+    "/students/{id}": {
+      "get": { "tags": ["Students"], "summary": "Get student by id", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "responses": { "200": { "$ref": "#/components/responses/StudentItem" }, "404": { "$ref": "#/components/responses/NotFoundError" } } },
+      "put": { "tags": ["Students"], "summary": "Update student", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StudentUpdateRequest" } } } }, "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } },
+      "delete": { "tags": ["Students"], "summary": "Delete student", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } }
+    },
+    "/students/export": { "get": { "tags": ["Students"], "summary": "Export students CSV", "responses": { "200": { "description": "CSV file" } } } },
+    "/rooms": {
+      "get": { "tags": ["Rooms"], "summary": "List rooms", "parameters": [ { "$ref": "#/components/parameters/Page" }, { "$ref": "#/components/parameters/Limit" }, { "name": "status", "in": "query", "schema": { "type": "string" } } ], "responses": { "200": { "$ref": "#/components/responses/RoomList" } } },
+      "post": { "tags": ["Rooms"], "summary": "Create room", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RoomCreateRequest" } } } }, "responses": { "201": { "$ref": "#/components/responses/CreatedMessage" } } }
+    },
+    "/rooms/{id}": {
+      "get": { "tags": ["Rooms"], "summary": "Get room by id", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "responses": { "200": { "$ref": "#/components/responses/RoomItem" } } },
+      "put": { "tags": ["Rooms"], "summary": "Update room", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RoomUpdateRequest" } } } }, "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } },
+      "delete": { "tags": ["Rooms"], "summary": "Delete room", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } }
+    },
+    "/rooms/wardens": { "get": { "tags": ["Rooms"], "summary": "List wardens for room assignment", "responses": { "200": { "$ref": "#/components/responses/UserList" } } } },
+    "/rooms/floor-wardens": {
+      "get": { "tags": ["Rooms"], "summary": "List floor warden assignments", "responses": { "200": { "$ref": "#/components/responses/FloorWardenList" } } },
+      "put": { "tags": ["Rooms"], "summary": "Set floor warden assignments", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/FloorWardenAssignmentRequest" } } } }, "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } }
+    },
+    "/allocations/allocate": { "post": { "tags": ["Allocations"], "summary": "Allocate room to student", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AllocationRequest" } } } }, "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/allocations/vacate": { "post": { "tags": ["Allocations"], "summary": "Vacate room allocation", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/VacateRequest" } } } }, "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/allocations/history": { "get": { "tags": ["Allocations"], "summary": "Get allocation history", "responses": { "200": { "$ref": "#/components/responses/AllocationHistory" } } } },
+    "/complaints": { "get": { "tags": ["Complaints"], "summary": "List complaints", "parameters": [ { "$ref": "#/components/parameters/Page" }, { "$ref": "#/components/parameters/Limit" }, { "$ref": "#/components/parameters/Status" } ], "responses": { "200": { "$ref": "#/components/responses/ComplaintList" } } }, "post": { "tags": ["Complaints"], "summary": "Create complaint", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ComplaintCreateRequest" } } } }, "responses": { "201": { "$ref": "#/components/responses/CreatedMessage" } } } },
+    "/complaints/{id}": { "put": { "tags": ["Complaints"], "summary": "Update complaint status", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ComplaintStatusUpdate" } } } }, "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } }, "delete": { "tags": ["Complaints"], "summary": "Delete complaint", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/notices": { "get": { "tags": ["Notices"], "summary": "List notices", "responses": { "200": { "$ref": "#/components/responses/NoticeList" } } }, "post": { "tags": ["Notices"], "summary": "Create notice", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NoticeCreateRequest" } } } }, "responses": { "201": { "$ref": "#/components/responses/CreatedMessage" } } } },
+    "/notices/{id}": { "delete": { "tags": ["Notices"], "summary": "Delete notice", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/hostel-applications": { "get": { "tags": ["Requests"], "summary": "List hostel applications", "responses": { "200": { "$ref": "#/components/responses/HostelApplicationList" } } } },
+    "/hostel-applications/{id}": { "put": { "tags": ["Requests"], "summary": "Review hostel application", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HostelApplicationReviewRequest" } } } }, "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/requests": { "get": { "tags": ["Requests"], "summary": "List requests", "responses": { "200": { "$ref": "#/components/responses/RequestList" } } } },
+    "/requests/{id}": { "put": { "tags": ["Requests"], "summary": "Review request", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RequestReviewRequest" } } } }, "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/attendance": { "get": { "tags": ["Attendance"], "summary": "List attendance", "responses": { "200": { "$ref": "#/components/responses/AttendanceList" } } }, "post": { "tags": ["Attendance"], "summary": "Mark attendance", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AttendanceMarkRequest" } } } }, "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/attendance/bulk": { "post": { "tags": ["Attendance"], "summary": "Bulk mark attendance", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BulkAttendanceRequest" } } } }, "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/staff-directory": { "get": { "tags": ["Staff Directory"], "summary": "List staff directory", "responses": { "200": { "$ref": "#/components/responses/StaffList" } } } },
+    "/student/profile": { "get": { "tags": ["Student Portal"], "summary": "Get current student profile", "responses": { "200": { "$ref": "#/components/responses/StudentProfile" } } } },
+    "/student/dashboard": { "get": { "tags": ["Student Portal"], "summary": "Get current student dashboard", "responses": { "200": { "$ref": "#/components/responses/StudentDashboard" } } } },
+    "/student/complaints": { "get": { "tags": ["Student Portal", "Complaints"], "summary": "List current student complaints", "responses": { "200": { "$ref": "#/components/responses/ComplaintList" } } }, "post": { "tags": ["Student Portal", "Complaints"], "summary": "Create complaint for current student", "requestBody": { "required": true, "content": { "multipart/form-data": { "schema": { "$ref": "#/components/schemas/StudentComplaintRequest" } } } }, "responses": { "201": { "$ref": "#/components/responses/CreatedMessage" } } } },
+    "/student/complaints/{id}": { "put": { "tags": ["Student Portal", "Complaints"], "summary": "Update current student's complaint", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "requestBody": { "required": true, "content": { "multipart/form-data": { "schema": { "$ref": "#/components/schemas/StudentComplaintRequest" } } } }, "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } }, "patch": { "tags": ["Student Portal", "Complaints"], "summary": "Resolve current student's complaint", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/student/hostel-applications": { "get": { "tags": ["Student Portal", "Requests"], "summary": "List current student's hostel applications", "responses": { "200": { "$ref": "#/components/responses/HostelApplicationList" } } }, "post": { "tags": ["Student Portal", "Requests"], "summary": "Create current student's hostel application", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HostelApplicationCreateRequest" } } } }, "responses": { "201": { "$ref": "#/components/responses/CreatedMessage" } } } },
+    "/student/requests": { "get": { "tags": ["Student Portal", "Requests"], "summary": "List current student's requests", "responses": { "200": { "$ref": "#/components/responses/RequestList" } } }, "post": { "tags": ["Student Portal", "Requests"], "summary": "Create current student's request", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StudentRequestCreateRequest" } } } }, "responses": { "201": { "$ref": "#/components/responses/CreatedMessage" } } } },
+    "/student/attendance": { "get": { "tags": ["Student Portal", "Attendance"], "summary": "Get current student's attendance", "responses": { "200": { "$ref": "#/components/responses/AttendanceList" } } } },
+    "/student/visitors": { "get": { "tags": ["Student Portal", "Visitors"], "summary": "Get current student's visitors", "responses": { "200": { "$ref": "#/components/responses/VisitorList" } } }, "post": { "tags": ["Student Portal", "Visitors"], "summary": "Create current student's visitor request", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/VisitorCreateRequest" } } } }, "responses": { "201": { "$ref": "#/components/responses/CreatedMessage" } } } },
+    "/student/my-room": { "get": { "tags": ["Student Portal"], "summary": "Get current student's room", "responses": { "200": { "$ref": "#/components/responses/RoomItem" } } } },
+    "/visitors": { "get": { "tags": ["Visitors"], "summary": "List visitors", "responses": { "200": { "$ref": "#/components/responses/VisitorList" } } }, "post": { "tags": ["Visitors"], "summary": "Create visitor", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/VisitorCreateRequest" } } } }, "responses": { "201": { "$ref": "#/components/responses/CreatedMessage" } } } },
+    "/visitors/{id}/exit": { "put": { "tags": ["Visitors"], "summary": "Mark visitor exit", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/visitors/{id}": { "delete": { "tags": ["Visitors"], "summary": "Delete visitor record", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/leaves": { "get": { "tags": ["Leaves"], "summary": "List leaves", "responses": { "200": { "$ref": "#/components/responses/LeaveList" } } }, "post": { "tags": ["Leaves"], "summary": "Create leave request", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LeaveCreateRequest" } } } }, "responses": { "201": { "$ref": "#/components/responses/CreatedMessage" } } } },
+    "/leaves/{id}/status": { "put": { "tags": ["Leaves"], "summary": "Update leave status", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LeaveStatusUpdate" } } } }, "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/mess-menu": { "get": { "tags": ["Mess"], "summary": "Get mess menu", "responses": { "200": { "$ref": "#/components/responses/MessMenuList" } } }, "put": { "tags": ["Mess"], "summary": "Update mess menu", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MessMenuUpdateRequest" } } } }, "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/hostels": { "get": { "tags": ["Hostels"], "summary": "List hostels", "responses": { "200": { "$ref": "#/components/responses/HostelList" } } }, "post": { "tags": ["Hostels"], "summary": "Create hostel", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HostelCreateRequest" } } } }, "responses": { "201": { "$ref": "#/components/responses/CreatedMessage" } } } },
+    "/hostels/{id}": { "put": { "tags": ["Hostels"], "summary": "Update hostel", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HostelUpdateRequest" } } } }, "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } }, "delete": { "tags": ["Hostels"], "summary": "Delete hostel", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/hostels/warden/{id}": { "get": { "tags": ["Hostels"], "summary": "Get hostel warden detail", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "responses": { "200": { "$ref": "#/components/responses/HostelItem" } } } },
+    "/security/logs": { "get": { "tags": ["Security"], "summary": "List security logs", "responses": { "200": { "$ref": "#/components/responses/SecurityLogList" } } } },
+    "/security/incidents": { "get": { "tags": ["Security"], "summary": "List security incidents", "responses": { "200": { "$ref": "#/components/responses/SecurityIncidentList" } } }, "post": { "tags": ["Security"], "summary": "Create manual incident", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SecurityIncidentCreateRequest" } } } }, "responses": { "201": { "$ref": "#/components/responses/CreatedMessage" } } } },
+    "/security/incidents/{id}/resolve": { "patch": { "tags": ["Security"], "summary": "Resolve incident", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "requestBody": { "required": false, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SecurityIncidentResolveRequest" } } } }, "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/security/incidents/{id}/block": { "patch": { "tags": ["Security"], "summary": "Block incident IP", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "requestBody": { "required": false, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SecurityIncidentBlockRequest" } } } }, "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/security/incidents/{id}": { "delete": { "tags": ["Security"], "summary": "Delete incident", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/messages/warden/send": { "post": { "tags": ["Messages"], "summary": "Send warden message", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WardenMessageSendRequest" } } } }, "responses": { "201": { "$ref": "#/components/responses/CreatedMessage" } } } },
+    "/messages/warden/sent": { "get": { "tags": ["Messages"], "summary": "Get sent warden messages", "responses": { "200": { "$ref": "#/components/responses/MessageList" } } } },
+    "/messages/warden/received": { "get": { "tags": ["Messages"], "summary": "Get received warden messages", "responses": { "200": { "$ref": "#/components/responses/MessageList" } } } },
+    "/messages/admin/all": { "get": { "tags": ["Messages"], "summary": "Get all admin messages", "responses": { "200": { "$ref": "#/components/responses/MessageList" } } } },
+    "/messages/admin/send": { "post": { "tags": ["Messages"], "summary": "Send admin message", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminMessageSendRequest" } } } }, "responses": { "201": { "$ref": "#/components/responses/CreatedMessage" } } } },
+    "/messages/admin/{id}/status": { "put": { "tags": ["Messages"], "summary": "Update admin message status", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminMessageStatusUpdateRequest" } } } }, "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/messages/{id}/mark-seen": { "put": { "tags": ["Messages"], "summary": "Mark message as seen", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/messages/admin/{id}": { "delete": { "tags": ["Messages"], "summary": "Delete admin message", "parameters": [ { "$ref": "#/components/parameters/IdPath" } ], "responses": { "200": { "$ref": "#/components/responses/OkMessage" } } } },
+    "/openapi.json": { "get": { "tags": ["Docs"], "summary": "OpenAPI schema JSON", "responses": { "200": { "description": "OpenAPI JSON document" } } } }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" },
+      "cookieAuth": { "type": "apiKey", "in": "cookie", "name": "auth_token" }
+    },
+    "parameters": {
+      "IdPath": { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } },
+      "Page": { "name": "page", "in": "query", "schema": { "type": "integer", "minimum": 1, "default": 1 } },
+      "Limit": { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 } },
+      "Status": { "name": "status", "in": "query", "schema": { "type": "string" } }
+    },
+    "responses": {
+      "OkMessage": {
+        "description": "Successful response",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MessageResponse" } } }
+      },
+      "CreatedMessage": {
+        "description": "Created successfully",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreatedResponse" } } }
+      },
+      "AuthSuccess": {
+        "description": "Authentication success",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } } }
+      },
+      "CurrentUser": {
+        "description": "Current authenticated user",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CurrentUserResponse" } } }
+      },
+      "UnauthorizedError": {
+        "description": "Unauthorized",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+      },
+      "ForbiddenError": {
+        "description": "Forbidden",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+      },
+      "NotFoundError": {
+        "description": "Not found",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+      },
+      "BadRequestError": {
+        "description": "Bad request",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+      },
+      "EmailNotRegistered": {
+        "description": "Email not registered",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+      },
+      "TooManyRequests": {
+        "description": "Rate limited",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+      },
+      "ServerError": {
+        "description": "Server error",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+      },
+      "DashboardStats": { "description": "Dashboard stats", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GenericObjectResponse" } } } },
+      "CaretakerStats": { "description": "Caretaker dashboard stats", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GenericObjectResponse" } } } },
+      "WardenStats": { "description": "Warden dashboard stats", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GenericObjectResponse" } } } },
+      "WardenScope": { "description": "Warden scope", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GenericObjectResponse" } } } },
+      "UserList": { "description": "List of users", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedUsersResponse" } } } },
+      "UserItem": { "description": "User item", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UserResponse" } } } },
+      "StudentList": { "description": "List of students", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedStudentsResponse" } } } },
+      "StudentItem": { "description": "Student item", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StudentResponse" } } } },
+      "RoomList": { "description": "List of rooms", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedRoomsResponse" } } } },
+      "RoomItem": { "description": "Room item", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RoomResponse" } } } },
+      "HostelList": { "description": "List of hostels", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HostelListResponse" } } } },
+      "HostelItem": { "description": "Hostel item", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HostelResponse" } } } },
+      "FloorWardenList": { "description": "Floor warden assignments", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GenericObjectResponse" } } } },
+      "AllocationHistory": { "description": "Allocation history", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GenericObjectResponse" } } } },
+      "ComplaintList": { "description": "Complaint list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedComplaintsResponse" } } } },
+      "NoticeList": { "description": "Notice list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NoticeListResponse" } } } },
+      "HostelApplicationList": { "description": "Hostel application list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GenericObjectResponse" } } } },
+      "RequestList": { "description": "Request list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GenericObjectResponse" } } } },
+      "AttendanceList": { "description": "Attendance list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GenericObjectResponse" } } } },
+      "StaffList": { "description": "Staff directory list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GenericObjectResponse" } } } },
+      "VisitorList": { "description": "Visitor list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GenericObjectResponse" } } } },
+      "LeaveList": { "description": "Leave list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GenericObjectResponse" } } } },
+      "MessMenuList": { "description": "Mess menu list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GenericObjectResponse" } } } },
+      "SecurityLogList": { "description": "Security logs list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GenericObjectResponse" } } } },
+      "SecurityIncidentList": { "description": "Security incident list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GenericObjectResponse" } } } },
+      "MessageList": { "description": "Message list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GenericObjectResponse" } } } }
+    },
+    "schemas": {
+      "MessageResponse": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "message": { "type": "string" } } },
+      "CreatedResponse": { "allOf": [ { "$ref": "#/components/schemas/MessageResponse" }, { "type": "object", "properties": { "id": { "type": "integer" } } } ] },
+      "ErrorResponse": { "type": "object", "properties": { "success": { "type": "boolean", "example": false }, "message": { "type": "string" } } },
+      "GenericObjectResponse": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "type": "object", "additionalProperties": true } } },
+      "AuthResponse": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "message": { "type": "string" }, "token": { "type": "string" }, "user": { "$ref": "#/components/schemas/User" } } },
+      "CurrentUserResponse": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "user": { "$ref": "#/components/schemas/User" } } },
+      "LoginRequest": { "type": "object", "required": ["email", "password"], "properties": { "email": { "type": "string", "format": "email" }, "password": { "type": "string", "format": "password" } } },
+      "GoogleLoginRequest": { "type": "object", "required": ["credential"], "properties": { "credential": { "type": "string" } } },
+      "ChangePasswordRequest": { "type": "object", "required": ["currentPassword", "newPassword"], "properties": { "currentPassword": { "type": "string" }, "newPassword": { "type": "string", "minLength": 8 } } },
+      "User": { "type": "object", "properties": { "id": { "type": "integer" }, "name": { "type": "string" }, "email": { "type": "string", "format": "email" }, "role": { "type": "string", "enum": ["admin", "caretaker", "warden", "student"] }, "specialty": { "type": ["string", "null"] }, "student_id": { "type": ["integer", "null"] }, "created_at": { "type": ["string", "null"], "format": "date-time" }, "updated_at": { "type": ["string", "null"], "format": "date-time" } } },
+      "UserCreateRequest": { "type": "object", "required": ["name", "email", "role"], "properties": { "name": { "type": "string" }, "email": { "type": "string", "format": "email" }, "password": { "type": ["string", "null"] }, "role": { "type": "string" }, "specialty": { "type": ["string", "null"] } } },
+      "UserUpdateRequest": { "type": "object", "properties": { "name": { "type": "string" }, "email": { "type": "string", "format": "email" }, "role": { "type": "string" }, "specialty": { "type": ["string", "null"] }, "password": { "type": "string" } } },
+      "AssignWardenRequest": { "type": "object", "required": ["warden_id", "block", "floor", "wing"], "properties": { "warden_id": { "type": "integer" }, "block": { "type": "string" }, "floor": { "type": "integer" }, "wing": { "type": "string" } } },
+      "Student": { "type": "object", "properties": { "id": { "type": "integer" }, "user_id": { "type": ["integer", "null"] }, "name": { "type": "string" }, "register_no": { "type": "string" }, "department": { "type": "string" }, "year": { "type": ["integer", "string"] }, "phone": { "type": ["string", "null"] }, "email": { "type": ["string", "null"], "format": "email" }, "address": { "type": ["string", "null"] }, "joined_date": { "type": ["string", "null"], "format": "date" }, "block": { "type": ["string", "null"] }, "floor": { "type": ["integer", "null"] }, "wing": { "type": ["string", "null"] }, "room_number": { "type": ["string", "null"] } } },
+      "StudentCreateRequest": { "type": "object", "required": ["name", "register_no", "department", "year"], "properties": { "name": { "type": "string" }, "register_no": { "type": "string" }, "department": { "type": "string" }, "year": { "type": "integer" }, "wing": { "type": ["string", "null"] }, "phone": { "type": ["string", "null"] }, "email": { "type": ["string", "null"], "format": "email" }, "address": { "type": ["string", "null"] }, "joined_date": { "type": ["string", "null"], "format": "date" } } },
+      "StudentUpdateRequest": { "$ref": "#/components/schemas/StudentCreateRequest" },
+      "Room": { "type": "object", "properties": { "id": { "type": "integer" }, "room_number": { "type": "string" }, "hostel_id": { "type": ["integer", "null"] }, "block": { "type": "string" }, "floor": { "type": "integer" }, "wing": { "type": ["string", "null"] }, "capacity": { "type": "integer" }, "occupied": { "type": "integer" }, "room_type": { "type": "string" }, "status": { "type": "string" } } },
+      "RoomCreateRequest": { "type": "object", "required": ["room_number", "block", "floor", "capacity"], "properties": { "room_number": { "type": "string" }, "hostel_id": { "type": ["integer", "null"] }, "block": { "type": "string" }, "floor": { "type": "integer" }, "wing": { "type": ["string", "null"] }, "capacity": { "type": "integer" }, "room_type": { "type": "string" }, "status": { "type": "string" } } },
+      "RoomUpdateRequest": { "$ref": "#/components/schemas/RoomCreateRequest" },
+      "Hostel": { "type": "object", "properties": { "id": { "type": "integer" }, "name": { "type": "string" }, "block_code": { "type": ["string", "null"] }, "gender": { "type": ["string", "null"] }, "total_rooms": { "type": "integer" }, "warden_id": { "type": ["integer", "null"] }, "capacity": { "type": "integer" } } },
+      "HostelCreateRequest": { "type": "object", "required": ["name"], "properties": { "name": { "type": "string" }, "block_code": { "type": ["string", "null"] }, "gender": { "type": ["string", "null"] }, "total_rooms": { "type": "integer" }, "warden_id": { "type": ["integer", "null"] }, "capacity": { "type": "integer" } } },
+      "HostelUpdateRequest": { "$ref": "#/components/schemas/HostelCreateRequest" },
+      "FloorWardenAssignmentRequest": { "type": "object", "properties": { "assignments": { "type": "array", "items": { "type": "object", "properties": { "block": { "type": "string" }, "floor": { "type": "integer" }, "wing": { "type": "string" }, "warden_id": { "type": "integer" } } } } } },
+      "AllocationRequest": { "type": "object", "required": ["student_id", "room_id"], "properties": { "student_id": { "type": "integer" }, "room_id": { "type": "integer" } } },
+      "VacateRequest": { "type": "object", "properties": { "student_id": { "type": ["integer", "null"] }, "room_id": { "type": ["integer", "null"] } } },
+      "Complaint": { "type": "object", "properties": { "id": { "type": "integer" }, "title": { "type": "string" }, "description": { "type": ["string", "null"] }, "status": { "type": "string" }, "priority": { "type": "string" }, "category": { "type": ["string", "null"] }, "student_name": { "type": ["string", "null"] }, "room_number": { "type": ["string", "null"] }, "image_url": { "type": ["string", "null"] }, "created_at": { "type": ["string", "null"], "format": "date-time" } } },
+      "ComplaintCreateRequest": { "type": "object", "required": ["title"], "properties": { "title": { "type": "string" }, "description": { "type": ["string", "null"] }, "priority": { "type": ["string", "null"] }, "category": { "type": ["string", "null"] } } },
+      "ComplaintStatusUpdate": { "type": "object", "properties": { "status": { "type": "string" }, "admin_reply": { "type": ["string", "null"] } } },
+      "Notice": { "type": "object", "properties": { "id": { "type": "integer" }, "title": { "type": "string" }, "content": { "type": "string" }, "category": { "type": "string" }, "target": { "type": "string" }, "created_at": { "type": ["string", "null"], "format": "date-time" } } },
+      "NoticeCreateRequest": { "type": "object", "required": ["title", "content"], "properties": { "title": { "type": "string" }, "content": { "type": "string" }, "category": { "type": "string" }, "target": { "type": "string" } } },
+      "HostelApplication": { "type": "object", "properties": { "id": { "type": "integer" }, "academic_year": { "type": "string" }, "semester": { "type": "integer" }, "preferred_block": { "type": ["string", "null"] }, "preferred_room_type": { "type": ["string", "null"] }, "reason": { "type": ["string", "null"] }, "status": { "type": "string" }, "review_note": { "type": ["string", "null"] }, "created_at": { "type": ["string", "null"], "format": "date-time" } } },
+      "HostelApplicationCreateRequest": { "type": "object", "required": ["academic_year", "semester"], "properties": { "academic_year": { "type": "string" }, "semester": { "type": "integer" }, "preferred_block": { "type": ["string", "null"] }, "preferred_room_type": { "type": ["string", "null"] }, "reason": { "type": ["string", "null"] } } },
+      "HostelApplicationReviewRequest": { "type": "object", "required": ["status"], "properties": { "status": { "type": "string" }, "review_note": { "type": ["string", "null"] } } },
+      "Request": { "type": "object", "properties": { "id": { "type": "integer" }, "request_type": { "type": "string" }, "status": { "type": "string" }, "created_at": { "type": ["string", "null"], "format": "date-time" } } },
+      "RequestCreateRequest": { "type": "object", "properties": { "request_type": { "type": "string" }, "description": { "type": ["string", "null"] } } },
+      "RequestReviewRequest": { "type": "object", "properties": { "status": { "type": "string" }, "review_note": { "type": ["string", "null"] } } },
+      "Leave": { "type": "object", "properties": { "id": { "type": "integer" }, "status": { "type": "string" }, "created_at": { "type": ["string", "null"], "format": "date-time" } } },
+      "LeaveCreateRequest": { "type": "object", "properties": { "reason": { "type": ["string", "null"] }, "from_date": { "type": ["string", "null"], "format": "date" }, "to_date": { "type": ["string", "null"], "format": "date" } } },
+      "LeaveStatusUpdate": { "type": "object", "properties": { "status": { "type": "string" } } },
+      "Attendance": { "type": "object", "properties": { "id": { "type": "integer" }, "student_name": { "type": "string" }, "check_type": { "type": "string" }, "method": { "type": "string" }, "checked_at": { "type": ["string", "null"], "format": "date-time" } } },
+      "AttendanceMarkRequest": { "type": "object", "properties": { "student_id": { "type": "integer" }, "check_type": { "type": "string" }, "method": { "type": "string" } } },
+      "BulkAttendanceRequest": { "type": "object", "properties": { "student_ids": { "type": "array", "items": { "type": "integer" } }, "check_type": { "type": "string" }, "method": { "type": "string" } } },
+      "Visitor": { "type": "object", "properties": { "id": { "type": "integer" }, "name": { "type": "string" }, "relation": { "type": ["string", "null"] }, "status": { "type": "string" }, "created_at": { "type": ["string", "null"], "format": "date-time" } } },
+      "VisitorCreateRequest": { "type": "object", "properties": { "name": { "type": "string" }, "relation": { "type": ["string", "null"] }, "phone": { "type": ["string", "null"] } } },
+      "MessMenu": { "type": "object", "properties": { "id": { "type": "integer" }, "day_of_week": { "type": "string" }, "meal_type": { "type": "string" }, "items": { "type": ["string", "null"] } } },
+      "MessMenuUpdateRequest": { "type": "object", "properties": { "items": { "type": "array", "items": { "type": "string" } } } },
+      "SecurityIncident": { "type": "object", "properties": { "id": { "type": "integer" }, "severity": { "type": "string" }, "status": { "type": "string" }, "message": { "type": ["string", "null"] }, "created_at": { "type": ["string", "null"], "format": "date-time" } } },
+      "SecurityIncidentCreateRequest": { "type": "object", "properties": { "title": { "type": "string" }, "severity": { "type": "string" }, "message": { "type": "string" } } },
+      "SecurityIncidentResolveRequest": { "type": "object", "properties": { "status": { "type": "string", "example": "resolved" } } },
+      "SecurityIncidentBlockRequest": { "type": "object", "properties": { "reason": { "type": ["string", "null"] } } },
+      "WardenMessageSendRequest": { "type": "object", "properties": { "title": { "type": "string" }, "description": { "type": "string" }, "priority": { "type": "string" }, "is_to_all_wardens": { "type": "boolean" }, "warden_id": { "type": ["integer", "null"] } } },
+      "AdminMessageSendRequest": { "type": "object", "properties": { "title": { "type": "string" }, "description": { "type": "string" }, "priority": { "type": "string" }, "is_to_all_wardens": { "type": "boolean" }, "warden_id": { "type": ["integer", "null"] } } },
+      "AdminMessageStatusUpdateRequest": { "type": "object", "properties": { "status": { "type": "string" }, "admin_reply": { "type": ["string", "null"] } } },
+      "StudentComplaintRequest": { "type": "object", "properties": { "title": { "type": "string" }, "description": { "type": ["string", "null"] }, "category": { "type": ["string", "null"] }, "priority": { "type": ["string", "null"] }, "attachment": { "type": ["string", "null"], "format": "binary" } } },
+      "StudentRequestCreateRequest": { "type": "object", "properties": { "request_type": { "type": "string" }, "description": { "type": ["string", "null"] } } },
+      "UserListResponse": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/User" } }, "total": { "type": "integer" }, "page": { "type": "integer" } } },
+      "PaginatedUsersResponse": { "$ref": "#/components/schemas/UserListResponse" },
+      "PaginatedStudentsResponse": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Student" } }, "total": { "type": "integer" }, "page": { "type": "integer" } } },
+      "PaginatedRoomsResponse": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Room" } }, "total": { "type": "integer" }, "page": { "type": "integer" } } },
+      "PaginatedComplaintsResponse": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Complaint" } }, "total": { "type": "integer" }, "page": { "type": "integer" } } },
+      "NoticeListResponse": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Notice" } } } },
+      "RoomListResponse": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Room" } } } },
+      "HostelListResponse": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Hostel" } } } },
+      "StudentProfile": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "object", "additionalProperties": true } } },
+      "StudentDashboard": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "object", "additionalProperties": true } } }
+    }
+  }
+}

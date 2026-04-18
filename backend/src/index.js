@@ -67,6 +67,11 @@ app.use('/api/auth/google', authLimiter);
 // ── Write-Operation Limiter (50 POST/PUT/DELETE per 15 min) ──
 app.use('/api', writeLimiter);
 
+// ── OpenAPI schema ──
+app.get('/api/openapi.json', (req, res) => {
+  res.json(require('./openapi.json'));
+});
+
 // API routes
 app.use('/api', routes);
 
