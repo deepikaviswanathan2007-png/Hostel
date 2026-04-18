@@ -225,6 +225,69 @@ exports.deleteIncident = async (req, res) => {
   }
 };
 
+exports.getLogs = async (req, res) => {
+  try {
+    const page = Math.max(1, parseIntSafe(req.query.page, 1));
+    const limit = Math.min(200, Math.max(1, parseIntSafe(req.query.limit, 25)));
+    const offset = (page - 1) * limit;
+    const search = String(req.query.search || '').trim();
+    const status = String(req.query.status || '').trim();
+
+    const where = [];
+    const args = [];
+
+    if (status) {
+      where.push('sl.status = ?');
+      args.push(status);
+    }
+    if (search) {
+      where.push('(sl.ip_address LIKE ? OR sl.status LIKE ?)');
+      const token = `%${search}%`;
+      args.push(token, token);
+    }
+
+    const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+
+    const [rows] = await pool.query(
+      `SELECT
+        sl.id,
+        CASE WHEN u.id IS NOT NULL THEN sl.email ELSE NULL END AS email,
+        sl.ip_address,
+        sl.status,
+        sl.created_at
+      FROM security_logs sl
+      LEFT JOIN users u ON u.email = sl.email
+      ${whereSql}
+      ORDER BY sl.created_at DESC
+      LIMIT ? OFFSET ?`,
+      [...args, limit, offset]
+    );
+
+    const [countRows] = await pool.query(
+      `SELECT COUNT(*) AS total FROM security_logs sl ${whereSql}`,
+      args
+    );
+
+    const [statsRows] = await pool.query(
+      `SELECT
+        COUNT(*) AS total,
+        SUM(CASE WHEN sl.status = 'SUCCESS' THEN 1 ELSE 0 END) AS success_count,
+        SUM(CASE WHEN sl.status LIKE 'FAILED%' THEN 1 ELSE 0 END) AS failed_count
+      FROM security_logs sl`
+    );
+
+    res.json({
+      success: true,
+      data: rows,
+      pagination: { page, limit, total: countRows[0]?.total || 0 },
+      stats: statsRows[0] || { total: 0, success_count: 0, failed_count: 0 },
+    });
+  } catch (err) {
+    console.error('security.getLogs error:', err);
+    res.status(500).json({ success: false, message: 'Failed to load login logs.' });
+  }
+};
+
 exports.createManualIncident = async (req, res) => {
   try {
     const eventType = String(req.body.event_type || '').trim();

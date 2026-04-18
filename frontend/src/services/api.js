@@ -144,6 +144,7 @@ export const dashboardAPI = {
 
 export const securityAPI = {
   getIncidents: (p) => api.get('/security/incidents', { params: p }),
+  getLogs: (p) => api.get('/security/logs', { params: p }),
   createIncident: (d) => api.post('/security/incidents', d),
   resolveIncident: (id, d = { status: 'resolved' }) => api.patch(`/security/incidents/${id}/resolve`, d),
   blockIncidentIp: (id, d = {}) => api.patch(`/security/incidents/${id}/block`, d),

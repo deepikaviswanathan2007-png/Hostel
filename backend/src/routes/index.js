@@ -182,6 +182,7 @@ router.delete('/hostels/:id', authenticate, adminOnly, hostelCtrl.remove);
 router.get('/student/my-room', authenticate, hostelCtrl.getMyRoom);
 
 // ── Security & Malpractice Logs (Admin) ───────────────────────
+router.get('/security/logs', authenticate, adminOnly, securityCtrl.getLogs);
 router.get('/security/incidents', authenticate, adminOnly, securityCtrl.getIncidents);
 router.post('/security/incidents', authenticate, adminOnly, securityCtrl.createManualIncident);
 router.patch('/security/incidents/:id/resolve', authenticate, adminOnly, securityCtrl.resolveIncident);
