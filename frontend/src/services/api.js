@@ -8,6 +8,14 @@ const api = axios.create({
   withCredentials: true,
 });
 
+const notifyAuthInvalidated = () => {
+  try {
+    window.dispatchEvent(new Event('auth:invalidated'));
+  } catch {
+    // ignore non-browser environments
+  }
+};
+
 // Lightweight in-memory request cache + in-flight dedupe.
 // Goal: avoid request storms from rapid UI changes / repeated mounts.
 const __cache = new Map(); // key -> { expiresAt:number, value:any }
@@ -103,6 +111,8 @@ api.interceptors.response.use(
           // noop
         }
 
+        notifyAuthInvalidated();
+
         // Let auth bootstrap/login failures be handled by calling code without hard redirect loops.
         if (!isAuthBootstrapRequest && !isAuthAction && window.location.pathname !== '/login') {
           window.location.href = '/login';
@@ -114,6 +124,7 @@ api.interceptors.response.use(
         } catch {
           // noop
         }
+        notifyAuthInvalidated();
         if (window.location.pathname !== '/login') {
           window.location.href = '/login';
         }

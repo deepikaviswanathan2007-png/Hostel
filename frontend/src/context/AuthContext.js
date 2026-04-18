@@ -37,6 +37,17 @@ export function AuthProvider({ children }) {
     fetchUser();
   }, [fetchUser]);
 
+  useEffect(() => {
+    const handleAuthInvalidated = () => {
+      setUser(null);
+      setError(null);
+      setLoading(false);
+    };
+
+    window.addEventListener('auth:invalidated', handleAuthInvalidated);
+    return () => window.removeEventListener('auth:invalidated', handleAuthInvalidated);
+  }, []);
+
   const login = async (email, password) => {
     try {
       const { data } = await authAPI.login({ email, password });
