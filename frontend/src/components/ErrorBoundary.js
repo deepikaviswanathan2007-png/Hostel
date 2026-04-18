@@ -19,8 +19,8 @@ export default class ErrorBoundary extends React.Component {
     console.error('UI crash captured by ErrorBoundary:', error, info);
   }
 
-  handleReload = () => {
-    window.location.reload();
+  handleReset = () => {
+    this.setState({ hasError: false, message: '' });
   };
 
   render() {
@@ -36,10 +36,10 @@ export default class ErrorBoundary extends React.Component {
             <p className="mt-2 text-xs text-gray-500 break-words">{message}</p>
             <button
               type="button"
-              onClick={this.handleReload}
+              onClick={this.handleReset}
               className="mt-4 rounded bg-[#7D53F6] px-4 py-2 text-sm font-medium text-white hover:bg-[#6b42dd]"
             >
-              Reload page
+              Try again
             </button>
           </div>
         </div>

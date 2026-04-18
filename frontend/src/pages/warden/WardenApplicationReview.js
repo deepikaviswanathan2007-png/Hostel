@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import { hostelApplicationsAPI } from '../../services/api';
 import { Table, Badge, Button, Modal, Textarea, EmptyState } from '../../components/ui';
@@ -18,7 +18,7 @@ export default function WardenApplicationReview() {
   // Filters
   const [statusFilter, setStatusFilter] = useState('pending');
 
-  const fetchApplications = async () => {
+  const fetchApplications = useCallback(async () => {
     setLoading(true);
     try {
       const res = await hostelApplicationsAPI.getAll({ status: statusFilter, limit: 100 });
@@ -28,12 +28,11 @@ export default function WardenApplicationReview() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter]);
 
   useEffect(() => {
     fetchApplications();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter]);
+  }, [fetchApplications]);
 
   const handleReview = async (status) => {
     setSubmitting(true);

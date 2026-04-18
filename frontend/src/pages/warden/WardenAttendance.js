@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import { attendanceAPI } from '../../services/api';
 import { Table, Badge, Button, Input, Select, Modal, PageHeader, EmptyState } from '../../components/ui';
@@ -20,7 +20,7 @@ export default function WardenAttendance() {
   const [bulkType, setBulkType] = useState('morning');
   const [submittingBulk, setSubmittingBulk] = useState(false);
 
-  const fetchAttendance = async () => {
+  const fetchAttendance = useCallback(async () => {
     setLoading(true);
     try {
       const res = await attendanceAPI.getAll({ date: dateStr, check_type: checkType, limit: 100 });
@@ -30,7 +30,7 @@ export default function WardenAttendance() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateStr, checkType]);
 
   const fetchStudents = async () => {
     try {
@@ -46,8 +46,7 @@ export default function WardenAttendance() {
 
   useEffect(() => {
     fetchAttendance();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateStr, checkType]);
+  }, [fetchAttendance]);
 
   const handleBulkMarkOpen = () => {
     if(students.length === 0) fetchStudents();
