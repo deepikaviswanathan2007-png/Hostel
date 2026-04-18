@@ -14,9 +14,10 @@ export function Button({ children, variant = 'primary', size = 'md', className =
   };
   
   const sizes = { sm: 'h-9 px-3 text-sm', md: 'h-10 px-4 text-sm', lg: 'h-11 px-6 text-base' };
+  const { type = 'button' } = props;
   
   return (
-    <button className={`${base} ${variants[variant]} ${sizes[size]} ${className}`} disabled={loading || props.disabled} {...props}>
+    <button type={type} className={`${base} ${variants[variant]} ${sizes[size]} ${className}`} disabled={loading || props.disabled} {...props}>
       {loading && <Spinner size="sm" />}
       {children}
     </button>
@@ -133,7 +134,7 @@ export function Modal({ open, isOpen, onClose, title, children, size = 'md' }) {
             >
               <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 bg-white/50">
                 <h2 className="text-lg font-bold text-gray-900">{title}</h2>
-                <button onClick={onClose} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
+                <button type="button" onClick={onClose} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
               </div>

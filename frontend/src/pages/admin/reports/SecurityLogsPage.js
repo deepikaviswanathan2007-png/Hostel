@@ -561,6 +561,7 @@ export default function SecurityLogsPage() {
             {tabs.map(({ key, label, icon: TabIcon }) => (
               <button
                 key={key}
+                type="button"
                 onClick={() => setActiveTab(key)}
                 className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all duration-200 ${
                   activeTab === key
