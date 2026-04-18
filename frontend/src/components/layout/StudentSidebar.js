@@ -63,6 +63,11 @@ function NavItem({ to, label, icon: Icon, onClick, end = false }) {
 
 export default function StudentSidebar() {
   const contentZoom = 0.95;
+  const contentScaleStyle = {
+    transform: `scale(${contentZoom})`,
+    transformOrigin: 'top left',
+    width: `${100 / contentZoom}%`,
+  };
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -165,7 +170,7 @@ export default function StudentSidebar() {
         )}
 
         <main className="flex-1 px-6 py-4 lg:px-8">
-          <div style={{ zoom: contentZoom }}>
+          <div style={contentScaleStyle}>
             <Outlet />
           </div>
         </main>

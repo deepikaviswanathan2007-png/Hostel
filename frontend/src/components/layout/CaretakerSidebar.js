@@ -43,6 +43,11 @@ function NavItem({ to, label, icon: Icon, onClick, end = false }) {
 
 export default function CaretakerSidebar() {
   const contentZoom = 0.85;
+  const contentScaleStyle = {
+    transform: `scale(${contentZoom})`,
+    transformOrigin: 'top left',
+    width: `${100 / contentZoom}%`,
+  };
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -104,7 +109,7 @@ export default function CaretakerSidebar() {
         />
 
         <main className="flex-1 px-6 lg:px-8 py-6">
-          <div className="max-w-7xl mx-auto" style={{ zoom: contentZoom }}>
+          <div className="max-w-7xl mx-auto" style={contentScaleStyle}>
             <Outlet />
           </div>
         </main>
