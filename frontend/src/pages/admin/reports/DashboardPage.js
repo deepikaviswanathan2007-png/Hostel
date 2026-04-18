@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../../../context/AuthContext';
 import { dashboardAPI } from '../../../services/api';
 import { Spinner, Card } from '../../../components/ui';
 import { Building2, Home, Users, CheckCircle, AlertCircle } from 'lucide-react';
@@ -8,7 +7,6 @@ import useHostelNameMap from '../../../hooks/useHostelNameMap';
 import { motion } from 'framer-motion';
 
 export default function DashboardPage() {
-  const { user } = useAuth();
   const { getHostelName } = useHostelNameMap();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -78,21 +76,6 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header Section */}
-      <motion.section
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="space-y-3"
-      >
-        <div className="text-sm font-semibold uppercase tracking-wider text-blue-600">Dashboard</div>
-        <h1 className="text-4xl font-bold text-gray-900">
-          Welcome back, {user?.name || 'Administrator'}
-        </h1>
-        <p className="max-w-2xl text-base leading-relaxed text-gray-600">
-          Overview of your campus hostel system. Monitor occupancy, student statistics, and manage pending issues.
-        </p>
-      </motion.section>
-
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {metricCards.map(({ title, value, icon: Icon, tone }, idx) => (
