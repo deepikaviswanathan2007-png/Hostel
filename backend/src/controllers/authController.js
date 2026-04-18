@@ -118,7 +118,7 @@ const login = async (req, res) => {
       await logSecurityEvent({
         email,
         ipAddress,
-        status: 'FAILED - EMAIL NOT FOUND',
+        status: 'FAILED_EMAIL_NOT_FOUND',
       });
       return res.status(401).json({ success: false, message: INVALID_CREDENTIALS_MSG });
     }
@@ -129,7 +129,7 @@ const login = async (req, res) => {
       await logSecurityEvent({
         email,
         ipAddress,
-        status: 'FAILED - WRONG PASSWORD',
+        status: 'FAILED_WRONG_PASSWORD',
       });
       return res.status(401).json({ success: false, message: INVALID_CREDENTIALS_MSG });
     }
@@ -139,7 +139,7 @@ const login = async (req, res) => {
       await logSecurityEvent({
         email,
         ipAddress,
-        status: 'FAILED - WRONG PASSWORD',
+        status: 'FAILED_WRONG_PASSWORD',
       });
       return res.status(401).json({ success: false, message: INVALID_CREDENTIALS_MSG });
     }
