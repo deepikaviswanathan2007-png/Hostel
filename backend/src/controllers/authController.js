@@ -127,6 +127,7 @@ const signup = async (req, res) => {
       message: 'Signup successful.',
       user: userData,
       accessToken: tokens.accessToken,
+      token: tokens.accessToken,
       csrfToken: tokens.csrfToken,
     });
   } catch (err) {
@@ -167,6 +168,7 @@ const login = async (req, res) => {
       message: 'Login successful.',
       user: userData,
       accessToken: tokens.accessToken,
+      token: tokens.accessToken,
       csrfToken: tokens.csrfToken,
     });
   } catch (err) {
@@ -209,6 +211,7 @@ const googleLogin = async (req, res) => {
       message: 'Google login successful.',
       user: userData,
       accessToken: tokens.accessToken,
+      token: tokens.accessToken,
       csrfToken: tokens.csrfToken,
     });
   } catch (err) {
@@ -270,6 +273,7 @@ const refresh = async (req, res) => {
       success: true,
       message: 'Token refreshed successfully.',
       accessToken: newAccessToken,
+      token: newAccessToken,
       csrfToken,
     });
   } catch (err) {

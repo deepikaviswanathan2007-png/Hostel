@@ -253,6 +253,17 @@ const cookieCsrfGuard = (req, res, next) => {
     return next();
   }
 
+  // Auth bootstrap endpoints must remain reachable even if a stale auth cookie exists.
+  const csrfExemptRoutes = new Set([
+    '/api/auth/login',
+    '/api/auth/google',
+    '/api/auth/signup',
+    '/api/auth/logout',
+  ]);
+  if (csrfExemptRoutes.has(req.path)) {
+    return next();
+  }
+
   const cookieName = process.env.AUTH_COOKIE_NAME || 'auth_token';
   const csrfCookieName = process.env.CSRF_COOKIE_NAME || 'csrf_token';
   const hasAuthCookie = Boolean(req.cookies?.[cookieName]);

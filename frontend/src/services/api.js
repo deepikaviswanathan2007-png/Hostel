@@ -34,6 +34,21 @@ const api = axios.create({
   withCredentials: true,
 });
 
+const getCookieValue = (name) => {
+  if (typeof document === 'undefined') return '';
+  const safeName = String(name || '').trim();
+  if (!safeName) return '';
+
+  const parts = document.cookie ? document.cookie.split('; ') : [];
+  for (const part of parts) {
+    const [key, ...rest] = part.split('=');
+    if (key === safeName) {
+      return decodeURIComponent(rest.join('='));
+    }
+  }
+  return '';
+};
+
 const notifyAuthInvalidated = () => {
   try {
     window.dispatchEvent(new Event('auth:invalidated'));
@@ -117,6 +132,13 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  const method = String(config.method || 'get').toUpperCase();
+  const csrfToken = getCookieValue('csrf_token');
+  if (csrfToken && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    config.headers['X-CSRF-Token'] = csrfToken;
+  }
+
   return config;
 }, (error) => Promise.reject(error));
 
@@ -159,6 +181,7 @@ api.interceptors.response.use(
 );
 
 export const authAPI = {
+  getCsrfToken:   () => api.get('/auth/csrf-token'),
   login:          (d) => api.post('/auth/login', d),
   googleLogin:    (credential) => api.post('/auth/google', { credential }),
   me:             (config = {})  => api.get('/auth/me', config),

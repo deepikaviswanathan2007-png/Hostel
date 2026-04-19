@@ -57,9 +57,10 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (email, password) => {
     try {
+      await authAPI.getCsrfToken();
       const { data } = await authAPI.login({ email, password });
-      if (data.token) {
-        localStorage.setItem('token', data.token);
+      if (data.accessToken || data.token) {
+        localStorage.setItem('token', data.accessToken || data.token);
       }
       setUser(data.user);
       return data;
@@ -70,9 +71,10 @@ export function AuthProvider({ children }) {
 
   const googleLogin = useCallback(async (credential) => {
     try {
+      await authAPI.getCsrfToken();
       const { data } = await authAPI.googleLogin(credential);
-      if (data.token) {
-        localStorage.setItem('token', data.token);
+      if (data.accessToken || data.token) {
+        localStorage.setItem('token', data.accessToken || data.token);
       }
       setUser(data.user);
       return data;
