@@ -41,7 +41,11 @@ exports.getIncidents = async (req, res) => {
     const status = String(req.query.status || '').trim();
     const severity = String(req.query.severity || '').trim();
     const eventType = String(req.query.event_type || '').trim();
+    const sourceIp = String(req.query.source_ip || '').trim();
+    const actorEmail = String(req.query.actor_email || '').trim().toLowerCase();
     const search = String(req.query.search || '').trim();
+    const from = String(req.query.from || '').trim();
+    const to = String(req.query.to || '').trim();
     const page = Math.max(1, parseIntSafe(req.query.page, 1));
     const limit = Math.min(200, Math.max(1, parseIntSafe(req.query.limit, 25)));
     const offset = (page - 1) * limit;
@@ -75,6 +79,22 @@ exports.getIncidents = async (req, res) => {
     if (eventType && columns.has('event_type')) {
       where.push('si.event_type = ?');
       args.push(eventType);
+    }
+    if (sourceIp && columns.has('source_ip')) {
+      where.push('si.source_ip = ?');
+      args.push(sourceIp);
+    }
+    if (actorEmail && columns.has('actor_email')) {
+      where.push('LOWER(si.actor_email) = ?');
+      args.push(actorEmail);
+    }
+    if (from && columns.has('created_at')) {
+      where.push('si.created_at >= ?');
+      args.push(from);
+    }
+    if (to && columns.has('created_at')) {
+      where.push('si.created_at <= ?');
+      args.push(to);
     }
     if (search) {
       const searchable = ['actor_email', 'target_user_name', 'endpoint', 'source_ip', 'message'].filter((col) => columns.has(col));
@@ -118,6 +138,24 @@ exports.getIncidents = async (req, res) => {
       FROM security_incidents`
     );
 
+    const [eventTypeRows] = columns.has('event_type')
+      ? await pool.query(
+          `SELECT event_type, COUNT(*) AS count
+           FROM security_incidents
+           GROUP BY event_type
+           ORDER BY count DESC
+           LIMIT 8`
+        )
+      : [[]];
+
+    const [last24hRows] = columns.has('created_at')
+      ? await pool.query(
+          `SELECT COUNT(*) AS total
+           FROM security_incidents
+           WHERE created_at >= (NOW() - INTERVAL 24 HOUR)`
+        )
+      : [[{ total: 0 }]];
+
     res.json({
       success: true,
       data: rows,
@@ -132,6 +170,10 @@ exports.getIncidents = async (req, res) => {
         blocked_count: 0,
         resolved_count: 0,
         high_risk_count: 0,
+      },
+      insights: {
+        top_event_types: eventTypeRows || [],
+        last_24h_total: Number(last24hRows?.[0]?.total || 0),
       },
     });
   } catch (err) {

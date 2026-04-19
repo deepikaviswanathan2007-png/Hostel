@@ -214,6 +214,7 @@ function DetailChip({ label, value, icon }) {
 export default function SecurityLogsPage() {
   const [incidents, setIncidents] = useState([]);
   const [stats, setStats] = useState({ total: 0, open_count: 0, blocked_count: 0, resolved_count: 0, high_risk_count: 0 });
+  const [insights, setInsights] = useState({ top_event_types: [], last_24h_total: 0 });
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [busyId, setBusyId] = useState(null);
@@ -232,6 +233,7 @@ export default function SecurityLogsPage() {
       });
       setIncidents(res.data?.data || []);
       setStats(res.data?.stats || { total: 0, open_count: 0, blocked_count: 0, resolved_count: 0, high_risk_count: 0 });
+      setInsights(res.data?.insights || { top_event_types: [], last_24h_total: 0 });
     } catch (error) {
       const message = error?.response?.data?.message || 'Failed to load security incidents.';
       setLoadError(message);
@@ -354,6 +356,29 @@ export default function SecurityLogsPage() {
                 </div>
               </div>
             ))}
+          </div>
+
+          <div className="mt-4 grid gap-3 lg:grid-cols-12">
+            <div className="lg:col-span-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_12px_28px_rgba(15,23,42,0.05)]">
+              <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Last 24 Hours</div>
+              <div className="mt-1 text-[2rem] font-black tracking-[-0.06em] text-slate-950">{insights.last_24h_total || 0}</div>
+              <p className="text-xs text-slate-500">Incidents recorded in the past day</p>
+            </div>
+            <div className="lg:col-span-8 rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_12px_28px_rgba(15,23,42,0.05)]">
+              <div className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Top Event Types</div>
+              {insights.top_event_types?.length ? (
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {insights.top_event_types.slice(0, 6).map((event) => (
+                    <div key={event.event_type} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+                      <span className="truncate text-xs font-semibold text-slate-700">{event.event_type}</span>
+                      <Badge variant="warning" className="rounded-full px-2 py-0.5 text-[10px]">{event.count}</Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-500">No event type trends available yet.</p>
+              )}
+            </div>
           </div>
         </div>
       </section>
