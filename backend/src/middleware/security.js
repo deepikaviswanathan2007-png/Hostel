@@ -1,5 +1,6 @@
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
+const crypto = require('crypto');
 const {
   logSecurityIncident,
   isIpBlocked,
@@ -253,6 +254,7 @@ const cookieCsrfGuard = (req, res, next) => {
   }
 
   const cookieName = process.env.AUTH_COOKIE_NAME || 'auth_token';
+  const csrfCookieName = process.env.CSRF_COOKIE_NAME || 'csrf_token';
   const hasAuthCookie = Boolean(req.cookies?.[cookieName]);
   const hasBearer = String(req.headers.authorization || '').startsWith('Bearer ');
 
@@ -297,6 +299,51 @@ const cookieCsrfGuard = (req, res, next) => {
     return res.status(403).json({
       success: false,
       message: 'Forbidden. Invalid request origin.',
+    });
+  }
+
+  const csrfFromCookie = String(req.cookies?.[csrfCookieName] || '');
+  const csrfFromHeader = String(req.headers['x-csrf-token'] || '');
+  const csrfLooksValid = csrfFromCookie && csrfFromHeader;
+
+  if (!csrfLooksValid) {
+    logSecurityIncident({
+      req,
+      eventType: 'CSRF_GUARD_BLOCKED',
+      severity: 'high',
+      status: 'open',
+      message: `Blocked cookie-auth request without CSRF token for ${method} ${req.originalUrl}`,
+      extraContext: {
+        hasCsrfCookie: Boolean(csrfFromCookie),
+        hasCsrfHeader: Boolean(csrfFromHeader),
+      },
+    });
+    return res.status(403).json({
+      success: false,
+      message: 'Forbidden. CSRF token missing.',
+    });
+  }
+
+  const cookieBuffer = Buffer.from(csrfFromCookie);
+  const headerBuffer = Buffer.from(csrfFromHeader);
+  const csrfMatches =
+    cookieBuffer.length === headerBuffer.length
+    && crypto.timingSafeEqual(cookieBuffer, headerBuffer);
+
+  if (!csrfMatches) {
+    logSecurityIncident({
+      req,
+      eventType: 'CSRF_GUARD_BLOCKED',
+      severity: 'high',
+      status: 'open',
+      message: `Blocked cookie-auth request with invalid CSRF token for ${method} ${req.originalUrl}`,
+      extraContext: {
+        csrfMismatch: true,
+      },
+    });
+    return res.status(403).json({
+      success: false,
+      message: 'Forbidden. Invalid CSRF token.',
     });
   }
 

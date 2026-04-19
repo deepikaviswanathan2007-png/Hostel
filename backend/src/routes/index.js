@@ -1,7 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { authenticate, adminOnly, caretakerOrAdmin, wardenOrAdmin } = require('../middleware/auth');
+const { authenticate, adminOnly, caretakerOrAdmin, wardenOrAdmin, requireRoles } = require('../middleware/auth');
 const { studentsListAccess } = require('../middleware/wardenScope');
+const validate = require('../middleware/validate');
+const {
+    signupSchema,
+    loginSchema,
+    googleLoginSchema,
+    refreshSchema,
+    changePasswordSchema,
+} = require('../validators/authSchemas');
 
 const authCtrl = require('../controllers/authController');
 const dashCtrl = require('../controllers/dashboardController');
@@ -43,11 +51,22 @@ const upload = multer({
 });
 
 // ── Auth ──────────────────────────────────────────────────
-router.post('/auth/login', authCtrl.login);
-router.post('/auth/google', authCtrl.googleLogin);
+router.post('/auth/signup', validate(signupSchema), authCtrl.signup);
+router.post('/auth/login', validate(loginSchema), authCtrl.login);
+router.post('/auth/google', validate(googleLoginSchema), authCtrl.googleLogin);
+router.post('/auth/refresh', validate(refreshSchema), authCtrl.refresh);
 router.post('/auth/logout', authCtrl.logout);
+router.get('/auth/csrf-token', authCtrl.csrfToken);
 router.get('/auth/me', authenticate, authCtrl.me);
-router.put('/auth/change-password', authenticate, authCtrl.changePassword);
+router.put('/auth/change-password', authenticate, validate(changePasswordSchema), authCtrl.changePassword);
+
+// ── RBAC Examples (admin/user) ─────────────────────────────
+router.get('/example/protected-user', authenticate, requireRoles(['user', 'admin']), (req, res) => {
+    return res.json({ success: true, message: 'User-level protected route accessed successfully.' });
+});
+router.get('/example/protected-admin', authenticate, requireRoles(['admin']), (req, res) => {
+    return res.json({ success: true, message: 'Admin-level protected route accessed successfully.' });
+});
 
 // ── Dashboard (Admin) ─────────────────────────────────────
 router.get('/dashboard', authenticate, adminOnly, dashCtrl.getStats);

@@ -5,6 +5,8 @@ const cookieParser = require('cookie-parser');
 const http = require('http');
 const { testConnection } = require('./config/database');
 const routes = require('./routes');
+const requestLogger = require('./middleware/requestLogger');
+const sanitizeInput = require('./middleware/sanitizeInput');
 const {
   securityHeaders,
   globalLimiter,
@@ -14,6 +16,7 @@ const {
   suspiciousRequestBlocker,
   cookieCsrfGuard,
 } = require('./middleware/security');
+const { ensureRefreshTokenTable } = require('./utils/tokenService');
 
 const path = require('path');
 
@@ -36,6 +39,11 @@ if (!process.env.JWT_SECRET) {
   process.exit(1);
 }
 
+if (!process.env.ACCESS_TOKEN_SECRET || !process.env.REFRESH_TOKEN_SECRET) {
+  console.error('FATAL ERROR: ACCESS_TOKEN_SECRET and REFRESH_TOKEN_SECRET must be defined.');
+  process.exit(1);
+}
+
 if (process.env.NODE_ENV === 'production' && String(process.env.JWT_SECRET).length < 32) {
   console.error('FATAL ERROR: JWT_SECRET must be at least 32 characters in production.');
   process.exit(1);
@@ -44,6 +52,7 @@ if (process.env.NODE_ENV === 'production' && String(process.env.JWT_SECRET).leng
 // ── Trust proxy (required for rate limiting behind reverse proxies) ──
 app.set('trust proxy', 1);
 app.disable('x-powered-by');
+app.use(requestLogger);
 
 // ── CORS ──
 app.use(cors({
@@ -54,7 +63,8 @@ app.use(cors({
     return callback(new Error('Not allowed by CORS'));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
+  exposedHeaders: ['RateLimit-Limit', 'RateLimit-Remaining', 'RateLimit-Reset'],
   credentials: true,
   maxAge: 86400,
 }));
@@ -83,6 +93,7 @@ app.use((req, res, next) => {
 app.use(cookieParser());
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(sanitizeInput);
 
 // ── Cookie Auth CSRF Guard ──
 app.use(cookieCsrfGuard);
@@ -95,7 +106,9 @@ app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() 
 
 // ── Auth Routes — Strict brute-force protection (10 req / 15 min) ──
 app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/signup', authLimiter);
 app.use('/api/auth/google', authLimiter);
+app.use('/api/auth/refresh', authLimiter);
 
 // ── Write-Operation Limiter (50 POST/PUT/DELETE per 15 min) ──
 app.use('/api', writeLimiter);
@@ -124,7 +137,8 @@ app.use((err, req, res, _next) => {
   res.status(500).json({ success: false, message: 'Internal server error.' });
 });
 
-testConnection().then(() => {
+testConnection().then(async () => {
+  await ensureRefreshTokenTable();
   const server = http.createServer(app);
   server.on('error', (error) => {
     if (error?.code === 'EADDRINUSE') {

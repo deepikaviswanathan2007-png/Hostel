@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { pool } = require('../config/database');
 const { logSecurityIncident } = require('../services/securityIncidentService');
+const { getAccessSecret } = require('../utils/tokenService');
 
 const logDeniedAccess = (req, message, actor = null, severity = 'medium') => {
   logSecurityIncident({
@@ -32,10 +33,14 @@ const authenticate = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'Access denied. No token provided.' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, getAccessSecret());
     if (!decoded || !decoded.id) {
        logDeniedAccess(req, 'Malformed token structure was used for protected route access.');
        return res.status(401).json({ success: false, message: 'Invalid token structure.' });
+    }
+    if (decoded.type && decoded.type !== 'access') {
+      logDeniedAccess(req, 'Non-access token used for protected route access.');
+      return res.status(401).json({ success: false, message: 'Invalid token type.' });
     }
 
     const [rows] = await pool.query(
@@ -49,6 +54,7 @@ const authenticate = async (req, res, next) => {
     }
 
     req.user = rows[0];
+    req.user.rbacRole = req.user.role === 'admin' ? 'admin' : 'user';
     next();
   } catch (err) {
     if (err.name === 'TokenExpiredError') {
@@ -59,6 +65,20 @@ const authenticate = async (req, res, next) => {
     logDeniedAccess(req, 'Invalid token was used while trying to access a protected route.');
     return res.status(401).json({ success: false, message: 'Invalid or expired token.' });
   }
+};
+
+const requireRoles = (allowedRbacRoles) => (req, res, next) => {
+  const normalizedRole = req.user?.rbacRole || (req.user?.role === 'admin' ? 'admin' : 'user');
+  if (!req.user || !allowedRbacRoles.includes(normalizedRole)) {
+    logDeniedAccess(
+      req,
+      `RBAC access denied. Allowed roles: ${allowedRbacRoles.join(', ')}. Attempted role: ${normalizedRole || 'unknown'}`,
+      req.user || null,
+      'high'
+    );
+    return res.status(403).json({ success: false, message: 'Access denied. Insufficient permissions.' });
+  }
+  return next();
 };
 
 const adminOnly = (req, res, next) => {
@@ -113,4 +133,4 @@ const wardenOrAdmin = (req, res, next) => {
   next();
 };
 
-module.exports = { authenticate, adminOnly, roleCheck, caretakerOrAdmin, wardenOrAdmin };
+module.exports = { authenticate, adminOnly, roleCheck, caretakerOrAdmin, wardenOrAdmin, requireRoles };
