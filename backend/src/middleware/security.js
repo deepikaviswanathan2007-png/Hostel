@@ -11,6 +11,22 @@ const toInt = (value, fallback) => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 };
 
+const parseOriginList = (raw) => {
+  if (!raw) return [];
+  return String(raw)
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .map((entry) => {
+      try {
+        return new URL(entry).origin;
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean);
+};
+
 const rateLimitKeyGenerator = (req) => {
   const sourceIp = String(getSourceIp(req) || req.ip || req.socket?.remoteAddress || 'unknown')
     .replace('::ffff:', '')
@@ -228,6 +244,65 @@ const suspiciousRequestBlocker = async (req, res, next) => {
   next();
 };
 
+// ── 7. Cookie-Auth CSRF Guard ────────────────────────────────
+//    For browser cookie auth on mutating requests, require trusted Origin/Referer.
+const cookieCsrfGuard = (req, res, next) => {
+  const method = String(req.method || '').toUpperCase();
+  if (['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+    return next();
+  }
+
+  const cookieName = process.env.AUTH_COOKIE_NAME || 'auth_token';
+  const hasAuthCookie = Boolean(req.cookies?.[cookieName]);
+  const hasBearer = String(req.headers.authorization || '').startsWith('Bearer ');
+
+  // CSRF applies when browser cookies are used as auth credentials.
+  if (!hasAuthCookie || hasBearer) {
+    return next();
+  }
+
+  const allowedOrigins = new Set([
+    'http://localhost:3000',
+    'https://naveen.hummingtone.com',
+    'http://naveen.hummingtone.com',
+    ...parseOriginList(process.env.CORS_ORIGINS),
+  ]);
+
+  const originHeader = req.headers.origin;
+  const refererHeader = req.headers.referer;
+
+  let requestOrigin = '';
+  if (originHeader) {
+    requestOrigin = originHeader;
+  } else if (refererHeader) {
+    try {
+      requestOrigin = new URL(refererHeader).origin;
+    } catch {
+      requestOrigin = '';
+    }
+  }
+
+  if (!requestOrigin || !allowedOrigins.has(requestOrigin)) {
+    logSecurityIncident({
+      req,
+      eventType: 'CSRF_GUARD_BLOCKED',
+      severity: 'high',
+      status: 'open',
+      message: `Blocked potentially forged cookie-auth request for ${method} ${req.originalUrl}`,
+      extraContext: {
+        originHeader: originHeader || null,
+        refererHeader: refererHeader || null,
+      },
+    });
+    return res.status(403).json({
+      success: false,
+      message: 'Forbidden. Invalid request origin.',
+    });
+  }
+
+  return next();
+};
+
 module.exports = {
   securityHeaders,
   globalLimiter,
@@ -235,4 +310,5 @@ module.exports = {
   writeLimiter,
   requestSizeGuard,
   suspiciousRequestBlocker,
+  cookieCsrfGuard,
 };

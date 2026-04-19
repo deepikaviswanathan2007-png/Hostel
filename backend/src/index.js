@@ -12,6 +12,7 @@ const {
   writeLimiter,
   requestSizeGuard,
   suspiciousRequestBlocker,
+  cookieCsrfGuard,
 } = require('./middleware/security');
 
 const path = require('path');
@@ -19,18 +20,43 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const buildAllowedOrigins = () => {
+  const defaults = ['http://localhost:3000', 'https://naveen.hummingtone.com', 'http://naveen.hummingtone.com'];
+  const fromEnv = String(process.env.CORS_ORIGINS || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  return [...new Set([...defaults, ...fromEnv])];
+};
+
+const allowedOrigins = buildAllowedOrigins();
+
 if (!process.env.JWT_SECRET) {
   console.error('FATAL ERROR: JWT_SECRET is not defined.');
   process.exit(1);
 }
 
+if (process.env.NODE_ENV === 'production' && String(process.env.JWT_SECRET).length < 32) {
+  console.error('FATAL ERROR: JWT_SECRET must be at least 32 characters in production.');
+  process.exit(1);
+}
+
 // ── Trust proxy (required for rate limiting behind reverse proxies) ──
 app.set('trust proxy', 1);
+app.disable('x-powered-by');
 
 // ── CORS ──
-app.use(cors({ 
-  origin: ['http://localhost:3000', 'https://naveen.hummingtone.com', 'http://naveen.hummingtone.com'], 
-  credentials: true 
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  maxAge: 86400,
 }));
 
 // ── Security Headers (Helmet) ──
@@ -40,7 +66,11 @@ app.use(securityHeaders);
 app.use(suspiciousRequestBlocker);
 
 // ── Serve uploaded complaint files ──
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), {
+  dotfiles: 'deny',
+  index: false,
+  redirect: false,
+}));
 
 // ── Request Size Guard (reject payloads > 1MB before parsing) ──
 app.use((req, res, next) => {
@@ -53,6 +83,9 @@ app.use((req, res, next) => {
 app.use(cookieParser());
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+// ── Cookie Auth CSRF Guard ──
+app.use(cookieCsrfGuard);
 
 // ── Global Rate Limiter (200 req / 15 min per IP) ──
 app.use(globalLimiter);

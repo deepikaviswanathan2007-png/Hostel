@@ -17,12 +17,21 @@ const signToken = (user) =>
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
 
-const cookieOptions = () => ({
-  httpOnly: true,
-  sameSite: 'lax',
-  secure: process.env.NODE_ENV === 'production',
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-});
+const cookieOptions = () => {
+  const configuredSameSite = String(process.env.AUTH_COOKIE_SAMESITE || 'lax').toLowerCase();
+  const sameSite = ['lax', 'strict', 'none'].includes(configuredSameSite)
+    ? configuredSameSite
+    : 'lax';
+  const isSecure = process.env.NODE_ENV === 'production' || sameSite === 'none';
+
+  return {
+    httpOnly: true,
+    sameSite,
+    secure: isSecure,
+    path: '/',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  };
+};
 
 const login = async (req, res) => {
   const email = String(req.body?.email || '').trim().toLowerCase();
@@ -140,8 +149,9 @@ const googleLogin = async (req, res) => {
 const logout = async (req, res) => {
   res.clearCookie(cookieName, {
     httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: cookieOptions().sameSite,
+    secure: cookieOptions().secure,
+    path: '/',
   });
   res.json({ success: true, message: 'Logged out.' });
 };
