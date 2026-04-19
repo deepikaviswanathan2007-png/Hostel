@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import {
   AlertTriangle,
@@ -76,6 +76,13 @@ function buildCsv(incidents) {
   ].map(escapeCsvValue).join(','));
 
   return [header.map(escapeCsvValue).join(','), ...rows].join('\r\n');
+}
+
+function safeFormatDate(value, pattern, fallback = '-') {
+  if (!value) return fallback;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return fallback;
+  return format(parsed, pattern);
 }
 
 function IncidentCard({ incident, selected, onToggleSelect, onBlock, onResolve, onDelete, busyId }) {
@@ -157,7 +164,7 @@ function IncidentCard({ incident, selected, onToggleSelect, onBlock, onResolve, 
         <StatMini label="Target User" value={incident.target_user_name || 'Unknown / Guest'} helper={safeMeta} />
         <StatMini label="Endpoint" value={`${incident.request_method || 'GET'} ${incident.endpoint || '-'}`} helper={incident.status === 'blocked' ? 'Currently blocked' : 'Action required'} tone="blue" />
         <StatMini label="Source IP" value={incident.source_ip || '-'} helper={incident.browser || 'Unknown browser'} tone="slate" />
-        <StatMini label="Timestamp" value={incident.created_at ? format(new Date(incident.created_at), 'MMM d, yyyy') : '-'} helper={incident.created_at ? format(new Date(incident.created_at), 'h:mm a') : '-'} tone="violet" />
+        <StatMini label="Timestamp" value={safeFormatDate(incident.created_at, 'MMM d, yyyy')} helper={safeFormatDate(incident.created_at, 'h:mm a')} tone="violet" />
       </div>
 
       <div className="mx-5 mb-5 rounded-[24px] border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-50 p-4 md:mx-6">
@@ -221,31 +228,75 @@ export default function SecurityLogsPage() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [filters, setFilters] = useState({ status: '', severity: '', search: '' });
   const debouncedIncidentSearch = useDebouncedValue(filters.search, 400);
+  const inFlightRef = useRef(null);
+  const inFlightKeyRef = useRef('');
+  const latestRequestIdRef = useRef(0);
+  const mountedRef = useRef(false);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const load = useCallback(async () => {
+    const requestId = latestRequestIdRef.current + 1;
+    latestRequestIdRef.current = requestId;
+    const queryKey = JSON.stringify({
+      status: filters.status || '',
+      severity: filters.severity || '',
+      search: debouncedIncidentSearch || '',
+    });
+
+    // Avoid duplicate calls when the same query is already loading.
+    if (inFlightRef.current && inFlightKeyRef.current === queryKey) {
+      return inFlightRef.current;
+    }
+
+    inFlightKeyRef.current = queryKey;
     setLoading(true);
     setLoadError('');
-    try {
-      const res = await securityAPI.getIncidents({
-        status: filters.status,
-        severity: filters.severity,
-        search: debouncedIncidentSearch,
-      });
-      setIncidents(res.data?.data || []);
-      setStats(res.data?.stats || { total: 0, open_count: 0, blocked_count: 0, resolved_count: 0, high_risk_count: 0 });
-      setInsights(res.data?.insights || { top_event_types: [], last_24h_total: 0 });
-    } catch (error) {
-      const message = error?.response?.data?.message || 'Failed to load security incidents.';
-      setLoadError(message);
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
+    const request = (async () => {
+      try {
+        const res = await securityAPI.getIncidents({
+          status: filters.status,
+          severity: filters.severity,
+          search: debouncedIncidentSearch,
+        });
+        // Keep UI consistent when multiple loads race: only latest response wins.
+        if (!mountedRef.current || requestId !== latestRequestIdRef.current) return;
+        setIncidents(res.data?.data || []);
+        setStats(res.data?.stats || { total: 0, open_count: 0, blocked_count: 0, resolved_count: 0, high_risk_count: 0 });
+        setInsights(res.data?.insights || { top_event_types: [], last_24h_total: 0 });
+      } catch (error) {
+        if (!mountedRef.current || requestId !== latestRequestIdRef.current) return;
+        const message = error?.response?.data?.message || 'Failed to load security incidents.';
+        setLoadError(message);
+        toast.error(message);
+      } finally {
+        if (inFlightKeyRef.current === queryKey) {
+          inFlightRef.current = null;
+          inFlightKeyRef.current = '';
+        }
+        if (mountedRef.current && requestId === latestRequestIdRef.current) {
+          setLoading(false);
+        }
+      }
+    })();
+
+    inFlightRef.current = request;
+    return request;
   }, [filters.status, filters.severity, debouncedIncidentSearch]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    const visibleIds = new Set(incidents.map((item) => item.id));
+    setSelectedIds((prev) => prev.filter((id) => visibleIds.has(id)));
+  }, [incidents]);
 
   const allSelected = useMemo(() => incidents.length > 0 && selectedIds.length === incidents.length, [incidents.length, selectedIds.length]);
 
@@ -289,7 +340,9 @@ export default function SecurityLogsPage() {
     const link = document.createElement('a');
     link.href = url;
     link.download = `security-alerts-${format(new Date(), 'yyyy-MM-dd-HHmm')}.csv`;
+    document.body.appendChild(link);
     link.click();
+    link.remove();
     URL.revokeObjectURL(url);
   };
 
@@ -368,8 +421,8 @@ export default function SecurityLogsPage() {
               <div className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Top Event Types</div>
               {insights.top_event_types?.length ? (
                 <div className="grid gap-2 sm:grid-cols-2">
-                  {insights.top_event_types.slice(0, 6).map((event) => (
-                    <div key={event.event_type} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+                  {insights.top_event_types.slice(0, 6).map((event, index) => (
+                    <div key={`${event.event_type || 'event'}-${index}`} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
                       <span className="truncate text-xs font-semibold text-slate-700">{event.event_type}</span>
                       <Badge variant="warning" className="rounded-full px-2 py-0.5 text-[10px]">{event.count}</Badge>
                     </div>

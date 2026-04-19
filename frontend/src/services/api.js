@@ -194,7 +194,12 @@ export const dashboardAPI = {
 };
 
 export const securityAPI = {
-  getIncidents: (p) => api.get('/security/incidents', { params: p }),
+  // In-flight dedupe only (ttl 0) to avoid repeated identical calls during rapid rerenders.
+  getIncidents: (p) => requestCached('get', '/security/incidents', { params: p }, {
+    cacheKey: stableKey('get', '/security/incidents', { params: p }),
+    ttlMs: 0,
+    dedupe: true,
+  }),
   createIncident: (d) => api.post('/security/incidents', d),
   resolveIncident: (id, d = { status: 'resolved' }) => api.patch(`/security/incidents/${id}/resolve`, d),
   blockIncidentIp: (id, d = {}) => api.patch(`/security/incidents/${id}/block`, d),
