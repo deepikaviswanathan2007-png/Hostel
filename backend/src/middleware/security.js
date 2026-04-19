@@ -39,6 +39,24 @@ const rateLimitKeyGenerator = (req) => {
   return sourceIp;
 };
 
+const authRateLimitKeyGenerator = (req) => {
+  const sourceIp = String(getSourceIp(req) || req.ip || req.socket?.remoteAddress || 'unknown')
+    .replace('::ffff:', '')
+    .trim();
+
+  const email = String(req.body?.email || '')
+    .trim()
+    .toLowerCase()
+    .slice(0, 120);
+
+  const key = email ? `${email}|${sourceIp}` : sourceIp;
+
+  if (typeof rateLimit.ipKeyGenerator === 'function') {
+    return rateLimit.ipKeyGenerator(key);
+  }
+  return key;
+};
+
 const retryAfterSeconds = (req) => {
   const resetTime = req.rateLimit?.resetTime;
   if (!resetTime) return undefined;
@@ -94,12 +112,12 @@ const globalLimiter = rateLimit({
 const authLimiter = rateLimit({
   windowMs: toInt(process.env.RATE_LIMIT_AUTH_WINDOW_MS, 5 * 60 * 1000),
   max: toInt(process.env.RATE_LIMIT_AUTH_MAX, 20),
-  keyGenerator: rateLimitKeyGenerator,
+  keyGenerator: authRateLimitKeyGenerator,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     success: false,
-    message: 'Too many login attempts. Please try again after 5 minutes.',
+    message: 'Too many login attempts for this account. Please try again after 5 minutes.',
   },
   handler: (req, res) => {
     const retryAfter = retryAfterSeconds(req);
@@ -108,7 +126,7 @@ const authLimiter = rateLimit({
     }
     return res.status(429).json({
       success: false,
-      message: 'Too many login attempts. Please try again after 5 minutes.',
+      message: 'Too many login attempts for this account. Please try again after 5 minutes.',
       retryAfter,
     });
   },

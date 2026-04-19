@@ -110,8 +110,7 @@ app.use(globalLimiter);
 // Health check (not rate limited beyond global)
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));
 
-// ── Auth Routes — Strict brute-force protection (10 req / 15 min) ──
-app.use('/api/auth/login', authLimiter);
+// ── Auth Routes — strict brute-force protection for non-login auth endpoints ──
 app.use('/api/auth/signup', authLimiter);
 app.use('/api/auth/google', authLimiter);
 app.use('/api/auth/refresh', authLimiter);

@@ -44,7 +44,7 @@ const authenticate = async (req, res, next) => {
     }
 
     const [rows] = await pool.query(
-      'SELECT id, name, email, role, status, is_blocked, lock_until FROM users WHERE id = ? LIMIT 1',
+      'SELECT id, name, email, role, status, lock_until FROM users WHERE id = ? LIMIT 1',
       [decoded.id]
     );
 
@@ -54,7 +54,7 @@ const authenticate = async (req, res, next) => {
     }
 
     const dbUser = rows[0];
-    const hardBlocked = Number(dbUser.is_blocked || 0) === 1 || String(dbUser.status || '').toLowerCase() === 'blocked';
+    const hardBlocked = String(dbUser.status || '').toLowerCase() === 'blocked';
     const suspended = String(dbUser.status || '').toLowerCase() === 'suspended';
 
     if (hardBlocked || suspended) {

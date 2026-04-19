@@ -53,10 +53,9 @@ CREATE TABLE IF NOT EXISTS users (
   password    VARCHAR(255) NULL,
   google_id   VARCHAR(255) DEFAULT NULL,
   role        ENUM('admin','caretaker','warden','student') DEFAULT 'student',
-  is_blocked  TINYINT(1) NOT NULL DEFAULT 0,
   status      ENUM('active','blocked','suspended') NOT NULL DEFAULT 'active',
-  failed_login_attempts INT NOT NULL DEFAULT 0,
-  last_failed_login DATETIME DEFAULT NULL,
+  failed_attempts INT NOT NULL DEFAULT 0,
+  last_failed_attempt DATETIME DEFAULT NULL,
   lock_until DATETIME DEFAULT NULL,
   specialty   VARCHAR(60) DEFAULT NULL,
   created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -65,7 +64,7 @@ CREATE TABLE IF NOT EXISTS users (
   INDEX idx_users_role (role),
   INDEX idx_users_google_id (google_id),
   INDEX idx_users_specialty (specialty),
-  INDEX idx_users_block_state (is_blocked, status, lock_until)
+  INDEX idx_users_block_state (status, lock_until, failed_attempts)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE OR REPLACE VIEW wardens AS
@@ -364,6 +363,19 @@ CREATE TABLE IF NOT EXISTS login_attempts (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
   INDEX idx_login_attempts_email_created (email, created_at),
   INDEX idx_login_attempts_user_created (user_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── AUDIT LOGS TABLE ──
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id            INT DEFAULT NULL,
+  action             VARCHAR(120) NOT NULL,
+  ip                 VARCHAR(64) DEFAULT NULL,
+  user_agent         VARCHAR(1000) DEFAULT NULL,
+  created_at         DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_audit_user_created (user_id, created_at),
+  INDEX idx_audit_action_created (action, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ── REFRESH TOKENS TABLE ──

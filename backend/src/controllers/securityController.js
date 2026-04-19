@@ -239,9 +239,9 @@ exports.blockIncidentAccount = async (req, res) => {
     await pool.query(
       `UPDATE users
        SET status = 'blocked',
-           is_blocked = 1,
            lock_until = NULL,
-           failed_login_attempts = 0,
+           failed_attempts = 0,
+           last_failed_attempt = NULL,
            updated_at = NOW()
        WHERE id = ?`,
       [targetUserId]

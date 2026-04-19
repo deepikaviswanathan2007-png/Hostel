@@ -28,14 +28,33 @@ const ACCOUNT_BLOCKED_MSG = 'Account is blocked';
 const TEMPORARY_LOCK_MSG = 'Account is temporarily locked. Try again later.';
 const MAX_FAILED_LOGIN_ATTEMPTS = Number.parseInt(process.env.AUTH_MAX_FAILED_ATTEMPTS || '5', 10);
 const LOCK_DURATION_MINUTES = Number.parseInt(process.env.AUTH_LOCK_DURATION_MINUTES || '15', 10);
+const FAILED_RESPONSE_DELAY_MS = {
+  first: Number.parseInt(process.env.AUTH_FAIL_DELAY_FIRST_MS || '1000', 10),
+  second: Number.parseInt(process.env.AUTH_FAIL_DELAY_SECOND_MS || '2000', 10),
+  thirdPlus: Number.parseInt(process.env.AUTH_FAIL_DELAY_THIRD_PLUS_MS || '5000', 10),
+};
 
 const getPasswordHash = (user) => user?.password_hash || user?.password || null;
 
 const isAccountBlocked = (user) => {
   if (!user) return false;
-  if (Number(user.is_blocked || 0) === 1) return true;
   if (String(user.status || '').toLowerCase() === 'blocked') return true;
   return false;
+};
+
+const waitMs = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const getFailDelayMs = (attemptCount = 1) => {
+  if (attemptCount <= 1) return FAILED_RESPONSE_DELAY_MS.first;
+  if (attemptCount === 2) return FAILED_RESPONSE_DELAY_MS.second;
+  return FAILED_RESPONSE_DELAY_MS.thirdPlus;
+};
+
+const getRemainingLockSeconds = (lockUntil) => {
+  if (!lockUntil) return 0;
+  const ms = new Date(lockUntil).getTime() - Date.now();
+  if (!Number.isFinite(ms) || ms <= 0) return 0;
+  return Math.ceil(ms / 1000);
 };
 
 const recordLoginAttempt = async ({ req, email, userId = null, success, reason = null }) => {
@@ -54,6 +73,24 @@ const recordLoginAttempt = async ({ req, email, userId = null, success, reason =
     );
   } catch {
     // Do not block auth if login attempt audit write fails.
+  }
+};
+
+const recordAuditLog = async ({ req, userId = null, action }) => {
+  if (!action) return;
+  try {
+    await pool.query(
+      `INSERT INTO audit_logs (user_id, action, ip, user_agent)
+       VALUES (?, ?, ?, ?)`,
+      [
+        userId,
+        String(action).slice(0, 120),
+        getSourceIp(req),
+        String(req.headers['user-agent'] || '').slice(0, 1000),
+      ]
+    );
+  } catch {
+    // Do not block auth flow if audit log write fails.
   }
 };
 
@@ -171,37 +208,55 @@ const login = async (req, res) => {
   const password = String(req.body?.password || '');
 
   try {
-    const [rows] = await pool.query('SELECT * FROM users WHERE email = ? LIMIT 1', [email]);
+    const [rows] = await pool.query(
+      `SELECT id, name, email, role, password, password_hash, status,
+              failed_attempts, last_failed_attempt, lock_until
+       FROM users
+       WHERE email = ?
+       LIMIT 1`,
+      [email]
+    );
     if (!rows.length) {
       logAuthFailure(req, `Login failed for unknown email: ${email}`);
       await recordLoginAttempt({ req, email, success: false, reason: 'UNKNOWN_EMAIL' });
+      await recordAuditLog({ req, action: 'login_failure' });
+      await waitMs(getFailDelayMs(1));
       return res.status(404).json({ success: false, message: EMAIL_NOT_REGISTERED_MSG });
     }
 
     const user = rows[0];
     if (isAccountBlocked(user)) {
       await recordLoginAttempt({ req, email, userId: user.id, success: false, reason: 'ACCOUNT_BLOCKED' });
+      await recordAuditLog({ req, userId: user.id, action: 'login_failure' });
+      await waitMs(getFailDelayMs(Math.max(Number(user.failed_attempts || 0), 1)));
       return res.status(403).json({ success: false, message: ACCOUNT_BLOCKED_MSG });
     }
 
     const lockUntil = user.lock_until ? new Date(user.lock_until) : null;
     if (lockUntil && lockUntil.getTime() > Date.now()) {
       await recordLoginAttempt({ req, email, userId: user.id, success: false, reason: 'TEMP_LOCK_ACTIVE' });
-      return res.status(423).json({ success: false, message: TEMPORARY_LOCK_MSG, lockUntil });
+      await recordAuditLog({ req, userId: user.id, action: 'login_failure' });
+      await waitMs(getFailDelayMs(Math.max(Number(user.failed_attempts || 0), 1)));
+      return res.status(423).json({
+        success: false,
+        message: TEMPORARY_LOCK_MSG,
+        lockUntil,
+        remainingSeconds: getRemainingLockSeconds(lockUntil),
+      });
     }
 
     // Auto unlock when temporary lock has expired.
     if (lockUntil && lockUntil.getTime() <= Date.now()) {
       await pool.query(
         `UPDATE users
-         SET failed_login_attempts = 0,
-             last_failed_login = NULL,
+         SET failed_attempts = 0,
+             last_failed_attempt = NULL,
              lock_until = NULL,
              updated_at = NOW()
          WHERE id = ?`,
         [user.id]
       );
-      user.failed_login_attempts = 0;
+      user.failed_attempts = 0;
       user.lock_until = null;
     }
 
@@ -214,15 +269,15 @@ const login = async (req, res) => {
 
     const valid = await bcrypt.compare(password, passwordHash);
     if (!valid) {
-      const nextAttempts = Number(user.failed_login_attempts || 0) + 1;
+      const nextAttempts = Number(user.failed_attempts || 0) + 1;
       const lockUntilValue = nextAttempts >= MAX_FAILED_LOGIN_ATTEMPTS
         ? new Date(Date.now() + LOCK_DURATION_MINUTES * 60 * 1000)
         : null;
 
       await pool.query(
         `UPDATE users
-         SET failed_login_attempts = ?,
-             last_failed_login = NOW(),
+         SET failed_attempts = ?,
+             last_failed_attempt = NOW(),
              lock_until = ?,
              updated_at = NOW()
          WHERE id = ?`,
@@ -231,9 +286,21 @@ const login = async (req, res) => {
 
       logAuthFailure(req, `Login failed due to invalid password for user ${user.id}`, user);
       await recordLoginAttempt({ req, email, userId: user.id, success: false, reason: 'INVALID_PASSWORD' });
+      await recordAuditLog({ req, userId: user.id, action: 'login_failure' });
 
       if (lockUntilValue) {
-        return res.status(423).json({ success: false, message: TEMPORARY_LOCK_MSG, lockUntil: lockUntilValue });
+        await recordAuditLog({ req, userId: user.id, action: 'account_lock' });
+      }
+
+      await waitMs(getFailDelayMs(nextAttempts));
+
+      if (lockUntilValue) {
+        return res.status(423).json({
+          success: false,
+          message: TEMPORARY_LOCK_MSG,
+          lockUntil: lockUntilValue,
+          remainingSeconds: getRemainingLockSeconds(lockUntilValue),
+        });
       }
 
       return res.status(401).json({ success: false, message: INVALID_CREDENTIALS_MSG });
@@ -241,14 +308,15 @@ const login = async (req, res) => {
 
     await pool.query(
       `UPDATE users
-       SET failed_login_attempts = 0,
-           last_failed_login = NULL,
+       SET failed_attempts = 0,
+           last_failed_attempt = NULL,
            lock_until = NULL,
            updated_at = NOW()
        WHERE id = ?`,
       [user.id]
     );
     await recordLoginAttempt({ req, email, userId: user.id, success: true });
+    await recordAuditLog({ req, userId: user.id, action: 'login_success' });
 
     const tokens = await createSession(req, res, user);
     const userData = await getUserResponsePayload(user);
@@ -301,14 +369,20 @@ const googleLogin = async (req, res) => {
     const lockUntil = user.lock_until ? new Date(user.lock_until) : null;
     if (lockUntil && lockUntil.getTime() > Date.now()) {
       await recordLoginAttempt({ req, email: user.email, userId: user.id, success: false, reason: 'TEMP_LOCK_ACTIVE' });
-      return res.status(423).json({ success: false, message: TEMPORARY_LOCK_MSG, lockUntil });
+      await recordAuditLog({ req, userId: user.id, action: 'login_failure' });
+      return res.status(423).json({
+        success: false,
+        message: TEMPORARY_LOCK_MSG,
+        lockUntil,
+        remainingSeconds: getRemainingLockSeconds(lockUntil),
+      });
     }
 
     if (lockUntil && lockUntil.getTime() <= Date.now()) {
       await pool.query(
         `UPDATE users
-         SET failed_login_attempts = 0,
-             last_failed_login = NULL,
+         SET failed_attempts = 0,
+             last_failed_attempt = NULL,
              lock_until = NULL,
              updated_at = NOW()
          WHERE id = ?`,
@@ -318,14 +392,15 @@ const googleLogin = async (req, res) => {
 
     await pool.query(
       `UPDATE users
-       SET failed_login_attempts = 0,
-           last_failed_login = NULL,
+       SET failed_attempts = 0,
+           last_failed_attempt = NULL,
            lock_until = NULL,
            updated_at = NOW()
        WHERE id = ?`,
       [user.id]
     );
     await recordLoginAttempt({ req, email: user.email, userId: user.id, success: true });
+    await recordAuditLog({ req, userId: user.id, action: 'login_success' });
 
     const tokens = await createSession(req, res, user);
     const userData = await getUserResponsePayload(user);
@@ -407,11 +482,19 @@ const refresh = async (req, res) => {
 };
 
 const logout = async (req, res) => {
+  let userId = null;
   try {
     const refreshToken = String(req.cookies?.[REFRESH_COOKIE_NAME] || req.body?.refreshToken || '');
     if (refreshToken) {
+      try {
+        const decoded = jwt.verify(refreshToken, getRefreshSecret());
+        userId = decoded?.id || null;
+      } catch {
+        userId = null;
+      }
       await revokeRefreshToken({ token: refreshToken });
     }
+    await recordAuditLog({ req, userId, action: 'logout' });
   } catch (err) {
     console.warn('logout token revoke warning:', err.message);
   }

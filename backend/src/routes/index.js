@@ -3,6 +3,7 @@ const router = express.Router();
 const { authenticate, adminOnly, caretakerOrAdmin, wardenOrAdmin, requireRoles } = require('../middleware/auth');
 const { studentsListAccess } = require('../middleware/wardenScope');
 const validate = require('../middleware/validate');
+const { authLimiter } = require('../middleware/security');
 const {
     signupSchema,
     loginSchema,
@@ -52,7 +53,7 @@ const upload = multer({
 
 // ── Auth ──────────────────────────────────────────────────
 router.post('/auth/signup', validate(signupSchema), authCtrl.signup);
-router.post('/auth/login', validate(loginSchema), authCtrl.login);
+router.post('/auth/login', authLimiter, validate(loginSchema), authCtrl.login);
 router.post('/auth/google', validate(googleLoginSchema), authCtrl.googleLogin);
 router.post('/auth/refresh', validate(refreshSchema), authCtrl.refresh);
 router.post('/auth/logout', authCtrl.logout);
