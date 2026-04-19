@@ -40,8 +40,14 @@ if (!process.env.JWT_SECRET) {
 }
 
 if (!process.env.ACCESS_TOKEN_SECRET || !process.env.REFRESH_TOKEN_SECRET) {
-  console.error('FATAL ERROR: ACCESS_TOKEN_SECRET and REFRESH_TOKEN_SECRET must be defined.');
-  process.exit(1);
+  if (process.env.NODE_ENV === 'production') {
+    console.error('FATAL ERROR: ACCESS_TOKEN_SECRET and REFRESH_TOKEN_SECRET must be defined in production.');
+    process.exit(1);
+  }
+  // Development fallback for easier local bootstrapping.
+  process.env.ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || process.env.JWT_SECRET;
+  process.env.REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET;
+  console.warn('[SECURITY] ACCESS_TOKEN_SECRET/REFRESH_TOKEN_SECRET missing. Falling back to JWT_SECRET for non-production runtime.');
 }
 
 if (process.env.NODE_ENV === 'production' && String(process.env.JWT_SECRET).length < 32) {
