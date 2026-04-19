@@ -208,7 +208,7 @@ exports.resolveIncident = async (req, res) => {
   }
 };
 
-exports.blockIncidentIp = async (req, res) => {
+exports.blockIncidentAccount = async (req, res) => {
   try {
     const id = Number(req.params.id);
     if (!id) {
@@ -217,21 +217,34 @@ exports.blockIncidentIp = async (req, res) => {
 
     const reason = String(req.body.reason || 'Blocked from security incident').slice(0, 255);
 
-    const [rows] = await pool.query('SELECT source_ip FROM security_incidents WHERE id = ? LIMIT 1', [id]);
+    const [rows] = await pool.query(
+      'SELECT source_ip, actor_user_id, target_user_id FROM security_incidents WHERE id = ? LIMIT 1',
+      [id]
+    );
     if (!rows.length) {
       return res.status(404).json({ success: false, message: 'Incident not found.' });
     }
 
-    const sourceIp = rows[0].source_ip;
-    if (!sourceIp) {
-      return res.status(400).json({ success: false, message: 'No source IP available for this incident.' });
+    const targetUserId = rows[0].target_user_id || rows[0].actor_user_id || null;
+    if (!targetUserId) {
+      await pool.query(
+        `UPDATE security_incidents
+         SET status = 'blocked', reviewed_by = ?, reviewed_at = NOW(), updated_at = NOW()
+         WHERE id = ?`,
+        [req.user.id, id]
+      );
+      return res.json({ success: true, message: 'Incident marked as blocked (no account linked).' });
     }
 
     await pool.query(
-      `INSERT INTO blocked_ips (ip_address, reason, blocked_by_user_id)
-       VALUES (?, ?, ?)
-       ON DUPLICATE KEY UPDATE reason = VALUES(reason), blocked_by_user_id = VALUES(blocked_by_user_id), updated_at = NOW(), expires_at = NULL`,
-      [sourceIp, reason, req.user.id]
+      `UPDATE users
+       SET status = 'blocked',
+           is_blocked = 1,
+           lock_until = NULL,
+           failed_login_attempts = 0,
+           updated_at = NOW()
+       WHERE id = ?`,
+      [targetUserId]
     );
 
     await pool.query(
@@ -241,12 +254,15 @@ exports.blockIncidentIp = async (req, res) => {
       [req.user.id, id]
     );
 
-    return res.json({ success: true, message: `IP ${sourceIp} has been blocked.` });
+    return res.json({ success: true, message: `Account ${targetUserId} has been blocked.`, reason });
   } catch (err) {
-    console.error('security.blockIncidentIp error:', err);
-    return res.status(500).json({ success: false, message: 'Failed to block IP.' });
+    console.error('security.blockIncidentAccount error:', err);
+    return res.status(500).json({ success: false, message: 'Failed to block account.' });
   }
 };
+
+// Backward-compatible alias for existing clients using old controller symbol.
+exports.blockIncidentIp = exports.blockIncidentAccount;
 
 exports.deleteIncident = async (req, res) => {
   try {

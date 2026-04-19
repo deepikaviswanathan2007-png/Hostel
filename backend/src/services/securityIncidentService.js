@@ -253,26 +253,8 @@ async function logSecurityIncident({
   }
 }
 
-async function isIpBlocked(ipAddress) {
-  if (!ipAddress) return false;
-  try {
-    const [rows] = await pool.query(
-      `SELECT id
-       FROM blocked_ips
-       WHERE ip_address = ?
-         AND (expires_at IS NULL OR expires_at > NOW())
-       LIMIT 1`,
-      [ipAddress]
-    );
-    return rows.length > 0;
-  } catch {
-    return false;
-  }
-}
-
 module.exports = {
   getSourceIp,
   getFingerprint,
   logSecurityIncident,
-  isIpBlocked,
 };

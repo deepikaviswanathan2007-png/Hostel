@@ -22,7 +22,7 @@ DROP TABLE IF EXISTS notices;
 DROP TABLE IF EXISTS warden_messages;
 DROP TABLE IF EXISTS complaints;
 DROP TABLE IF EXISTS security_incidents;
-DROP TABLE IF EXISTS blocked_ips;
+DROP TABLE IF EXISTS login_attempts;
 DROP TABLE IF EXISTS allocations;
 DROP TABLE IF EXISTS students;
 DROP TABLE IF EXISTS floor_warden_assignments;
@@ -53,13 +53,19 @@ CREATE TABLE IF NOT EXISTS users (
   password    VARCHAR(255) NULL,
   google_id   VARCHAR(255) DEFAULT NULL,
   role        ENUM('admin','caretaker','warden','student') DEFAULT 'student',
+  is_blocked  TINYINT(1) NOT NULL DEFAULT 0,
+  status      ENUM('active','blocked','suspended') NOT NULL DEFAULT 'active',
+  failed_login_attempts INT NOT NULL DEFAULT 0,
+  last_failed_login DATETIME DEFAULT NULL,
+  lock_until DATETIME DEFAULT NULL,
   specialty   VARCHAR(60) DEFAULT NULL,
   created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at  DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_users_email (email),
   INDEX idx_users_role (role),
   INDEX idx_users_google_id (google_id),
-  INDEX idx_users_specialty (specialty)
+  INDEX idx_users_specialty (specialty),
+  INDEX idx_users_block_state (is_blocked, status, lock_until)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE OR REPLACE VIEW wardens AS
@@ -345,17 +351,19 @@ CREATE TABLE IF NOT EXISTS security_incidents (
   INDEX idx_sec_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ── BLOCKED IPs TABLE ──
-CREATE TABLE IF NOT EXISTS blocked_ips (
-  id                 INT AUTO_INCREMENT PRIMARY KEY,
-  ip_address         VARCHAR(64) NOT NULL UNIQUE,
-  reason             VARCHAR(255) DEFAULT NULL,
-  blocked_by_user_id INT DEFAULT NULL,
-  expires_at         DATETIME DEFAULT NULL,
+-- ── LOGIN ATTEMPTS TABLE ──
+CREATE TABLE IF NOT EXISTS login_attempts (
+  id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
+  email              VARCHAR(120) NOT NULL,
+  user_id            INT DEFAULT NULL,
+  ip_address         VARCHAR(64) DEFAULT NULL,
+  user_agent         VARCHAR(1000) DEFAULT NULL,
+  success            TINYINT(1) NOT NULL DEFAULT 0,
+  failure_reason     VARCHAR(160) DEFAULT NULL,
   created_at         DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at         DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (blocked_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
-  INDEX idx_blocked_ips_expires (expires_at)
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_login_attempts_email_created (email, created_at),
+  INDEX idx_login_attempts_user_created (user_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ── REFRESH TOKENS TABLE ──

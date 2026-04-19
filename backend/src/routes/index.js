@@ -205,7 +205,8 @@ router.get('/security/logs', authenticate, adminOnly, securityCtrl.getIncidents)
 router.get('/security/incidents', authenticate, adminOnly, securityCtrl.getIncidents);
 router.post('/security/incidents', authenticate, adminOnly, securityCtrl.createManualIncident);
 router.patch('/security/incidents/:id/resolve', authenticate, adminOnly, securityCtrl.resolveIncident);
-router.patch('/security/incidents/:id/block', authenticate, adminOnly, securityCtrl.blockIncidentIp);
+router.patch('/security/incidents/:id/block-account', authenticate, adminOnly, securityCtrl.blockIncidentAccount);
+router.patch('/security/incidents/:id/block', authenticate, adminOnly, securityCtrl.blockIncidentAccount);
 router.delete('/security/incidents/:id', authenticate, adminOnly, securityCtrl.deleteIncident);
 
 module.exports = router;

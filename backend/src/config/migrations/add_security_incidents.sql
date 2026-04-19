@@ -32,14 +32,3 @@ CREATE TABLE IF NOT EXISTS security_incidents (
   INDEX idx_sec_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS blocked_ips (
-  id                 INT AUTO_INCREMENT PRIMARY KEY,
-  ip_address         VARCHAR(64) NOT NULL UNIQUE,
-  reason             VARCHAR(255) DEFAULT NULL,
-  blocked_by_user_id INT DEFAULT NULL,
-  expires_at         DATETIME DEFAULT NULL,
-  created_at         DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at         DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (blocked_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
-  INDEX idx_blocked_ips_expires (expires_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -3,7 +3,6 @@ const helmet = require('helmet');
 const crypto = require('crypto');
 const {
   logSecurityIncident,
-  isIpBlocked,
   getSourceIp,
 } = require('../services/securityIncidentService');
 
@@ -163,21 +162,6 @@ const requestSizeGuard = (maxBytes = 1024 * 1024) => {
 //    Blocks common malicious path patterns and bad user agents.
 const suspiciousRequestBlocker = async (req, res, next) => {
   const sourceIp = getSourceIp(req);
-
-  if (await isIpBlocked(sourceIp)) {
-    logSecurityIncident({
-      req,
-      eventType: 'BLOCKED_IP_REQUEST',
-      severity: 'high',
-      status: 'blocked',
-      message: `Blocked IP attempted access: ${sourceIp}`,
-      extraContext: { sourceIp },
-    });
-    return res.status(403).json({
-      success: false,
-      message: 'Forbidden.',
-    });
-  }
 
   const blockedPatterns = [
     /\.\.\//, /\.\.\\/, /%2e%2e/i,             // path traversal

@@ -44,7 +44,7 @@ const authenticate = async (req, res, next) => {
     }
 
     const [rows] = await pool.query(
-      'SELECT id, name, email, role FROM users WHERE id = ? LIMIT 1',
+      'SELECT id, name, email, role, status, is_blocked, lock_until FROM users WHERE id = ? LIMIT 1',
       [decoded.id]
     );
 
@@ -53,7 +53,16 @@ const authenticate = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'User associated with token not found.' });
     }
 
-    req.user = rows[0];
+    const dbUser = rows[0];
+    const hardBlocked = Number(dbUser.is_blocked || 0) === 1 || String(dbUser.status || '').toLowerCase() === 'blocked';
+    const suspended = String(dbUser.status || '').toLowerCase() === 'suspended';
+
+    if (hardBlocked || suspended) {
+      logDeniedAccess(req, 'Blocked/suspended account attempted to access protected route.', dbUser, 'high');
+      return res.status(403).json({ success: false, message: 'Account is blocked' });
+    }
+
+    req.user = dbUser;
     req.user.rbacRole = req.user.role === 'admin' ? 'admin' : 'user';
     next();
   } catch (err) {
