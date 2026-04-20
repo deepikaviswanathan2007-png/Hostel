@@ -1,18 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --font-display: 'Poppins';
-    --font-sans: 'Inter';
+    --font-display: 'Outfit';
+    --font-sans: 'Space Grotesk';
     --font-mono: 'IBM Plex Mono';
-    --college-primary: #2563EB;
-    --college-secondary: #1D4ED8;
+    --college-primary: #0891B2;
+    --college-secondary: #0F172A;
     --college-accent: #F59E0B;
-    --college-ring: #DBEAFE;
-    --college-soft: #EFF6FF;
+    --college-ring: #CFFAFE;
+    --college-soft: #ECFEFF;
   }
 
   html {
@@ -24,9 +24,9 @@
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
     background:
-      radial-gradient(circle at top left, rgba(125, 83, 246, 0.12), transparent 26%),
-      radial-gradient(circle at 82% 12%, rgba(3, 136, 252, 0.10), transparent 22%),
-      linear-gradient(180deg, #f8faff 0%, #eef3fb 100%);
+      radial-gradient(circle at 8% 10%, rgba(45, 212, 191, 0.16), transparent 28%),
+      radial-gradient(circle at 88% 6%, rgba(56, 189, 248, 0.16), transparent 24%),
+      linear-gradient(180deg, #f5f8fc 0%, #eef3f8 100%);
   }
 
   body {
@@ -39,9 +39,9 @@
     font-feature-settings: 'liga' 1, 'calt' 1;
     overflow-x: hidden;
     background:
-      radial-gradient(circle at top left, rgba(125, 83, 246, 0.12), transparent 26%),
-      radial-gradient(circle at 82% 12%, rgba(3, 136, 252, 0.10), transparent 22%),
-      linear-gradient(180deg, #f8faff 0%, #eef3fb 100%);
+      radial-gradient(circle at 8% 10%, rgba(45, 212, 191, 0.16), transparent 28%),
+      radial-gradient(circle at 88% 6%, rgba(56, 189, 248, 0.16), transparent 24%),
+      linear-gradient(180deg, #f5f8fc 0%, #eef3f8 100%);
   }
 
   #root {
@@ -74,8 +74,8 @@
   }
 
   ::selection {
-    background: rgba(125, 83, 246, 0.18);
-    color: #1f2937;
+    background: rgba(8, 145, 178, 0.2);
+    color: #0f172a;
   }
 }
 
@@ -118,7 +118,7 @@
       linear-gradient(90deg, rgba(255,255,255,0.18) 1px, transparent 1px);
     background-size: 34px 34px;
     mask-image: linear-gradient(180deg, rgba(0,0,0,0.26), transparent 74%);
-    opacity: 0.42;
+    opacity: 0.32;
   }
 
   .soft-surface {
@@ -135,7 +135,7 @@
 
   .dashboard-grid {
     background-image:
-      radial-gradient(circle at top left, rgba(125, 83, 246, 0.08), transparent 22%),
-      radial-gradient(circle at 82% 10%, rgba(3, 136, 252, 0.07), transparent 18%);
+      radial-gradient(circle at top left, rgba(45, 212, 191, 0.12), transparent 22%),
+      radial-gradient(circle at 82% 10%, rgba(56, 189, 248, 0.1), transparent 18%);
   }
 }
