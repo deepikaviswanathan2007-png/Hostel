@@ -1,13 +1,9 @@
 import React from 'react';
-import { Menu } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function TopNavBar({ pageTitle, brandingContent, theme = 'admin' }) {
   const { user } = useAuth();
   const initials = user?.name?.charAt(0)?.toUpperCase() || 'U';
-  
-  // Format role text
-  const roleDisplay = user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'User';
 
   return (
     <div className="sticky top-0 z-30 border-b border-brand-border bg-white">
@@ -24,13 +20,10 @@ export default function TopNavBar({ pageTitle, brandingContent, theme = 'admin' 
 
         {/* Right: User Info Block + Avatar */}
         <div className="flex items-center gap-3 ml-6">
-          {/* User Name & Role */}
+          {/* User Name */}
           <div className="text-right hidden sm:block">
             <div className="text-[13px] font-medium text-brand-text">
               {user?.name || 'User'}
-            </div>
-            <div className="text-[11px] text-brand-muted">
-              {roleDisplay}
             </div>
           </div>
 
