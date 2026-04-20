@@ -19,7 +19,7 @@ const {
   clearAuthCookies,
 } = require('../utils/tokenService');
 
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const googleClient = new OAuth2Client();
 const INVALID_CREDENTIALS_MSG = 'Invalid email or password';
 const EMAIL_NOT_REGISTERED_MSG = 'Email not registered';
 const EMAIL_ALREADY_REGISTERED_MSG = 'Email is already registered';
@@ -55,6 +55,16 @@ const getRemainingLockSeconds = (lockUntil) => {
   const ms = new Date(lockUntil).getTime() - Date.now();
   if (!Number.isFinite(ms) || ms <= 0) return 0;
   return Math.ceil(ms / 1000);
+};
+
+const getGoogleAudiences = () => {
+  const single = String(process.env.GOOGLE_CLIENT_ID || '').trim();
+  const multiple = String(process.env.GOOGLE_CLIENT_IDS || '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  return [...new Set([single, ...multiple].filter(Boolean))];
 };
 
 const recordLoginAttempt = async ({ req, email, userId = null, success, reason = null }) => {
@@ -336,17 +346,32 @@ const login = async (req, res) => {
 };
 
 const googleLogin = async (req, res) => {
-  const credential = String(req.body?.credential || '');
+  const credential = String(req.body?.credential || '').trim();
   if (!credential) {
     return res.status(400).json({ success: false, message: 'Google credential required.' });
   }
 
   try {
+    const audiences = getGoogleAudiences();
+    if (!audiences.length) {
+      logAuthFailure(req, 'Google login attempted without GOOGLE_CLIENT_ID/GOOGLE_CLIENT_IDS configured.');
+      return res.status(500).json({
+        success: false,
+        message: 'Google sign-in is not configured on the server.',
+      });
+    }
+
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
+      audience: audiences.length === 1 ? audiences[0] : audiences,
     });
-    const { sub: googleId, email } = ticket.getPayload();
+    const payload = ticket.getPayload() || {};
+    const { sub: googleId, email } = payload;
+
+    if (!googleId || !email) {
+      logAuthFailure(req, 'Google login failed because id_token payload was missing required claims.');
+      return res.status(401).json({ success: false, message: 'Google authentication failed.' });
+    }
 
     let [rows] = await pool.query('SELECT * FROM users WHERE google_id = ? LIMIT 1', [googleId]);
 
@@ -415,7 +440,11 @@ const googleLogin = async (req, res) => {
     });
   } catch (err) {
     logAuthFailure(req, `Google login verification failed: ${err.message}`);
-    return res.status(401).json({ success: false, message: 'Google authentication failed.' });
+    return res.status(401).json({
+      success: false,
+      message: 'Google authentication failed.',
+      ...(process.env.NODE_ENV === 'production' ? {} : { details: err.message }),
+    });
   }
 };
 
