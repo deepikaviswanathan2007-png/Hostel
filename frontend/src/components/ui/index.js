@@ -3,18 +3,18 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function Button({ children, variant = 'primary', size = 'md', className = '', loading, ...props }) {
-  const base = 'inline-flex items-center justify-center gap-2 rounded-full font-medium transition-all duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent hover:-translate-y-0.5 hover:shadow-card-hover';
+  const base = 'inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer focus:outline-none border border-transparent';
   
   const variants = {
-    primary:  'bg-gradient-to-r from-brand-primary to-brand-primary-light text-white shadow-brand focus:ring-brand-primary',
-    outline:  'border border-brand-border bg-white/90 text-brand-text shadow-card hover:bg-white focus:ring-brand-primary/20',
-    ghost:    'bg-transparent text-brand-muted hover:bg-brand-primarybg hover:text-brand-text focus:ring-brand-primary/20',
-    danger:   'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-brand focus:ring-red-500',
-    success:  'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-brand focus:ring-emerald-500',
-    skyblue:  'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-brand focus:ring-sky-500',
+    primary:  'bg-brand-primary hover:bg-brand-primaryLight text-white rounded-lg',
+    outline:  'border-brand-border bg-white text-brand-text hover:bg-brand-bg rounded-lg',
+    ghost:    'bg-transparent text-brand-primary hover:bg-brand-bg rounded-lg',
+    danger:   'bg-brand-danger hover:bg-red-700 text-white rounded-lg',
+    success:  'bg-brand-success hover:bg-green-700 text-white rounded-lg',
+    skyblue:  'bg-brand-accent hover:bg-blue-600 text-white rounded-lg',
   };
   
-  const sizes = { sm: 'h-9 px-3 text-sm', md: 'h-10 px-4 text-sm', lg: 'h-11 px-6 text-base' };
+  const sizes = { sm: 'h-8 px-3 text-sm', md: 'h-9 px-4 text-sm', lg: 'h-11 px-6 text-base' };
   const { type = 'button' } = props;
   
   return (
@@ -27,7 +27,7 @@ export function Button({ children, variant = 'primary', size = 'md', className =
 
 export function Badge({ children, variant = 'default', className = '' }) {
   const variants = {
-    default:  'bg-brand-primarybg text-brand-muted border-brand-border',
+    default:  'bg-brand-bg text-brand-muted border-brand-border',
     success:  'bg-emerald-50 text-emerald-700 border-emerald-200',
     warning:  'bg-amber-50 text-amber-700 border-amber-200',
     danger:   'bg-red-50 text-red-700 border-red-200',
@@ -38,7 +38,7 @@ export function Badge({ children, variant = 'default', className = '' }) {
     outline:  'bg-white/90 text-brand-muted border-brand-border',
   };
   return (
-    <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${variants[variant] || variants.default} ${className}`}>
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${variants[variant] || variants.default} ${className}`}>
       {children}
     </span>
   );
@@ -46,14 +46,12 @@ export function Badge({ children, variant = 'default', className = '' }) {
 
 export function Card({ children, className = '', hover = false, ...props }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`rounded-[24px] border border-white/80 bg-white/85 shadow-card backdrop-blur-xl ${hover ? 'transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover' : ''} ${className}`}
+    <div
+      className={`rounded-lg border border-brand-border bg-white ${hover ? 'transition-all duration-300 hover:shadow-lg' : ''} ${className}`}
       {...props}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 
@@ -64,11 +62,11 @@ export function Input({ label, error, className = '', icon, ...props }) {
       <div className="relative">
         {icon && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-muted">{icon}</span>}
         <input
-          className={`w-full ${icon ? 'pl-9' : 'pl-3'} pr-3 h-11 rounded-2xl border border-brand-border bg-white/92 text-sm text-brand-text placeholder:text-brand-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-card ${error ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500' : ''} ${className}`}
+          className={`w-full ${icon ? 'pl-9' : 'pl-3'} pr-3 h-10 rounded-lg border border-brand-border bg-white text-sm text-brand-text placeholder:text-brand-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/10 focus:border-brand-primary transition-all ${error ? 'border-brand-danger focus:ring-brand-danger/10 focus:border-brand-danger' : ''} ${className}`}
           {...props}
         />
       </div>
-      {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
+      {error && <p className="text-xs text-brand-danger mt-0.5">{error}</p>}
     </div>
   );
 }
@@ -78,12 +76,12 @@ export function Select({ label, error, className = '', children, ...props }) {
     <div className="flex flex-col gap-1.5">
       {label && <label className="text-sm font-medium text-brand-text">{label}</label>}
       <select
-        className={`w-full h-11 px-3 pr-10 rounded-2xl border border-brand-border bg-white/92 text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-card appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%235F6388%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-[length:16px_16px] bg-[right_12px_center] bg-no-repeat ${error ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500' : ''} ${className}`}
+        className={`w-full h-10 px-3 pr-10 rounded-lg border border-brand-border bg-white text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/10 focus:border-brand-primary transition-all appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%236B7A90%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-[length:16px_16px] bg-[right_12px_center] bg-no-repeat ${error ? 'border-brand-danger focus:ring-brand-danger/10 focus:border-brand-danger' : ''} ${className}`}
         {...props}
       >
         {children}
       </select>
-      {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
+      {error && <p className="text-xs text-brand-danger mt-0.5">{error}</p>}
     </div>
   );
 }
@@ -94,10 +92,10 @@ export function Textarea({ label, error, className = '', ...props }) {
       {label && <label className="text-sm font-medium text-brand-text">{label}</label>}
       <textarea
         rows={3}
-        className={`w-full px-3 py-3 rounded-2xl border border-brand-border bg-white/92 text-sm text-brand-text placeholder:text-brand-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-card resize-none ${error ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500' : ''} ${className}`}
+        className={`w-full px-3 py-3 rounded-lg border border-brand-border bg-white text-sm text-brand-text placeholder:text-brand-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/10 focus:border-brand-primary transition-all resize-none ${error ? 'border-brand-danger focus:ring-brand-danger/10 focus:border-brand-danger' : ''} ${className}`}
         {...props}
       />
-      {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
+      {error && <p className="text-xs text-brand-danger mt-0.5">{error}</p>}
     </div>
   );
 }
@@ -122,7 +120,7 @@ export function Modal({ open, isOpen, onClose, title, children, size = 'md' }) {
         <>
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-40 bg-black/45"
             onClick={onClose}
           />
           <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 pt-8 sm:items-center sm:pt-4 pointer-events-none">
@@ -131,11 +129,11 @@ export function Modal({ open, isOpen, onClose, title, children, size = 'md' }) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ duration: 0.2 }}
-              className={`my-2 w-full ${sizes[size]} pointer-events-auto overflow-hidden rounded-[28px] border border-white/80 bg-white/88 shadow-[0_28px_70px_rgba(15,23,42,0.18)] backdrop-blur-xl flex flex-col max-h-[92vh] sm:my-0`}
+              className={`my-2 w-full ${sizes[size]} pointer-events-auto overflow-hidden rounded-xl border border-brand-border bg-white shadow-[0_20px_60px_rgba(0,0,0,0.12)] flex flex-col max-h-[92vh] sm:my-0`}
             >
-              <div className="flex items-center justify-between border-b border-brand-border/70 px-6 py-4 bg-white/60">
-                <h2 className="text-lg font-bold text-brand-text">{title}</h2>
-                <button type="button" onClick={onClose} className="rounded-full p-1.5 text-brand-muted hover:bg-brand-primarybg hover:text-brand-text transition-colors">
+              <div className="flex items-center justify-between border-b border-brand-border px-6 py-4 bg-brand-bg">
+                <h2 className="text-base font-semibold text-brand-text font-display">{title}</h2>
+                <button type="button" onClick={onClose} className="rounded-lg p-1.5 text-brand-muted hover:bg-brand-border hover:text-brand-text transition-colors">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
               </div>
@@ -157,7 +155,7 @@ export function Modal({ open, isOpen, onClose, title, children, size = 'md' }) {
 export function EmptyState({ icon, title, description }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-      {icon ? <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-primarybg text-brand-primary">{icon}</div> : null}
+      {icon ? <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-lg bg-brand-bg text-brand-muted">{icon}</div> : null}
       <h3 className="text-base font-semibold text-brand-text mb-1">{title}</h3>
       {description && <p className="text-sm text-brand-muted max-w-sm">{description}</p>}
     </div>
@@ -354,51 +352,22 @@ export function PortalHero({
   accent = 'primary',
   className = '',
 }) {
-  const accents = {
-    primary: {
-      glow: 'bg-brand-primary/12',
-      soft: 'bg-[#f4f1ff]',
-      text: 'text-brand-primary',
-      ring: 'border-[#ece8ff]',
-      icon: 'bg-brand-primary/12 text-brand-primary',
-    },
-    orange: {
-      glow: 'bg-[#CDBDF1]/30',
-      soft: 'bg-[#CDBDF1]/20',
-      text: 'text-[#2F3396]',
-      ring: 'border-[#CDBDF1]',
-      icon: 'bg-[#CDBDF1]/40 text-[#2F3396]',
-    },
-    blue: {
-      glow: 'bg-sky-500/10',
-      soft: 'bg-sky-50',
-      text: 'text-sky-600',
-      ring: 'border-sky-100',
-      icon: 'bg-sky-100 text-sky-600',
-    },
-  };
-
-  const palette = accents[accent] || accents.primary;
-
   return (
-    <section className={`relative overflow-hidden rounded-[28px] border border-white/80 bg-white/82 px-4 py-4 shadow-[0_18px_40px_rgba(145,158,171,0.12)] backdrop-blur-xl md:px-5 md:py-5 ${className}`}>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(125,83,246,0.14),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(3,136,252,0.08),transparent_24%)]" />
-      <div className={`absolute -right-8 -top-8 h-28 w-28 rounded-full blur-3xl ${palette.glow}`} />
-      <div className="relative flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+    <section className={`border-b border-brand-border pb-5 mb-6 ${className}`}>
+      <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
         <div className="max-w-2xl">
           {eyebrow && (
-            <div className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] ${palette.soft} ${palette.text} ${palette.ring}`}>
-              {icon ? <span className={`flex h-5 w-5 items-center justify-center rounded-full ${palette.icon}`}>{icon}</span> : null}
-              <span>{eyebrow}</span>
+            <div className="text-xs uppercase tracking-widest font-semibold text-brand-primary mb-2">
+              {eyebrow}
             </div>
           )}
-          <h1 className="mt-3 font-display text-[2rem] font-black tracking-[-0.04em] text-brand-text md:text-[2.25rem] md:leading-[1.05]">{title}</h1>
+          <h1 className="font-display text-2xl font-bold text-brand-text">{title}</h1>
           {description && (
-            <p className="mt-2.5 max-w-2xl text-sm leading-6 text-brand-muted md:text-[0.95rem]">{description}</p>
+            <p className="mt-1.5 max-w-2xl text-sm leading-6 text-brand-muted">{description}</p>
           )}
           {meta && <div className="mt-4">{meta}</div>}
         </div>
-        {actions && <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">{actions}</div>}
+        {actions && <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end mt-4 xl:mt-0">{actions}</div>}
       </div>
     </section>
   );
@@ -406,41 +375,43 @@ export function PortalHero({
 
 export function MetricPanel({ title, value, helper, icon, tone = 'primary', className = '' }) {
   const tones = {
-    primary: 'bg-brand-primary/10 text-brand-primary',
-    orange: 'bg-orange-100 text-orange-600',
-    blue: 'bg-sky-100 text-sky-600',
-    green: 'bg-emerald-100 text-emerald-600',
-    red: 'bg-red-100 text-red-600',
-    purple: 'bg-purple-100 text-purple-600',
+    primary: { bg: 'bg-brand-bg', icon: 'text-brand-primary' },
+    orange: { bg: 'bg-amber-50', icon: 'text-amber-600' },
+    blue: { bg: 'bg-blue-50', icon: 'text-blue-600' },
+    green: { bg: 'bg-emerald-50', icon: 'text-emerald-600' },
+    red: { bg: 'bg-red-50', icon: 'text-red-600' },
+    purple: { bg: 'bg-violet-50', icon: 'text-violet-600' },
   };
 
+  const tone_config = tones[tone] || tones.primary;
+
   return (
-    <Card className={`rounded-[22px] border-white/80 bg-white/88 p-4 backdrop-blur-xl ${className}`}>
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-[9px] font-semibold uppercase tracking-[0.16em] text-brand-muted">{title}</div>
-          <div className="mt-2 font-display text-[2rem] font-black tracking-[-0.04em] text-brand-text">{value}</div>
-          {helper && <div className="mt-1 text-xs text-brand-muted">{helper}</div>}
-        </div>
-        {icon ? <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${tones[tone] || tones.primary}`}>{icon}</div> : null}
+    <div className={`border border-brand-border bg-white rounded-lg p-5 min-h-[100px] flex flex-col justify-between ${className}`}>
+      <div>
+        <div className="text-xs uppercase tracking-widest font-semibold text-brand-muted">{title}</div>
+        <div className="mt-3 font-display text-3xl font-bold text-brand-text">{value}</div>
       </div>
-    </Card>
+      <div className="flex items-end justify-between mt-3">
+        {helper && <div className="text-xs text-brand-muted">{helper}</div>}
+        {icon ? <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${tone_config.bg} ${tone_config.icon}`}>{icon}</div> : null}
+      </div>
+    </div>
   );
 }
 
 export function PanelShell({ title, description, action, children, className = '' }) {
   return (
-    <section className={`overflow-hidden rounded-[28px] border border-white/80 bg-white/88 shadow-[0_18px_42px_rgba(145,158,171,0.11)] backdrop-blur-xl ${className}`}>
+    <section className={`overflow-hidden rounded-lg border border-brand-border bg-white ${className}`}>
       {(title || description || action) && (
-        <div className="flex flex-col gap-3 border-b border-brand-border/70 bg-[linear-gradient(180deg,rgba(247,248,253,0.95)_0%,rgba(247,248,253,0.76)_100%)] px-4 py-4 md:flex-row md:items-center md:justify-between md:px-5">
+        <div className="flex flex-col gap-3 border-b border-brand-border bg-brand-bg px-6 py-4 md:flex-row md:items-center md:justify-between">
           <div>
-            {title && <h2 className="font-display text-[1.15rem] font-bold tracking-[-0.03em] text-brand-text md:text-[1.35rem]">{title}</h2>}
-            {description && <p className="mt-1.5 max-w-2xl text-xs leading-6 text-brand-muted md:text-sm">{description}</p>}
+            {title && <h2 className="font-display text-base font-semibold text-brand-text">{title}</h2>}
+            {description && <p className="mt-0.5 max-w-2xl text-xs leading-6 text-brand-muted md:text-sm">{description}</p>}
           </div>
           {action && <div className="shrink-0">{action}</div>}
         </div>
       )}
-      <div className="px-4 py-4 md:px-5">{children}</div>
+      <div className="px-6 py-5">{children}</div>
     </section>
   );
 }

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import toast from 'react-hot-toast';
+import { ShieldCheck, Eye, Network } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
@@ -52,73 +53,140 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#F0F2F5] px-4 py-8 text-[#333]">
-      <div className="w-full max-w-[420px]">
-        <div className="rounded-xl border border-gray-100 bg-white px-8 py-10 shadow-lg sm:px-10">
-          <div className="mb-6 flex flex-col items-center gap-2">
-            <img
-              src="/bit-hostel-logo.png"
-              alt="Bannari Amman Institute of Technology - Hostel"
-              className="h-28 w-28 object-contain drop-shadow-sm"
-            />
-            <div className="text-center">
-              <div className="text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--college-primary, #2563EB)' }}>
-                Bannari Amman Institute of Technology
-              </div>
-              <h1 className="mt-1 text-[18px] font-semibold tracking-wide text-gray-800">
-                Hostel Management Portal
-              </h1>
-              <p className="mt-0.5 text-[12px] text-gray-400">Sign in to continue</p>
+    <div className="flex min-h-screen bg-brand-bg">
+      {/* Left Panel - Desktop Only */}
+      <div className="hidden md:flex md:w-2/5 bg-brand-sidebar flex-col items-center justify-center px-12 py-12">
+        <div className="max-w-sm text-center">
+          {/* Logo */}
+          <div className="mb-6 flex justify-center">
+            <div className="h-[72px] w-[72px] rounded-full bg-white flex items-center justify-center">
+              <img
+                src="/bit-hostel-logo.png"
+                alt="Bannari Amman Institute of Technology"
+                className="h-16 w-16 object-contain"
+              />
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="login-username" className="mb-1 block text-[13px] font-medium text-gray-700 text-left">Username</label>
-              <input
-                id="login-username"
-                type="text"
-                placeholder="Enter your username"
-                value={form.email}
-                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                autoComplete="username"
-                className="h-10 w-full rounded border border-[#e2e8f0] bg-[#f0f4f8] px-3 text-[14px] text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1"
-                style={{ outlineColor: 'var(--college-primary, #2563EB)' }}
-                required
+          {/* College Name */}
+          <h1 className="text-2xl font-bold text-white font-display mb-2">
+            Bannari Amman Institute of Technology
+          </h1>
+
+          {/* Tagline */}
+          <p className="text-base text-white/60 mb-8">
+            Hostel Management Portal
+          </p>
+
+          {/* Decorative Line */}
+          <div className="h-px bg-white/15 my-8" />
+
+          {/* Features */}
+          <div className="space-y-4 text-white/60">
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="h-5 w-5 text-white/70 flex-shrink-0" />
+              <span className="text-sm">Secure role-based access</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Eye className="h-5 w-5 text-white/70 flex-shrink-0" />
+              <span className="text-sm">Real-time room & complaint tracking</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Network className="h-5 w-5 text-white/70 flex-shrink-0" />
+              <span className="text-sm">Managed by Hostel Administration</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Panel - Form */}
+      <div className="flex w-full md:w-3/5 flex-col items-center justify-center px-4 py-8 md:py-0">
+        <div className="w-full max-w-[380px]">
+          {/* Mobile Logo */}
+          <div className="md:hidden mb-8 flex flex-col items-center">
+            <div className="h-16 w-16 rounded-full bg-white border-2 border-brand-border flex items-center justify-center mb-4">
+              <img
+                src="/bit-hostel-logo.png"
+                alt="Logo"
+                className="h-14 w-14 object-contain"
               />
             </div>
+            <h2 className="text-xl font-bold text-brand-text font-display text-center">
+              Hostel Management Portal
+            </h2>
+          </div>
 
-            <div>
-              <label htmlFor="login-password" className="mb-1 block text-[13px] font-medium text-gray-700 text-left">Password</label>
-              <input
-                id="login-password"
-                type="password"
-                placeholder="Enter your password"
-                value={form.password}
-                onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                autoComplete="current-password"
-                className="h-10 w-full rounded border border-[#e2e8f0] bg-[#f0f4f8] px-3 text-[14px] text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1"
-                style={{ outlineColor: 'var(--college-primary, #2563EB)' }}
-                required
-              />
+          {/* Card */}
+          <div className="rounded-xl border border-brand-border bg-white shadow-sm p-8">
+            {/* Header */}
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-brand-text font-display">
+                Sign In
+              </h1>
+              <p className="text-sm text-brand-muted mt-1">
+                Enter your credentials to continue
+              </p>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="mt-6 h-10 w-full rounded text-[15px] font-medium text-white transition-colors focus:outline-none disabled:opacity-50"
-              style={{ backgroundColor: 'var(--college-primary, #2563EB)' }}
-            >
-              {loading ? 'Logging in...' : 'Login'}
-            </button>
-          </form>
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Username Field */}
+              <div>
+                <label htmlFor="login-username" className="block text-sm font-medium text-brand-text mb-1.5">
+                  Username
+                </label>
+                <input
+                  id="login-username"
+                  type="text"
+                  placeholder="Enter your username"
+                  value={form.email}
+                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  autoComplete="username"
+                  className="h-10 w-full rounded-lg border border-brand-border bg-white px-3.5 text-sm text-brand-text placeholder:text-brand-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/10 focus:border-brand-primary transition-all"
+                  required
+                />
+              </div>
 
-          {googleLoginEnabled && (
-            <>
-              <div className="my-5 text-center text-[13px] text-gray-600">Or</div>
+              {/* Password Field */}
+              <div>
+                <label htmlFor="login-password" className="block text-sm font-medium text-brand-text mb-1.5">
+                  Password
+                </label>
+                <input
+                  id="login-password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={form.password}
+                  onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                  autoComplete="current-password"
+                  className="h-10 w-full rounded-lg border border-brand-border bg-white px-3.5 text-sm text-brand-text placeholder:text-brand-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/10 focus:border-brand-primary transition-all"
+                  required
+                />
+              </div>
 
-              <div className="flex justify-center">
-                <div className="overflow-hidden rounded border border-gray-200 bg-white">
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="h-10 w-full rounded-lg bg-brand-primary hover:bg-brand-primaryLight text-white text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Signing in...' : 'Sign In'}
+              </button>
+            </form>
+
+            {/* Google Login */}
+            {googleLoginEnabled && (
+              <>
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-brand-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="bg-white px-2 text-brand-muted">or continue with</span>
+                  </div>
+                </div>
+
+                <div className="flex justify-center">
                   <GoogleLogin
                     onSuccess={handleGoogleSuccess}
                     onError={handleGoogleError}
@@ -128,15 +196,20 @@ export default function LoginPage() {
                     shape="rectangular"
                   />
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
 
-          {!googleLoginEnabled && (
-            <p className="mt-4 text-center text-[12px] text-gray-400">
-              Google sign-in is disabled for this environment.
-            </p>
-          )}
+            {!googleLoginEnabled && (
+              <p className="mt-6 text-center text-xs text-brand-muted">
+                Google sign-in is disabled for this environment.
+              </p>
+            )}
+
+            {/* Footer */}
+            <div className="mt-6 border-t border-brand-border pt-4 text-center text-xs text-brand-muted">
+              Bannari Amman Institute of Technology © 2025
+            </div>
+          </div>
         </div>
       </div>
     </div>

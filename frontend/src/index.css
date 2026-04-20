@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,13 +6,13 @@
 @layer base {
   :root {
     --font-display: 'Outfit';
-    --font-sans: 'Space Grotesk';
+    --font-sans: 'DM Sans';
     --font-mono: 'IBM Plex Mono';
-    --college-primary: #0891B2;
-    --college-secondary: #0F172A;
-    --college-accent: #F59E0B;
-    --college-ring: #CFFAFE;
-    --college-soft: #ECFEFF;
+    --college-primary: #1A3C6E;
+    --college-secondary: #1C2B3A;
+    --college-accent: #0078D4;
+    --college-ring: #EFF6FF;
+    --college-soft: #F4F6F9;
   }
 
   html {
@@ -23,10 +23,7 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
-    background:
-      radial-gradient(circle at 8% 10%, rgba(45, 212, 191, 0.16), transparent 28%),
-      radial-gradient(circle at 88% 6%, rgba(56, 189, 248, 0.16), transparent 24%),
-      linear-gradient(180deg, #f5f8fc 0%, #eef3f8 100%);
+    background: #F4F6F9;
   }
 
   body {
@@ -34,14 +31,11 @@
     margin: 0;
     padding: 0;
     min-height: 100%;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
     line-height: 1.5;
     font-feature-settings: 'liga' 1, 'calt' 1;
     overflow-x: hidden;
-    background:
-      radial-gradient(circle at 8% 10%, rgba(45, 212, 191, 0.16), transparent 28%),
-      radial-gradient(circle at 88% 6%, rgba(56, 189, 248, 0.16), transparent 24%),
-      linear-gradient(180deg, #f5f8fc 0%, #eef3f8 100%);
+    background: #F4F6F9;
   }
 
   #root {
@@ -65,25 +59,25 @@
   h5,
   h6 {
     font-family: var(--font-display);
-    letter-spacing: -0.03em;
+    letter-spacing: -0.02em;
   }
 
   * {
-    scrollbar-color: #c0c9da transparent;
+    scrollbar-color: #DDE3ED transparent;
     box-sizing: border-box;
   }
 
   ::selection {
-    background: rgba(8, 145, 178, 0.2);
-    color: #0f172a;
+    background: rgba(26, 60, 110, 0.2);
+    color: #1C2B3A;
   }
 }
 
 @layer utilities {
   .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
   .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-  .scrollbar-thin::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 999px; }
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: #DDE3ED; border-radius: 999px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #AAB2C5; }
 
   .scrollbar-hidden {
     -ms-overflow-style: none;
@@ -97,10 +91,10 @@
   }
 
   .glass-panel {
-    background: rgba(255, 255, 255, 0.82);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
 
   .page-shell {
@@ -108,34 +102,17 @@
     isolation: isolate;
   }
 
-  .page-shell::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    background-image:
-      linear-gradient(rgba(255,255,255,0.18) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.18) 1px, transparent 1px);
-    background-size: 34px 34px;
-    mask-image: linear-gradient(180deg, rgba(0,0,0,0.26), transparent 74%);
-    opacity: 0.32;
-  }
-
   .soft-surface {
-    background: rgba(255, 255, 255, 0.88);
-    border: 1px solid rgba(226, 232, 240, 0.9);
-    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.98);
+    border: 1px solid #DDE3ED;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
 
   .premium-outline {
-    border: 1px solid rgba(226, 232, 240, 0.85);
+    border: 1px solid #DDE3ED;
   }
 
   .dashboard-grid {
-    background-image:
-      radial-gradient(circle at top left, rgba(45, 212, 191, 0.12), transparent 22%),
-      radial-gradient(circle at 82% 10%, rgba(56, 189, 248, 0.1), transparent 18%);
+    background: #F4F6F9;
   }
 }

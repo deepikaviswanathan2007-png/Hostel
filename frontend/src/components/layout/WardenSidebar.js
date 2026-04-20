@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Home, Users, FileText, LogOut, X, List, Building2, RefreshCcw, CalendarCheck, MessageSquare } from 'lucide-react';
+import { Menu, Home, Users, FileText, LogOut, X, List, Building2, RefreshCcw, CalendarCheck, MessageSquare } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import TopNavBar from './TopNavBar';
 
@@ -46,17 +45,14 @@ function NavItem({ to, label, icon: Icon, onClick, end = false }) {
       onClick={onClick}
       children={({ isActive }) => (
         <div
-          className={`group flex items-center justify-between rounded-xl px-3 py-2.5 text-[14px] font-semibold transition-all duration-200 ${isActive
-            ? 'text-white shadow-sm'
-            : 'text-black hover:bg-slate-100/90 hover:text-black'
+          className={`flex items-center gap-2 h-[38px] rounded-lg px-4 text-[13.5px] font-medium transition-all duration-150 m-0.5 mx-2 ${
+            isActive
+              ? 'bg-white/15 text-white border-l-3 border-blue-400 pl-[13px]'
+              : 'text-white/70 hover:bg-white/8 hover:text-white'
           }`}
-          style={isActive ? { backgroundColor: 'var(--college-primary, #2563EB)' } : undefined}
         >
-          <div className="flex items-center gap-3">
-            <Icon className="h-4 w-4" />
-            <span>{label}</span>
-          </div>
-          <ChevronRight className="h-4 w-4 text-current opacity-60 transition-transform group-hover:translate-x-0.5" />
+          <Icon className="h-[15px] w-[15px] stroke-[1.75]" />
+          <span>{label}</span>
         </div>
       )}
     />
@@ -64,12 +60,6 @@ function NavItem({ to, label, icon: Icon, onClick, end = false }) {
 }
 
 export default function WardenSidebar() {
-  const contentZoom = 0.95;
-  const contentScaleStyle = {
-    transform: `scale(${contentZoom})`,
-    transformOrigin: 'top left',
-    width: `${100 / contentZoom}%`,
-  };
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -86,24 +76,30 @@ export default function WardenSidebar() {
 
   return (
     <div className="min-h-screen bg-brand-surface font-sans">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[292px] flex-col border-r border-slate-200 bg-slate-50 shadow-[0_10px_35px_rgba(15,23,42,0.08)] lg:flex">
-        <div className="border-b border-slate-200 px-6 py-6 bg-white/70">
-          <div className="flex items-center gap-2">
-            <img src="/bit-hostel-logo.png" alt="Bannari Amman Institute of Technology Logo" className="h-[38px] w-[38px] object-contain drop-shadow-sm" />
-            <div className="leading-tight">
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.08em] leading-tight" style={{ color: 'var(--college-primary, #2563EB)' }}>Bannari Amman Institute of Technology</div>
-              <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Management Portal</div>
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col bg-brand-sidebar shadow-[4px_0_20px_rgba(0,0,0,0.12)] lg:flex">
+        <div className="border-b border-white/10 px-5 py-5 bg-[#152F5A]">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+              <img src="/bit-hostel-logo.png" alt="Logo" className="h-7 w-7 object-contain" />
+            </div>
+            <div className="leading-tight min-w-0">
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-white/90 line-clamp-2">
+                Bannari Amman Institute of Technology
+              </div>
+              <div className="text-[10px] uppercase tracking-widest text-white/50 mt-0.5">
+                Warden Portal
+              </div>
             </div>
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-5 space-y-5 custom-scrollbar" aria-label="Warden navigation">
+        <nav className="flex-1 overflow-y-auto px-0 py-4 space-y-4 scrollbar-thin" aria-label="Warden navigation">
           {NAV_GROUPS.map((group, idx) => (
             <div key={idx}>
-              <div className="px-3 mb-2 text-[12px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
+              <div className="px-4 mb-1 text-[10px] font-semibold uppercase tracking-widest text-white/40">
                 {group.title}
               </div>
-              <div className="space-y-0.5">
+              <div className="space-y-0">
                 {group.items.map(item => (
                   <NavItem key={item.to + item.label} {...item} />
                 ))}
@@ -112,70 +108,57 @@ export default function WardenSidebar() {
           ))}
         </nav>
 
-        <div className="p-2 border-t border-slate-200 bg-white/70">
+        <div className="border-t border-white/10 p-4">
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[12px] font-semibold text-slate-700 transition-colors hover:bg-red-50 hover:text-red-600"
+            className="flex w-full items-center gap-2 rounded-lg px-4 py-3 text-[13px] font-medium text-white/50 transition-all hover:bg-white/7 hover:text-white/90"
           >
-            <LogOut className="h-3 w-3" />
+            <LogOut className="h-[15px] w-[15px]" />
             <span>Logout</span>
           </button>
         </div>
       </aside>
 
-      <div className="lg:pl-[292px] flex flex-col min-h-screen">
+      <div className="lg:pl-[260px] flex flex-col min-h-screen">
         <TopNavBar 
           pageTitle={pageTitle}
           theme="warden"
         />
 
-        <main className="flex-1 px-6 lg:px-8 py-6">
-          <div className="max-w-7xl mx-auto" style={contentScaleStyle}>
-            <Outlet />
-          </div>
+        <main className="flex-1 px-6 py-5 lg:px-8">
+          <Outlet />
         </main>
       </div>
 
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            key="warden-mobile-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setMobileOpen(false)}
-            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-          />
-        )}
-        {mobileOpen && (
-          <motion.aside
-            key="warden-mobile-sidebar"
-            initial={{ x: -250 }}
-            animate={{ x: 0 }}
-            exit={{ x: -250 }}
-            className="fixed inset-y-0 left-0 z-50 flex w-[292px] flex-col bg-slate-50 shadow-xl lg:hidden"
-          >
-            <div className="flex h-[80px] items-center justify-between px-6 border-b border-slate-200 bg-white/70">
+      {mobileOpen && (
+        <div className="fixed inset-0 z-40 flex lg:hidden">
+          <div className="fixed inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
+          <div className="relative flex w-[260px] flex-col bg-brand-sidebar shadow-xl">
+            <div className="border-b border-white/10 px-5 py-4 bg-[#152F5A] flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <img src="/bit-hostel-logo.png" alt="Bannari Amman Institute of Technology Logo" className="h-[32px] w-[32px] object-contain drop-shadow-sm" />
+                <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center">
+                  <img src="/bit-hostel-logo.png" alt="Logo" className="h-6 w-6 object-contain" />
+                </div>
                 <div className="leading-tight">
-                  <div className="text-[11px] font-bold" style={{ color: 'var(--college-primary, #2563EB)' }}>Bannari Amman Institute of Technology</div>
-                  <div className="text-[10px] font-semibold text-slate-600">Management Portal</div>
+                  <div className="text-[11px] font-semibold uppercase tracking-wide text-white/90">BAIT Warden</div>
                 </div>
               </div>
-              <button onClick={() => setMobileOpen(false)} className="rounded-xl bg-slate-100 p-2 text-slate-700">
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="text-white/70 hover:text-white"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <nav className="flex-1 overflow-y-auto px-3 py-5 space-y-5" aria-label="Warden mobile navigation">
+            <nav className="flex-1 overflow-y-auto px-0 py-4 space-y-4 scrollbar-thin">
               {NAV_GROUPS.map((group, idx) => (
                 <div key={idx}>
-                  <div className="px-3 mb-2 text-[12px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
+                  <div className="px-4 mb-1 text-[10px] font-semibold uppercase tracking-widest text-white/40">
                     {group.title}
                   </div>
-                  <div className="space-y-0.5">
+                  <div className="space-y-0">
                     {group.items.map(item => (
                       <NavItem
                         key={item.to + item.label}
@@ -188,19 +171,19 @@ export default function WardenSidebar() {
               ))}
             </nav>
 
-            <div className="p-2 border-t border-slate-200 bg-white/70">
+            <div className="border-t border-white/10 p-4">
               <button
                 type="button"
                 onClick={handleLogout}
-                className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[12px] font-semibold text-slate-700 transition-colors hover:bg-red-50 hover:text-red-600"
+                className="flex w-full items-center gap-2 rounded-lg px-4 py-3 text-[13px] font-medium text-white/50 transition-all hover:bg-white/7 hover:text-white/90"
               >
-                <LogOut className="h-3 w-3" />
+                <LogOut className="h-[15px] w-[15px]" />
                 <span>Logout</span>
               </button>
             </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
