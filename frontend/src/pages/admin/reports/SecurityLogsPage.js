@@ -96,9 +96,9 @@ function IncidentCard({ incident, selected, onToggleSelect, onBlock, onResolve, 
   }[incident.status] || 'bg-slate-100 text-slate-600 border-slate-200';
 
   return (
-    <div className="overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.08)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(15,23,42,0.12)]">
-      <div className="h-1 bg-gradient-to-r from-rose-500 via-amber-400 to-orange-500" />
-      <div className="flex items-start gap-4 border-b border-slate-100 px-5 py-5 md:px-6">
+    <div className="overflow-hidden rounded-[28px] border border-white/80 bg-white/90 shadow-card backdrop-blur-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-card-hover">
+      <div className="h-1 bg-gradient-to-r from-brand-primary via-sky-500 to-emerald-500" />
+      <div className="flex items-start gap-4 border-b border-brand-border/70 px-5 py-5 md:px-6">
         <input
           type="checkbox"
           checked={selected}
@@ -106,7 +106,7 @@ function IncidentCard({ incident, selected, onToggleSelect, onBlock, onResolve, 
           className="mt-1 h-4 w-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
         />
 
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50 to-orange-50 text-amber-600 shadow-sm">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-brand-border bg-brand-primarybg text-brand-primary shadow-sm">
           <ShieldAlert className="h-6 w-6" />
         </div>
 
@@ -120,8 +120,8 @@ function IncidentCard({ incident, selected, onToggleSelect, onBlock, onResolve, 
             </span>
           </div>
 
-          <div className="text-[1.3rem] font-black leading-tight tracking-[-0.04em] text-slate-950 md:text-[1.5rem]">{incident.event_type}</div>
-          <p className="mt-1.5 max-w-4xl text-sm leading-6 text-slate-600 md:text-[0.95rem]">
+          <div className="text-[1.3rem] font-black leading-tight tracking-[-0.04em] text-brand-text md:text-[1.5rem]">{incident.event_type}</div>
+          <p className="mt-1.5 max-w-4xl text-sm leading-6 text-brand-muted md:text-[0.95rem]">
             [Attributed to {incident.actor_email || safeMeta}] {incident.message || 'Suspicious activity detected.'}
           </p>
         </div>
@@ -167,8 +167,8 @@ function IncidentCard({ incident, selected, onToggleSelect, onBlock, onResolve, 
         <StatMini label="Timestamp" value={safeFormatDate(incident.created_at, 'MMM d, yyyy')} helper={safeFormatDate(incident.created_at, 'h:mm a')} tone="violet" />
       </div>
 
-      <div className="mx-5 mb-5 rounded-[24px] border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-50 p-4 md:mx-6">
-        <div className="mb-3 flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">
+      <div className="mx-5 mb-5 rounded-[24px] border border-brand-border/70 bg-gradient-to-br from-white via-brand-primarybg/40 to-white p-4 md:mx-6">
+        <div className="mb-3 flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-muted">
           <Shield className="h-3.5 w-3.5 text-brand-primary" /> Device Details (Fingerprint)
         </div>
         <div className="grid gap-3 md:grid-cols-3">
@@ -177,8 +177,8 @@ function IncidentCard({ incident, selected, onToggleSelect, onBlock, onResolve, 
           <DetailChip label="Device Type" value={incident.device_type || 'Unknown'} icon={<ShieldOff className="h-4 w-4" />} />
         </div>
 
-        <div className="mt-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-[11px] leading-6 text-slate-500 shadow-sm">
-          <span className="font-semibold text-slate-700">Raw User-Agent:</span> {incident.user_agent || 'Unavailable'}
+        <div className="mt-4 rounded-2xl border border-brand-border bg-white px-4 py-3 text-[11px] leading-6 text-brand-muted shadow-sm">
+          <span className="font-semibold text-brand-text">Raw User-Agent:</span> {incident.user_agent || 'Unavailable'}
         </div>
       </div>
     </div>
@@ -188,28 +188,28 @@ function IncidentCard({ incident, selected, onToggleSelect, onBlock, onResolve, 
 function StatMini({ label, value, helper, tone = 'default' }) {
   const toneMap = {
     default: 'bg-white',
-    blue: 'bg-blue-50/60',
-    slate: 'bg-slate-50/80',
+    blue: 'bg-sky-50/70',
+    slate: 'bg-brand-primarybg/70',
     violet: 'bg-violet-50/70',
   };
 
   return (
-    <div className={`rounded-2xl border border-slate-200 px-4 py-3 ${toneMap[tone] || toneMap.default}`}>
-      <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">{label}</div>
-      <div className="mt-1 break-words text-sm font-bold text-slate-950">{value}</div>
-      <div className="mt-1 text-[11px] text-slate-500">{helper}</div>
+    <div className={`rounded-2xl border border-brand-border px-4 py-3 ${toneMap[tone] || toneMap.default}`}>
+      <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-brand-muted">{label}</div>
+      <div className="mt-1 break-words text-sm font-bold text-brand-text">{value}</div>
+      <div className="mt-1 text-[11px] text-brand-muted">{helper}</div>
     </div>
   );
 }
 
 function DetailChip({ label, value, icon }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-brand-border bg-white/92 p-4 shadow-card">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">{label}</div>
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-white">{icon}</div>
+        <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-brand-muted">{label}</div>
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-primarybg text-brand-primary">{icon}</div>
       </div>
-      <div className="text-sm font-semibold text-slate-950">{value}</div>
+      <div className="text-sm font-semibold text-brand-text">{value}</div>
     </div>
   );
 }
@@ -347,23 +347,22 @@ export default function SecurityLogsPage() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* ── Header ───────────────────────────────────────────── */}
-      <section className="relative overflow-hidden rounded-[32px] border border-slate-200/80 bg-white shadow-[0_22px_60px_rgba(15,23,42,0.08)]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.08),transparent_28%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.08),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.98))]" />
+    <div className="page-shell space-y-6 animate-fade-in">
+      <section className="relative overflow-hidden rounded-[32px] border border-white/80 bg-white/84 shadow-[0_22px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.10),transparent_28%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.08),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.97),rgba(248,250,252,0.94))]" />
         <div className="relative px-5 py-5 md:px-6 md:py-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-3xl">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-rose-100 bg-rose-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-rose-600 shadow-sm">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-brand-border bg-brand-primarybg px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-primary shadow-sm">
                 <Radar className="h-3.5 w-3.5" /> Security Monitoring
               </div>
               <div className="flex items-center gap-3">
-                <div className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-slate-950 text-white shadow-[0_18px_32px_rgba(15,23,42,0.18)]">
+                <div className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-gradient-to-br from-brand-primary to-brand-primary-light text-white shadow-brand">
                   <ShieldAlert className="h-6 w-6" />
                 </div>
                 <div>
-                  <h1 className="font-display text-[2rem] font-black tracking-[-0.06em] text-slate-950 md:text-[2.5rem]">Security Alerts</h1>
-                  <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500 md:text-[0.98rem]">
+                  <h1 className="font-display text-[2rem] font-black tracking-[-0.06em] text-brand-text md:text-[2.5rem]">Security Alerts</h1>
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-brand-muted md:text-[0.98rem]">
                     Live monitoring for unauthorized access, suspicious requests, and account abuse.
                   </p>
                 </div>
@@ -375,7 +374,7 @@ export default function SecurityLogsPage() {
                 variant="primary"
                 size="md"
                 onClick={handleExport}
-                className="h-11 rounded-2xl bg-slate-900 px-5 text-white shadow-[0_10px_20px_rgba(15,23,42,0.12)] hover:bg-slate-800"
+                className="h-11 px-5"
               >
                 <Download className="h-4 w-4" /> Export Data
               </Button>
@@ -383,7 +382,7 @@ export default function SecurityLogsPage() {
                 variant="outline"
                 size="md"
                 onClick={load}
-                className="h-11 rounded-2xl px-5"
+                className="h-11 px-5"
               >
                 <RefreshCcw className="h-4 w-4" /> Refresh
               </Button>
@@ -397,13 +396,13 @@ export default function SecurityLogsPage() {
               { label: 'Blocked', value: stats.blocked_count || 0, icon: Ban, tone: 'from-rose-500 to-red-600' },
               { label: 'High Risk', value: stats.high_risk_count || 0, icon: BadgeCheck, tone: 'from-emerald-500 to-green-600' },
             ].map(({ label, value, icon: Icon, tone }) => (
-              <div key={label} className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_12px_28px_rgba(15,23,42,0.05)]">
+              <div key={label} className="rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-card backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">{label}</div>
-                    <div className="mt-1 text-[2rem] font-black tracking-[-0.06em] text-slate-950">{value}</div>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-muted">{label}</div>
+                    <div className="mt-1 text-[2rem] font-black tracking-[-0.06em] text-brand-text">{value}</div>
                   </div>
-                  <div className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${tone} text-white shadow-lg`}>
+                  <div className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${tone} text-white shadow-brand`}>
                     <Icon className="h-5 w-5" />
                   </div>
                 </div>
@@ -412,24 +411,24 @@ export default function SecurityLogsPage() {
           </div>
 
           <div className="mt-4 grid gap-3 lg:grid-cols-12">
-            <div className="lg:col-span-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_12px_28px_rgba(15,23,42,0.05)]">
-              <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Last 24 Hours</div>
-              <div className="mt-1 text-[2rem] font-black tracking-[-0.06em] text-slate-950">{insights.last_24h_total || 0}</div>
-              <p className="text-xs text-slate-500">Incidents recorded in the past day</p>
+            <div className="lg:col-span-4 rounded-3xl border border-white/80 bg-white/90 p-4 shadow-card backdrop-blur-xl">
+              <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-brand-muted">Last 24 Hours</div>
+              <div className="mt-1 text-[2rem] font-black tracking-[-0.06em] text-brand-text">{insights.last_24h_total || 0}</div>
+              <p className="text-xs text-brand-muted">Incidents recorded in the past day</p>
             </div>
-            <div className="lg:col-span-8 rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_12px_28px_rgba(15,23,42,0.05)]">
-              <div className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Top Event Types</div>
+            <div className="lg:col-span-8 rounded-3xl border border-white/80 bg-white/90 p-4 shadow-card backdrop-blur-xl">
+              <div className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-brand-muted">Top Event Types</div>
               {insights.top_event_types?.length ? (
                 <div className="grid gap-2 sm:grid-cols-2">
                   {insights.top_event_types.slice(0, 6).map((event, index) => (
-                    <div key={`${event.event_type || 'event'}-${index}`} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
-                      <span className="truncate text-xs font-semibold text-slate-700">{event.event_type}</span>
+                    <div key={`${event.event_type || 'event'}-${index}`} className="flex items-center justify-between rounded-2xl border border-brand-border bg-brand-primarybg/60 px-3 py-2">
+                      <span className="truncate text-xs font-semibold text-brand-text">{event.event_type}</span>
                       <Badge variant="warning" className="rounded-full px-2 py-0.5 text-[10px]">{event.count}</Badge>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-slate-500">No event type trends available yet.</p>
+                <p className="text-xs text-brand-muted">No event type trends available yet.</p>
               )}
             </div>
           </div>
@@ -446,9 +445,9 @@ export default function SecurityLogsPage() {
                 <Button variant="outline" size="sm" onClick={load}><RefreshCcw className="h-4 w-4" /> Refresh Logs</Button>
               </div>
             )}
-            className="overflow-hidden border border-slate-200/80 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]"
+            className="overflow-hidden"
           >
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand-border bg-brand-primarybg px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-brand-muted">
               <SlidersHorizontal className="h-3.5 w-3.5" /> Quick Filters
             </div>
             <div className="grid gap-3 lg:grid-cols-12">
@@ -479,7 +478,7 @@ export default function SecurityLogsPage() {
                 />
               </div>
               <div className="lg:col-span-2">
-                <Button variant="ghost" className="h-10 w-full" onClick={() => setFilters({ status: '', severity: '', search: '' })}>
+                <Button variant="ghost" className="h-11 w-full" onClick={() => setFilters({ status: '', severity: '', search: '' })}>
                   Reset Filters
                 </Button>
               </div>
@@ -489,7 +488,7 @@ export default function SecurityLogsPage() {
           {loading ? (
             <div className="flex justify-center py-20"><Spinner size="lg" className="text-brand-primary" /></div>
           ) : loadError ? (
-            <div className="rounded-[28px] border border-rose-200 bg-rose-50 py-8 shadow-[0_12px_28px_rgba(15,23,42,0.05)]">
+            <div className="rounded-[28px] border border-rose-200 bg-rose-50 py-8 shadow-card">
               <EmptyState
                 icon={<AlertTriangle />}
                 title="Unable to load security incidents"
@@ -498,7 +497,7 @@ export default function SecurityLogsPage() {
               />
             </div>
           ) : incidents.length === 0 ? (
-            <div className="rounded-[28px] border border-slate-200 bg-white py-8 shadow-[0_12px_28px_rgba(15,23,42,0.05)]">
+            <div className="rounded-[28px] border border-white/80 bg-white/90 py-8 shadow-card">
               <EmptyState icon={<AlertTriangle />} title="No security incidents" description="No incidents match the selected filters." />
             </div>
           ) : (

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { dashboardAPI } from '../../../services/api';
-import { Spinner, Card } from '../../../components/ui';
+import { Spinner, Button, Card, MetricPanel, PageHeader, SectionCard, Select } from '../../../components/ui';
 import { Building2, Home, Users, CheckCircle, AlertCircle } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import useHostelNameMap from '../../../hooks/useHostelNameMap';
@@ -34,43 +34,43 @@ export default function DashboardPage() {
       title: 'Total Students',
       value: stats.totalStudents || 0,
       icon: Users,
-      tone: 'bg-blue-100 text-blue-600',
-      color: '#3B82F6'
+      tone: 'blue',
+      helper: 'Registered student accounts'
     },
     {
       title: 'Total Rooms',
       value: stats.totalRooms || 0,
       icon: Building2,
-      tone: 'bg-indigo-100 text-indigo-600',
-      color: '#4F46E5'
+      tone: 'purple',
+      helper: 'Active hostel inventory'
     },
     {
       title: 'Available Rooms',
       value: stats.availableRooms || 0,
       icon: Home,
-      tone: 'bg-green-100 text-green-600',
-      color: '#10B981'
+      tone: 'green',
+      helper: 'Ready for new allocations'
     },
     {
       title: 'Occupied Rooms',
       value: stats.occupiedRooms || 0,
       icon: Home,
-      tone: 'bg-purple-100 text-purple-600',
-      color: '#A855F7'
+      tone: 'primary',
+      helper: 'Students currently housed'
     },
     {
       title: 'Pending Issues',
       value: stats.pendingComplaints || 0,
       icon: AlertCircle,
-      tone: 'bg-amber-100 text-amber-600',
-      color: '#F59E0B'
+      tone: 'orange',
+      helper: 'Open items needing action'
     },
     {
       title: 'Resolved Issues',
       value: stats.resolvedComplaints || 0,
       icon: CheckCircle,
-      tone: 'bg-emerald-100 text-emerald-600',
-      color: '#10B981'
+      tone: 'green',
+      helper: 'Closed and tracked issues'
     },
   ];
 
@@ -83,53 +83,54 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Overview</h1>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-500 shadow-sm">{todayLabel}</div>
-          <select
-            id="college-theme"
-            value={collegeTheme}
-            onChange={(event) => setCollegeTheme(event.target.value)}
-            className="rounded-full border-0 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm outline-none ring-1 ring-slate-200 transition-all duration-200 ease-in-out focus:ring-2 focus:ring-brand-primary/30"
-          >
-            {collegeThemeOptions.map((option) => (
-              <option key={option.key} value={option.key}>{option.label}</option>
-            ))}
-          </select>
-        </div>
-      </div>
+    <div className="page-shell space-y-6">
+      <section className="relative overflow-hidden rounded-[32px] border border-white/80 bg-white/82 px-5 py-5 shadow-[0_22px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:px-6 md:py-6">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(125,83,246,0.12),transparent_26%),radial-gradient(circle_at_top_right,rgba(3,136,252,0.08),transparent_20%),linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,250,255,0.88))]" />
+        <div className="relative flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div className="max-w-3xl">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-brand-border bg-brand-primarybg px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-primary shadow-sm">
+              Live overview
+            </div>
+            <h1 className="font-display text-[2rem] font-black tracking-[-0.05em] text-brand-text md:text-[2.75rem]">Hostel command center</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-muted md:text-[0.98rem]">
+              Monitor occupancy, room movement, and operational issues from a clean, responsive dashboard built for fast admin decisions.
+            </p>
+          </div>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {metricCards.map(({ title, value, icon: Icon, tone }, idx) => (
+          <div className="flex flex-wrap items-center gap-3 xl:justify-end">
+            <div className="rounded-full border border-brand-border bg-white px-4 py-2 text-sm font-medium text-brand-muted shadow-card">{todayLabel}</div>
+            <Select
+              aria-label="College theme"
+              value={collegeTheme}
+              onChange={(event) => setCollegeTheme(event.target.value)}
+              className="min-w-[220px]"
+            >
+              {collegeThemeOptions.map((option) => (
+                <option key={option.key} value={option.key}>{option.label}</option>
+              ))}
+            </Select>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Refresh View
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        {metricCards.map(({ title, value, icon: Icon, tone, helper }, idx) => (
           <motion.div
             key={title}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.05 }}
           >
-            <Card className="group overflow-hidden rounded-2xl border border-[#F1F5F9] bg-white p-5 shadow-sm transition-all duration-200 ease-in-out hover:scale-[1.02] hover:shadow-md">
-              <div className="flex flex-col gap-4">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${tone}`}>
-                  <Icon className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="text-3xl font-black text-slate-900">{value.toLocaleString()}</div>
-                  <div className="mt-1 text-sm font-medium text-slate-500">{title}</div>
-                </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: '72%' }}
-                    transition={{ duration: 0.8, delay: idx * 0.05 }}
-                    className={`h-full rounded-full ${tone.split(' ')[0]}`}
-                  />
-                </div>
-              </div>
-            </Card>
+            <MetricPanel
+              title={title}
+              value={value.toLocaleString()}
+              helper={helper}
+              icon={<Icon className="h-4 w-4" />}
+              tone={tone}
+            />
           </motion.div>
         ))}
       </div>
@@ -141,8 +142,7 @@ export default function DashboardPage() {
           transition={{ delay: 0.2 }}
           className="lg:col-span-1"
         >
-          <Card className="rounded-2xl border-l-4 border-l-brand-primary border border-[#F1F5F9] bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-900">Room Occupancy</h2>
+          <SectionCard title="Room Occupancy" description="Current distribution of occupied versus available rooms.">
             <div className="relative mt-6 flex items-center justify-center">
               <div className="h-48 w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -164,11 +164,11 @@ export default function DashboardPage() {
                     </Pie>
                     <Tooltip
                       contentStyle={{
-                        borderRadius: '12px',
+                          borderRadius: '16px',
                         fontSize: '13px',
-                        border: '1px solid #E5E7EB',
+                          border: '1px solid #D8DCF0',
                         backgroundColor: '#FFFFFF',
-                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                          boxShadow: '0 12px 30px rgba(15, 23, 42, 0.10)'
                       }}
                       itemStyle={{ color: '#111827', fontWeight: 600 }}
                     />
@@ -183,19 +183,17 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="mt-6 space-y-2">
-              <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2">
-                <span className="text-sm text-slate-600">Occupied</span>
-                <span className="font-bold text-slate-900">{stats.occupiedRooms || 0}</span>
+              <div className="flex items-center justify-between rounded-2xl bg-brand-primarybg px-3 py-2.5">
+                <span className="text-sm text-brand-muted">Occupied</span>
+                <span className="font-bold text-brand-text">{stats.occupiedRooms || 0}</span>
               </div>
-              <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2">
-                <span className="text-sm text-slate-600">Available</span>
-                <span className="font-bold text-slate-900">{stats.availableRooms || 0}</span>
+              <div className="flex items-center justify-between rounded-2xl bg-brand-primarybg px-3 py-2.5">
+                <span className="text-sm text-brand-muted">Available</span>
+                <span className="font-bold text-brand-text">{stats.availableRooms || 0}</span>
               </div>
             </div>
-            <button className="mt-5 w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-all duration-200 ease-in-out hover:bg-slate-800">
-              View Details
-            </button>
-          </Card>
+            <Button className="mt-5 w-full">View Details</Button>
+          </SectionCard>
         </motion.div>
 
         <motion.div
@@ -204,8 +202,7 @@ export default function DashboardPage() {
           transition={{ delay: 0.3 }}
           className="lg:col-span-2"
         >
-          <Card className="rounded-2xl border border-[#F1F5F9] bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-900">Hostel Distribution</h2>
+          <SectionCard title="Hostel Distribution" description="Block occupancy at a glance with soft progress bars and clean contrast.">
             <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {blockStats.map((block, idx) => {
                 const occupancy = block.capacity ? Math.round((block.occupied / block.capacity) * 100) : 0;
@@ -217,13 +214,13 @@ export default function DashboardPage() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3 + idx * 0.05 }}
-                    className="space-y-2 rounded-xl p-4 transition-all duration-200 ease-in-out hover:bg-slate-50"
+                    className="space-y-2 rounded-[20px] border border-brand-border/70 bg-white/70 p-4 transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:bg-white"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-slate-800">{getHostelName(block.block)}</span>
-                      <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600">{occupancy}%</span>
+                      <span className="font-semibold text-brand-text">{getHostelName(block.block)}</span>
+                      <span className="rounded-full bg-brand-primarybg px-2 py-1 text-xs font-bold text-brand-primary">{occupancy}%</span>
                     </div>
-                    <div className="h-2.5 overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-2.5 overflow-hidden rounded-full bg-brand-primarybg">
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${occupancy}%` }}
@@ -231,12 +228,12 @@ export default function DashboardPage() {
                         className={`h-full rounded-full bg-gradient-to-r ${colorClass}`}
                       />
                     </div>
-                    <div className="text-xs text-slate-500">{block.occupied} of {block.capacity} rooms</div>
+                    <div className="text-xs text-brand-muted">{block.occupied} of {block.capacity} rooms</div>
                   </motion.div>
                 );
               })}
             </div>
-          </Card>
+          </SectionCard>
         </motion.div>
       </div>
     </div>

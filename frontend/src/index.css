@@ -1,12 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --font-display: 'Plus Jakarta Sans';
-    --font-sans: 'Manrope';
+    --font-display: 'Poppins';
+    --font-sans: 'Inter';
     --font-mono: 'IBM Plex Mono';
     --college-primary: #2563EB;
     --college-secondary: #1D4ED8;
@@ -24,9 +24,9 @@
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
     background:
-      radial-gradient(circle at top left, rgba(125, 83, 246, 0.14), transparent 28%),
-      radial-gradient(circle at 85% 10%, rgba(3, 136, 252, 0.10), transparent 22%),
-      linear-gradient(180deg, #f6f8fe 0%, #eef2fb 100%);
+      radial-gradient(circle at top left, rgba(125, 83, 246, 0.12), transparent 26%),
+      radial-gradient(circle at 82% 12%, rgba(3, 136, 252, 0.10), transparent 22%),
+      linear-gradient(180deg, #f8faff 0%, #eef3fb 100%);
   }
 
   body {
@@ -39,9 +39,9 @@
     font-feature-settings: 'liga' 1, 'calt' 1;
     overflow-x: hidden;
     background:
-      radial-gradient(circle at top left, rgba(125, 83, 246, 0.14), transparent 28%),
-      radial-gradient(circle at 85% 10%, rgba(3, 136, 252, 0.10), transparent 22%),
-      linear-gradient(180deg, #f6f8fe 0%, #eef2fb 100%);
+      radial-gradient(circle at top left, rgba(125, 83, 246, 0.12), transparent 26%),
+      radial-gradient(circle at 82% 12%, rgba(3, 136, 252, 0.10), transparent 22%),
+      linear-gradient(180deg, #f8faff 0%, #eef3fb 100%);
   }
 
   #root {
@@ -69,7 +69,7 @@
   }
 
   * {
-    scrollbar-color: #b5c3d6 transparent;
+    scrollbar-color: #c0c9da transparent;
     box-sizing: border-box;
   }
 
@@ -80,9 +80,9 @@
 }
 
 @layer utilities {
-  .scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
   .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-  .scrollbar-thin::-webkit-scrollbar-thumb { background: #D1D1D1; border-radius: 999px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 999px; }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
 
   .scrollbar-hidden {
@@ -97,13 +97,15 @@
   }
 
   .glass-panel {
-    background: rgba(255, 255, 255, 0.78);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
   }
 
   .page-shell {
     position: relative;
+    isolation: isolate;
   }
 
   .page-shell::before {
@@ -112,10 +114,28 @@
     inset: 0;
     pointer-events: none;
     background-image:
-      linear-gradient(rgba(255,255,255,0.16) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.16) 1px, transparent 1px);
-    background-size: 32px 32px;
-    mask-image: linear-gradient(180deg, rgba(0,0,0,0.24), transparent 75%);
-    opacity: 0.35;
+      linear-gradient(rgba(255,255,255,0.18) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.18) 1px, transparent 1px);
+    background-size: 34px 34px;
+    mask-image: linear-gradient(180deg, rgba(0,0,0,0.26), transparent 74%);
+    opacity: 0.42;
+  }
+
+  .soft-surface {
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .premium-outline {
+    border: 1px solid rgba(226, 232, 240, 0.85);
+  }
+
+  .dashboard-grid {
+    background-image:
+      radial-gradient(circle at top left, rgba(125, 83, 246, 0.08), transparent 22%),
+      radial-gradient(circle at 82% 10%, rgba(3, 136, 252, 0.07), transparent 18%);
   }
 }
