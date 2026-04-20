@@ -26,18 +26,22 @@ function NavItem({ to, label, icon: Icon, onClick, end = false }) {
       to={to}
       end={end}
       onClick={onClick}
-      className={({ isActive }) =>
-        `group flex items-center justify-between rounded-xl px-3 py-2.5 text-[14px] font-semibold transition-all duration-200 ${isActive
-          ? 'bg-orange-600 text-white shadow-sm'
-        : 'text-black hover:bg-slate-100/90 hover:text-black'        }`
-      }
-    >
-      <div className="flex items-center gap-3">
-        <Icon className="h-4 w-4" />
-        <span>{label}</span>
-      </div>
-      <ChevronRight className="h-4 w-4 text-current opacity-60 transition-transform group-hover:translate-x-0.5" />
-    </NavLink>
+      children={({ isActive }) => (
+        <div
+          className={`group flex items-center justify-between rounded-xl px-3 py-2.5 text-[14px] font-semibold transition-all duration-200 ${isActive
+            ? 'text-white shadow-sm'
+            : 'text-black hover:bg-slate-100/90 hover:text-black'
+          }`}
+          style={isActive ? { backgroundColor: 'var(--college-primary, #2563EB)' } : undefined}
+        >
+          <div className="flex items-center gap-3">
+            <Icon className="h-4 w-4" />
+            <span>{label}</span>
+          </div>
+          <ChevronRight className="h-4 w-4 text-current opacity-60 transition-transform group-hover:translate-x-0.5" />
+        </div>
+      )}
+    />
   );
 }
 
@@ -69,7 +73,7 @@ export default function CaretakerSidebar() {
           <div className="flex items-center gap-2">
             <img src="/bit-hostel-logo.png" alt="Bannari Amman Institute of Technology Logo" className="h-[38px] w-[38px] object-contain drop-shadow-sm" />
             <div className="leading-tight">
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-900 leading-tight">Bannari Amman Institute of Technology</div>
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.08em] leading-tight" style={{ color: 'var(--college-primary, #2563EB)' }}>Bannari Amman Institute of Technology</div>
               <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Operations Portal</div>
             </div>
           </div>
@@ -135,7 +139,7 @@ export default function CaretakerSidebar() {
                 <div className="flex items-center gap-2">
                   <img src="/bit-hostel-logo.png" alt="Bannari Amman Institute of Technology Logo" className="h-[32px] w-[32px] object-contain drop-shadow-sm" />
                   <div className="leading-tight">
-                    <div className="text-[11px] font-bold text-slate-900">Bannari Amman Institute of Technology</div>
+                    <div className="text-[11px] font-bold" style={{ color: 'var(--college-primary, #2563EB)' }}>Bannari Amman Institute of Technology</div>
                     <div className="text-[10px] font-semibold text-slate-600">Operations Portal</div>
                   </div>
                 </div>

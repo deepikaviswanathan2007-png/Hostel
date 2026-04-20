@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom
 import { Toaster } from 'react-hot-toast';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ErrorBoundary from './components/ErrorBoundary';
 
 import Sidebar from './components/layout/Sidebar';
@@ -199,18 +200,20 @@ export default function App() {
 
   const appTree = (
     <ErrorBoundary>
-      <AuthProvider>
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <AppRoutes />
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              style: { borderRadius: '12px', fontSize: '13px', fontFamily: 'Manrope, Segoe UI, sans-serif' },
-              success: { iconTheme: { primary: '#7D53F6', secondary: '#fff' } },
-            }}
-          />
-        </BrowserRouter>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <AppRoutes />
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                style: { borderRadius: '12px', fontSize: '13px', fontFamily: 'Manrope, Segoe UI, sans-serif' },
+                success: { iconTheme: { primary: '#7D53F6', secondary: '#fff' } },
+              }}
+            />
+          </BrowserRouter>
+        </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 

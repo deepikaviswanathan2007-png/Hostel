@@ -30,13 +30,16 @@ export default function TopNavBar({ pageTitle, brandingContent, theme = 'admin' 
   };
 
   const currentTheme = themeConfig[theme] || themeConfig.admin;
+  const collegePrimary = 'var(--college-primary, #2563EB)';
+  const collegeSecondary = 'var(--college-secondary, #1D4ED8)';
+  const collegeRing = 'var(--college-ring, #DBEAFE)';
 
   return (
     <div className="sticky top-0 z-30 bg-white shadow-sm border-b border-gray-200">
       <div className="flex items-center justify-between px-6 py-6 lg:px-8 gap-4">
         {/* Left: Page Title */}
         <div className="flex-1">
-          <h2 className="text-lg font-bold text-black tracking-tight">
+          <h2 className="text-lg font-bold tracking-tight" style={{ color: collegePrimary }}>
             {pageTitle}
           </h2>
         </div>
@@ -48,7 +51,13 @@ export default function TopNavBar({ pageTitle, brandingContent, theme = 'admin' 
               {user?.name || 'User'}
             </div>
           </div>
-          <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${currentTheme.avatar} flex items-center justify-center font-bold text-white text-sm shadow-md border-2 ${currentTheme.border}`}>
+          <div
+            className={`w-10 h-10 rounded-full bg-gradient-to-br flex items-center justify-center font-bold text-white text-sm shadow-md border-2 ${currentTheme.border}`}
+            style={{
+              backgroundImage: `linear-gradient(135deg, ${collegePrimary}, ${collegeSecondary})`,
+              borderColor: collegeRing,
+            }}
+          >
             {initials}
           </div>
         </div>

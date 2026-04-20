@@ -62,7 +62,7 @@ export default function LoginPage() {
               className="h-28 w-28 object-contain drop-shadow-sm"
             />
             <div className="text-center">
-              <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#7c5dfa]">
+              <div className="text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--college-primary, #2563EB)' }}>
                 Bannari Amman Institute of Technology
               </div>
               <h1 className="mt-1 text-[18px] font-semibold tracking-wide text-gray-800">
@@ -82,7 +82,8 @@ export default function LoginPage() {
                 value={form.email}
                 onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                 autoComplete="username"
-                className="h-10 w-full rounded border border-[#e2e8f0] bg-[#f0f4f8] px-3 text-[14px] text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#7D53F6]"
+                className="h-10 w-full rounded border border-[#e2e8f0] bg-[#f0f4f8] px-3 text-[14px] text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1"
+                style={{ outlineColor: 'var(--college-primary, #2563EB)' }}
                 required
               />
             </div>
@@ -96,7 +97,8 @@ export default function LoginPage() {
                 value={form.password}
                 onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                 autoComplete="current-password"
-                className="h-10 w-full rounded border border-[#e2e8f0] bg-[#f0f4f8] px-3 text-[14px] text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#7D53F6]"
+                className="h-10 w-full rounded border border-[#e2e8f0] bg-[#f0f4f8] px-3 text-[14px] text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1"
+                style={{ outlineColor: 'var(--college-primary, #2563EB)' }}
                 required
               />
             </div>
@@ -104,7 +106,8 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="mt-6 h-10 w-full rounded bg-[#7D53F6] text-[15px] font-medium text-white transition-colors hover:bg-[#6b42dd] focus:outline-none disabled:opacity-50"
+              className="mt-6 h-10 w-full rounded text-[15px] font-medium text-white transition-colors focus:outline-none disabled:opacity-50"
+              style={{ backgroundColor: 'var(--college-primary, #2563EB)' }}
             >
               {loading ? 'Logging in...' : 'Login'}
             </button>

@@ -45,19 +45,22 @@ function NavItem({ to, label, icon: Icon, onClick, end = false }) {
       to={to}
       end={end}
       onClick={onClick}
-      className={({ isActive }) =>
-        `group flex items-center justify-between rounded-xl px-3 py-2.5 text-[14px] font-semibold transition-all duration-200 ${isActive
-          ? 'bg-brand-primary text-white shadow-sm'
-          : 'text-black hover:bg-slate-100/90 hover:text-black'
-        }`
-      }
-    >
-      <div className="flex items-center gap-3">
-        <Icon className="h-4 w-4" />
-        <span>{label}</span>
-      </div>
-      <ChevronRight className="h-4 w-4 text-current opacity-60 transition-transform group-hover:translate-x-0.5" />
-    </NavLink>
+      children={({ isActive }) => (
+        <div
+          className={`group flex items-center justify-between rounded-xl px-3 py-2.5 text-[14px] font-semibold transition-all duration-200 ${isActive
+            ? 'text-white shadow-sm'
+            : 'text-black hover:bg-slate-100/90 hover:text-black'
+          }`}
+          style={isActive ? { backgroundColor: 'var(--college-primary, #2563EB)' } : undefined}
+        >
+          <div className="flex items-center gap-3">
+            <Icon className="h-4 w-4" />
+            <span>{label}</span>
+          </div>
+          <ChevronRight className="h-4 w-4 text-current opacity-60 transition-transform group-hover:translate-x-0.5" />
+        </div>
+      )}
+    />
   );
 }
 
@@ -89,7 +92,7 @@ export default function StudentSidebar() {
           <div className="flex items-center gap-2">
             <img src="/bit-hostel-logo.png" alt="Bannari Amman Institute of Technology Logo" className="h-[38px] w-[38px] object-contain drop-shadow-sm" />
             <div className="leading-tight">
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-900 leading-tight">Bannari Amman Institute of Technology</div>
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.08em] leading-tight" style={{ color: 'var(--college-primary, #2563EB)' }}>Bannari Amman Institute of Technology</div>
               <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Student Portal</div>
             </div>
           </div>
@@ -135,7 +138,7 @@ export default function StudentSidebar() {
               <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5 bg-white/70">
                 <div className="flex items-center gap-2">
                   <img src="/bit-hostel-logo.png" alt="Bannari Amman Institute of Technology Logo" className="h-[26px] w-[26px] object-contain drop-shadow-sm" />
-                  <div className="font-bold text-slate-900 text-[12px]">Bannari Amman Institute of Technology</div>
+                  <div className="font-bold text-[12px]" style={{ color: 'var(--college-primary, #2563EB)' }}>Bannari Amman Institute of Technology</div>
                 </div>
                 <button onClick={() => setMobileOpen(false)} className="rounded-xl bg-slate-100 p-2 text-slate-700">
                   <X className="h-4 w-4" />

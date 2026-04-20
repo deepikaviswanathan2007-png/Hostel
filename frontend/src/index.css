@@ -8,6 +8,11 @@
     --font-display: 'Plus Jakarta Sans';
     --font-sans: 'Manrope';
     --font-mono: 'IBM Plex Mono';
+    --college-primary: #2563EB;
+    --college-secondary: #1D4ED8;
+    --college-accent: #F59E0B;
+    --college-ring: #DBEAFE;
+    --college-soft: #EFF6FF;
   }
 
   html {
