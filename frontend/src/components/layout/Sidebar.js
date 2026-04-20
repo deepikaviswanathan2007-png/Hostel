@@ -56,8 +56,8 @@ function NavItem({ to, label, icon: Icon, onClick, end = false }) {
       onClick={onClick}
       className={({ isActive }) =>
         `group relative flex items-center gap-3 rounded-xl border-l-2 px-4 py-2.5 text-sm font-semibold transition-all duration-200 ease-in-out ${isActive
-          ? 'border-transparent bg-brand-primary text-white shadow-[0_0_20px_rgba(125,83,246,0.4)]'
-          : 'border-transparent text-slate-400 hover:border-brand-primary/70 hover:bg-white/5 hover:text-white'
+          ? 'border-transparent bg-brand-primary text-white shadow-[0_0_20px_rgba(125,83,246,0.35)]'
+          : 'border-transparent text-brand-secondarytext hover:border-brand-primary/70 hover:bg-brand-primarybg hover:text-brand-text'
         }`
       }
     >
@@ -90,19 +90,19 @@ export default function Sidebar() {
   const initials = user?.name?.charAt(0)?.toUpperCase() || 'A';
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col bg-[#0F172A] lg:flex">
-        <div className="border-b border-white/10 px-5 py-6">
+    <div className="min-h-screen bg-brand-primarybg font-sans">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col border-r border-brand-scroll bg-brand-secondarybg lg:flex">
+        <div className="border-b border-brand-scroll px-5 py-6">
           <div className="leading-tight">
-            <div className="text-2xl font-black tracking-tight text-white">BIT</div>
-            <div className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Hostel Management</div>
+            <div className="text-2xl font-black tracking-tight text-brand-text">BIT</div>
+            <div className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-secondarytext">Hostel Management</div>
           </div>
         </div>
 
         <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5 custom-scrollbar" aria-label="Admin navigation">
           {NAV_GROUPS.map((group, idx) => (
             <div key={idx}>
-              <div className="mb-2 flex items-center gap-2 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[#475569]">
+              <div className="mb-2 flex items-center gap-2 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-secondarytext">
                 <span className="h-1.5 w-1.5 rounded-full bg-brand-primary" />
                 {group.title}
               </div>
@@ -115,19 +115,19 @@ export default function Sidebar() {
           ))}
         </nav>
 
-        <div className="border-t border-white/10 p-4">
-          <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-3">
+        <div className="border-t border-brand-scroll p-4">
+          <div className="flex items-center gap-3 rounded-2xl bg-brand-primarybg p-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-primary text-sm font-bold text-white">
               {initials}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-semibold text-white">{user?.name || 'Admin'}</div>
-              <div className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Full Access</div>
+              <div className="truncate text-sm font-semibold text-brand-text">{user?.name || 'Admin'}</div>
+              <div className="text-[11px] uppercase tracking-[0.16em] text-brand-secondarytext">Full Access</div>
             </div>
             <button
               type="button"
               onClick={handleLogout}
-              className="rounded-xl p-2 text-slate-400 transition-all duration-200 ease-in-out hover:bg-white/10 hover:text-white"
+              className="rounded-xl p-2 text-brand-secondarytext transition-all duration-200 ease-in-out hover:bg-white hover:text-brand-text"
             >
               <LogOut className="h-4 w-4" />
             </button>
@@ -144,13 +144,13 @@ export default function Sidebar() {
         {mobileOpen && (
           <div className="fixed inset-0 z-50 flex lg:hidden">
             <div className="fixed inset-0 bg-black/45" onClick={() => setMobileOpen(false)} />
-            <div className="relative flex w-[260px] flex-col bg-[#0F172A] shadow-xl">
-              <div className="flex items-center justify-between border-b border-white/10 px-5 py-5">
+            <div className="relative flex w-[260px] flex-col bg-brand-secondarybg shadow-xl">
+              <div className="flex items-center justify-between border-b border-brand-scroll px-5 py-5">
                 <div className="leading-tight">
-                  <div className="text-xl font-black text-white">BIT</div>
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Hostel Management</div>
+                  <div className="text-xl font-black text-brand-text">BIT</div>
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-secondarytext">Hostel Management</div>
                 </div>
-                <button onClick={() => setMobileOpen(false)} className="rounded-xl bg-white/10 p-2 text-slate-300 transition-all duration-200 ease-in-out hover:bg-white/20 hover:text-white">
+                <button onClick={() => setMobileOpen(false)} className="rounded-xl bg-brand-primarybg p-2 text-brand-secondarytext transition-all duration-200 ease-in-out hover:bg-white hover:text-brand-text">
                   <X className="h-4 w-4" />
                 </button>
               </div>
@@ -158,7 +158,7 @@ export default function Sidebar() {
               <div className="flex-1 space-y-6 overflow-y-auto px-3 py-5" aria-label="Admin mobile navigation">
                 {NAV_GROUPS.map((group, idx) => (
                   <div key={idx}>
-                    <div className="mb-2 flex items-center gap-2 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[#475569]">
+                    <div className="mb-2 flex items-center gap-2 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-secondarytext">
                       <span className="h-1.5 w-1.5 rounded-full bg-brand-primary" />
                       {group.title}
                     </div>
@@ -170,19 +170,19 @@ export default function Sidebar() {
                   </div>
                 ))}
               </div>
-              <div className="border-t border-white/10 p-4">
-                <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-3">
+              <div className="border-t border-brand-scroll p-4">
+                <div className="flex items-center gap-3 rounded-2xl bg-brand-primarybg p-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-primary text-sm font-bold text-white">
                     {initials}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-semibold text-white">{user?.name || 'Admin'}</div>
-                    <div className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Full Access</div>
+                    <div className="truncate text-sm font-semibold text-brand-text">{user?.name || 'Admin'}</div>
+                    <div className="text-[11px] uppercase tracking-[0.16em] text-brand-secondarytext">Full Access</div>
                   </div>
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="rounded-xl p-2 text-slate-400 transition-all duration-200 ease-in-out hover:bg-white/10 hover:text-white"
+                    className="rounded-xl p-2 text-brand-secondarytext transition-all duration-200 ease-in-out hover:bg-white hover:text-brand-text"
                   >
                     <LogOut className="h-4 w-4" />
                   </button>
