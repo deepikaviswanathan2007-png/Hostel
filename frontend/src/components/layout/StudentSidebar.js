@@ -209,18 +209,3 @@ export default function StudentSidebar() {
     </div>
   );
 }
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <main className="flex-1 px-6 py-4 lg:px-8">
-          <div style={contentScaleStyle}>
-            <Outlet />
-          </div>
-        </main>
-      </div>
-    </div>
-  );
-}
